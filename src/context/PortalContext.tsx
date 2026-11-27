@@ -21,6 +21,7 @@ import {
   deleteDoc,
   doc,
   getDoc,
+  getDocs,
   onSnapshot,
   orderBy,
   query,
@@ -308,6 +309,7 @@ interface PortalContextValue {
     address?: string;
     photoUrl?: string;
     status: 'active' | 'suspended';
+    targetGmail?: string;
   }) => Promise<void>;
   bulkAddEnrollments: (identifiers: string[]) => Promise<number>;
   removeEnrollment: (emailKey: string) => Promise<void>;
@@ -362,11 +364,12 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
   const isPhoneStudent = isStudentPhoneEmail(normalizedEmail);
   const needsLegacyGmailLink = Boolean(user) && isPhoneStudent;
   const hasVerifiedEmail = Boolean(user?.emailVerified) && tokenEmailVerified;
-  const isVerifiedAccount = hasVerifiedEmail || isPhoneStudent;
-  const needsStudentEmailVerification =
-    Boolean(user) && !isPhoneStudent && !hasVerifiedEmail;
+  const isEnrolledActive = myEnrollment?.status === 'active';
+  const isVerifiedAccount = hasVerifiedEmail || isPhoneStudent || isEnrolledActive;
   const isPaidStudent =
-    (isVerifiedAccount && myEnrollment?.status === 'active') || studentIsAdminAccount;
+    (Boolean(user) && isEnrolledActive) || studentIsAdminAccount;
+  const needsStudentEmailVerification =
+    Boolean(user) && !isPhoneStudent && !hasVerifiedEmail && !isEnrolledActive;
 
   const adminNormalizedEmail = adminUser?.email?.trim().toLowerCase() ?? '';
   const adminHasVerifiedEmail = Boolean(adminUser?.emailVerified) && adminTokenVerified;
@@ -764,7 +767,7 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
   // 2. Personal Enrollment, Request, Progress & Private Results Listeners (Student track)
   useEffect(() => {
     if (!authReady) return;
-    if (!user || !isVerifiedAccount || !normalizedEmail) {
+    if (!user || !normalizedEmail) {
       setMyEnrollment(null);
       setMyRequest(null);
       setMyResults([]);
@@ -1736,6 +1739,7 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
     address?: string;
     photoUrl?: string;
     status: 'active' | 'suspended';
+    targetGmail?: string;
   }) => {
     if (!adminUser || !isAdmin) throw new Error('Admin access required.');
     const resolved = resolveIdentifierToEmailAndPhone(input.identifier, input.phone);
@@ -1743,45 +1747,133 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
       throw new Error('Enter a valid 11-digit mobile number (01XXXXXXXXX) or Gmail.');
     }
 
-    const path = `enrollments/${resolved.emailKey}`;
+    const sourceEmailKey = resolved.emailKey.toLowerCase();
+    const sourcePhone = resolved.phone;
+    let targetGmailKey: string | null = null;
+
+    if (input.targetGmail?.trim()) {
+      const cleanTarget = input.targetGmail.trim().toLowerCase();
+      if (
+        !/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/.test(cleanTarget) ||
+        isStudentPhoneEmail(cleanTarget)
+      ) {
+        throw new Error('সঠিক Gmail ঠিকানা লিখুন (যেমন: student@gmail.com)।');
+      }
+      targetGmailKey = cleanTarget;
+    }
+
+    const primaryKey = targetGmailKey || sourceEmailKey;
+    const finalPhone = (input.phone ?? sourcePhone ?? '').trim().slice(0, 24);
+
+    const path = `enrollments/${primaryKey}`;
     try {
-      const existingSnap = await getDoc(doc(adminDb, 'enrollments', resolved.emailKey));
-      if (existingSnap.exists()) {
-        const prev = existingSnap.data() as Enrollment;
-        await updateDoc(doc(adminDb, 'enrollments', resolved.emailKey), {
-          studentName: input.studentName.trim().slice(0, 100),
-          rollNumber: (input.rollNumber ?? prev.rollNumber ?? '').trim().slice(0, 32),
-          college: (input.college ?? prev.college ?? '').trim().slice(0, 120),
-          phone: resolved.phone.slice(0, 24),
-          guardianPhone: (input.guardianPhone ?? prev.guardianPhone ?? '').trim().slice(0, 24),
-          sectionTime: (input.sectionTime ?? prev.sectionTime ?? '').trim().slice(0, 80),
-          sscGpa: (input.sscGpa ?? prev.sscGpa ?? '').trim().slice(0, 40),
-          address: (input.address ?? prev.address ?? '').trim().slice(0, 200),
-          photoUrl:
-            input.photoUrl !== undefined
-              ? sanitizeProfilePhotoUrl(input.photoUrl)
-              : (prev.photoUrl ?? ''),
-          status: input.status,
-          updatedAt: serverTimestamp(),
-        });
-      } else {
-        await setDoc(doc(adminDb, 'enrollments', resolved.emailKey), {
-          email: resolved.emailKey,
-          studentName: input.studentName.trim().slice(0, 100),
-          batch: 'HSC-28',
-          rollNumber: (input.rollNumber ?? '').trim().slice(0, 32),
-          college: (input.college ?? '').trim().slice(0, 120),
-          phone: resolved.phone.slice(0, 24),
-          guardianPhone: (input.guardianPhone ?? '').trim().slice(0, 24),
-          sectionTime: (input.sectionTime ?? '').trim().slice(0, 80),
-          sscGpa: (input.sscGpa ?? '').trim().slice(0, 40),
-          address: (input.address ?? '').trim().slice(0, 200),
-          photoUrl: sanitizeProfilePhotoUrl(input.photoUrl ?? ''),
-          status: input.status,
-          addedByUid: adminUser.uid,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-        });
+      const existingSnap = await getDoc(doc(adminDb, 'enrollments', primaryKey));
+      const sourceSnap =
+        primaryKey !== sourceEmailKey
+          ? await getDoc(doc(adminDb, 'enrollments', sourceEmailKey))
+          : existingSnap;
+
+      const prev = existingSnap.exists()
+        ? (existingSnap.data() as Enrollment)
+        : sourceSnap.exists()
+          ? (sourceSnap.data() as Enrollment)
+          : null;
+
+      const effectiveAddedByUid =
+        prev?.addedByUid && /^[a-zA-Z0-9_\-]+$/.test(prev.addedByUid)
+          ? prev.addedByUid
+          : adminUser.uid;
+
+      const baseEnrollmentData: Record<string, unknown> = {
+        email: primaryKey,
+        studentName: input.studentName.trim().slice(0, 100),
+        batch: 'HSC-28',
+        rollNumber: (input.rollNumber ?? prev?.rollNumber ?? '').trim().slice(0, 32),
+        college: (input.college ?? prev?.college ?? '').trim().slice(0, 120),
+        phone: finalPhone,
+        guardianPhone: (input.guardianPhone ?? prev?.guardianPhone ?? '').trim().slice(0, 24),
+        sectionTime: (input.sectionTime ?? prev?.sectionTime ?? '').trim().slice(0, 80),
+        sscGpa: (input.sscGpa ?? prev?.sscGpa ?? '').trim().slice(0, 40),
+        address: (input.address ?? prev?.address ?? '').trim().slice(0, 200),
+        photoUrl:
+          input.photoUrl !== undefined
+            ? sanitizeProfilePhotoUrl(input.photoUrl)
+            : (prev?.photoUrl ?? ''),
+        status: input.status,
+        addedByUid: effectiveAddedByUid,
+        createdAt:
+          existingSnap.exists() && prev?.createdAt
+            ? prev.createdAt
+            : prev?.createdAt ?? serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      };
+
+      await setDoc(doc(adminDb, 'enrollments', primaryKey), baseEnrollmentData, { merge: true });
+
+      // If a mobile number is known, also keep phone-based enrollment record synchronized
+      // so the student can seamlessly log in with either Mobile or Gmail!
+      if (finalPhone) {
+        const phoneAuthEmailKey = phoneToAuthEmail(finalPhone);
+        if (phoneAuthEmailKey !== primaryKey) {
+          const phoneSnap = await getDoc(doc(adminDb, 'enrollments', phoneAuthEmailKey));
+          const phoneData: Record<string, unknown> = {
+            ...baseEnrollmentData,
+            email: phoneAuthEmailKey,
+            phone: finalPhone,
+            updatedAt: serverTimestamp(),
+          };
+          if (phoneSnap.exists()) {
+            const prevPhone = phoneSnap.data() as Enrollment;
+            if (prevPhone.createdAt) {
+              phoneData.createdAt = prevPhone.createdAt;
+            }
+            if (prevPhone.addedByUid) {
+              phoneData.addedByUid = prevPhone.addedByUid;
+            }
+          }
+          await setDoc(
+            doc(adminDb, 'enrollments', phoneAuthEmailKey),
+            phoneData,
+            { merge: true },
+          );
+        }
+      }
+
+      // If enrollment was moved from a legacy or old email, clean up old doc
+      if (
+        primaryKey !== sourceEmailKey &&
+        !isStudentPhoneEmail(sourceEmailKey) &&
+        sourceSnap.exists()
+      ) {
+        try {
+          await deleteDoc(doc(adminDb, 'enrollments', sourceEmailKey));
+        } catch {
+          // Non-fatal cleanup
+        }
+      }
+
+      // Migrate any previously recorded results from the old email to the new primaryKey
+      if (primaryKey !== sourceEmailKey) {
+        try {
+          const resultsSnap = await getDocs(
+            query(
+              collection(adminDb, 'studentResults'),
+              where('studentEmail', '==', sourceEmailKey),
+            ),
+          );
+          if (!resultsSnap.empty) {
+            const batch = writeBatch(adminDb);
+            resultsSnap.docs.forEach((d) => {
+              batch.update(d.ref, {
+                studentEmail: primaryKey,
+                updatedAt: serverTimestamp(),
+              });
+            });
+            await batch.commit();
+          }
+        } catch {
+          // Non-fatal result sync
+        }
       }
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, path, adminAuth.currentUser);

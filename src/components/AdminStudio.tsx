@@ -7,6 +7,7 @@ import {
   EyeOff,
   ImagePlus,
   KeyRound,
+  Mail,
   Pencil,
   Plus,
   Search,
@@ -21,7 +22,11 @@ import {
 } from 'lucide-react';
 import { HSC28_PHYSICS_CHAPTERS } from '../data/hsc28Curriculum';
 import { usePortal } from '../context/PortalContext';
-import { extractPhoneFromAuthEmail, formatAuthError } from '../lib/phoneAuth';
+import {
+  extractPhoneFromAuthEmail,
+  formatAuthError,
+  isStudentPhoneEmail,
+} from '../lib/phoneAuth';
 import {
   compressNoticeImage,
   parseVideoUrl,
@@ -105,6 +110,7 @@ export function AdminStudio() {
   // Admin inline student profile edit state
   const [editingStudentEmail, setEditingStudentEmail] = useState<string | null>(null);
   const [editStudentName, setEditStudentName] = useState('');
+  const [editStudentGmail, setEditStudentGmail] = useState('');
   const [editStudentRoll, setEditStudentRoll] = useState('');
   const [editStudentCollege, setEditStudentCollege] = useState('');
   const [editStudentPhone, setEditStudentPhone] = useState('');
@@ -337,9 +343,13 @@ export function AdminStudio() {
   const openStudentProfileEditor = (en: Enrollment) => {
     setEditingStudentEmail(en.email);
     setEditStudentName(en.studentName);
+    const initialGmail = isStudentPhoneEmail(en.email) ? '' : en.email;
+    setEditStudentGmail(initialGmail);
     setEditStudentRoll(en.rollNumber ?? '');
     setEditStudentCollege(en.college ?? '');
-    setEditStudentPhone(en.phone ?? '');
+    setEditStudentPhone(
+      en.phone ?? (isStudentPhoneEmail(en.email) ? extractPhoneFromAuthEmail(en.email) : ''),
+    );
     setEditStudentGuardianPhone(en.guardianPhone ?? '');
     setEditStudentSectionTime(en.sectionTime ?? '');
     setEditStudentSscGpa(en.sscGpa ?? '');
@@ -366,9 +376,10 @@ export function AdminStudio() {
         sscGpa: editStudentSscGpa,
         address: editStudentAddress,
         status: editStudentStatus,
+        targetGmail: editStudentGmail.trim() || undefined,
       });
       setEditingStudentEmail(null);
-      showToast(`${editStudentName} profile updated.`);
+      showToast(`${editStudentName} profile updated with Gmail.`);
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Failed to update student profile.');
     } finally {
@@ -1522,8 +1533,20 @@ export function AdminStudio() {
                             <div className="text-sm font-semibold text-slate-100 truncate">
                               {en.studentName}
                             </div>
-                            <div className="text-xs font-mono text-slate-400 truncate">
-                              {displayHandle}
+                            <div className="text-xs text-slate-400 flex flex-wrap items-center gap-x-2 gap-y-1 mt-1 font-mono">
+                              <span>{displayHandle}</span>
+                              <span aria-hidden="true">·</span>
+                              {isStudentPhoneEmail(en.email) ? (
+                                <span className="inline-flex items-center gap-1 text-[11px] font-sans text-amber-400 font-medium">
+                                  <Mail className="w-3 h-3 shrink-0" />
+                                  <span>Gmail যুক্ত নেই (Edit Profile চাপুন)</span>
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 text-[11px] text-sky-300 font-medium">
+                                  <Mail className="w-3 h-3 shrink-0" />
+                                  <span>{en.email}</span>
+                                </span>
+                              )}
                               {en.guardianPhone ? ` · Guardian: ${en.guardianPhone}` : ''}
                               {en.sscGpa ? ` · SSC: ${en.sscGpa}` : ''}
                             </div>
@@ -1586,6 +1609,24 @@ export function AdminStudio() {
                             <div className="text-xs font-semibold text-sky-300">
                               Edit Complete Student Profile ({displayHandle})
                             </div>
+
+                            <div className="p-3 bg-amber-950/25 border border-amber-800/60 rounded-xl space-y-1.5">
+                              <label className="block text-[11px] font-semibold text-amber-300 flex items-center gap-1.5">
+                                <Mail className="w-3.5 h-3.5 text-amber-400" />
+                                <span>Student Gmail (শিক্ষার্থীর আসল Gmail)</span>
+                              </label>
+                              <input
+                                type="email"
+                                placeholder="student@gmail.com"
+                                value={editStudentGmail}
+                                onChange={(e) => setEditStudentGmail(e.target.value)}
+                                className={`${inputClass} font-mono`}
+                              />
+                              <p className="text-[10px] text-amber-200/90 leading-relaxed">
+                                যেসব শিক্ষার্থী ভেরিফিকেশন ইমেইল পাচ্ছে না, অ্যাডমিন হিসেবে এখানে তাদের আসল Gmail বসিয়ে সেভ করুন। শিক্ষার্থী কোনো ভেরিফিকেশন বাধা ছাড়াই সরাসরি ক্লাসরুমে প্রবেশ করতে পারবে।
+                              </p>
+                            </div>
+
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                               <div>
                                 <label className="block text-[11px] text-slate-400 mb-1">
@@ -1598,6 +1639,18 @@ export function AdminStudio() {
                                   value={editStudentName}
                                   onChange={(e) => setEditStudentName(e.target.value)}
                                   className={inputClass}
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[11px] text-slate-400 mb-1">
+                                  Student Phone
+                                </label>
+                                <input
+                                  type="tel"
+                                  maxLength={24}
+                                  value={editStudentPhone}
+                                  onChange={(e) => setEditStudentPhone(e.target.value)}
+                                  className={`${inputClass} font-mono`}
                                 />
                               </div>
                               <div>
@@ -1636,18 +1689,6 @@ export function AdminStudio() {
                                   value={editStudentCollege}
                                   onChange={(e) => setEditStudentCollege(e.target.value)}
                                   className={inputClass}
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-[11px] text-slate-400 mb-1">
-                                  Student Phone
-                                </label>
-                                <input
-                                  type="tel"
-                                  maxLength={24}
-                                  value={editStudentPhone}
-                                  onChange={(e) => setEditStudentPhone(e.target.value)}
-                                  className={`${inputClass} font-mono`}
                                 />
                               </div>
                               <div>
