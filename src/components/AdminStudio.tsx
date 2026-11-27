@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import {
+  Award,
   CheckCircle2,
   Database,
   ImagePlus,
@@ -25,7 +26,14 @@ import {
   sanitizeNoticeImageUrl,
   sanitizeNoticeVideoUrl,
 } from '../lib/videoUtils';
-import type { Notice, NoticeAudience, NoticeCategory, RecordedClass } from '../types/portal';
+import type {
+  Enrollment,
+  Notice,
+  NoticeAudience,
+  NoticeCategory,
+  RecordedClass,
+  StudentResult,
+} from '../types/portal';
 import { NoticeMediaViewer } from './NoticeMediaViewer';
 
 export function AdminStudio() {
@@ -35,6 +43,7 @@ export function AdminStudio() {
     notices,
     allEnrollments,
     allRequests,
+    allResults,
     fetchClassStream,
     publishRecordedClass,
     updateRecordedClass,
@@ -46,11 +55,14 @@ export function AdminStudio() {
     bulkAddEnrollments,
     removeEnrollment,
     resolveEnrollmentRequest,
+    publishStudentResult,
+    updateStudentResult,
+    removeStudentResult,
     linkAdminPassword,
     seedDemoContent,
   } = usePortal();
 
-  const [tab, setTab] = useState<'classes' | 'notices' | 'students'>('classes');
+  const [tab, setTab] = useState<'classes' | 'notices' | 'students' | 'results'>('classes');
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -83,8 +95,37 @@ export function AdminStudio() {
   const [studentName, setStudentName] = useState('');
   const [studentRoll, setStudentRoll] = useState('');
   const [studentCollege, setStudentCollege] = useState('');
+  const [studentSectionTime, setStudentSectionTime] = useState('');
+  const [studentGuardianPhone, setStudentGuardianPhone] = useState('');
   const [bulkIdentifiersText, setBulkIdentifiersText] = useState('');
   const [rosterSearch, setRosterSearch] = useState('');
+
+  // Admin inline student profile edit state
+  const [editingStudentEmail, setEditingStudentEmail] = useState<string | null>(null);
+  const [editStudentName, setEditStudentName] = useState('');
+  const [editStudentRoll, setEditStudentRoll] = useState('');
+  const [editStudentCollege, setEditStudentCollege] = useState('');
+  const [editStudentPhone, setEditStudentPhone] = useState('');
+  const [editStudentGuardianPhone, setEditStudentGuardianPhone] = useState('');
+  const [editStudentSectionTime, setEditStudentSectionTime] = useState('');
+  const [editStudentSscGpa, setEditStudentSscGpa] = useState('');
+  const [editStudentAddress, setEditStudentAddress] = useState('');
+  const [editStudentStatus, setEditStudentStatus] = useState<'active' | 'suspended'>('active');
+
+  // Individual Student Results form state
+  const [editingResultId, setEditingResultId] = useState<string | null>(null);
+  const [resultStudentEmail, setResultStudentEmail] = useState('');
+  const [resultExamTitle, setResultExamTitle] = useState('');
+  const [resultChapterNumber, setResultChapterNumber] = useState(2);
+  const [resultExamDate, setResultExamDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [resultCqMarks, setResultCqMarks] = useState('');
+  const [resultMcqMarks, setResultMcqMarks] = useState('');
+  const [resultObtainedMarks, setResultObtainedMarks] = useState('');
+  const [resultTotalMarks, setResultTotalMarks] = useState('100');
+  const [resultHighestMarks, setResultHighestMarks] = useState('');
+  const [resultMeritRank, setResultMeritRank] = useState('');
+  const [resultRemarks, setResultRemarks] = useState('');
+  const [resultSearch, setResultSearch] = useState('');
 
   // Link Admin Password state
   const [newAdminPassword, setNewAdminPassword] = useState('');
@@ -272,15 +313,165 @@ export function AdminStudio() {
         studentName,
         rollNumber: studentRoll,
         college: studentCollege,
+        sectionTime: studentSectionTime,
+        guardianPhone: studentGuardianPhone,
         status: 'active',
       });
       setStudentIdentifier('');
       setStudentName('');
       setStudentRoll('');
       setStudentCollege('');
+      setStudentSectionTime('');
+      setStudentGuardianPhone('');
       showToast(`${studentName} approved and added to Batch Student Roster.`);
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Failed to enroll student.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const openStudentProfileEditor = (en: Enrollment) => {
+    setEditingStudentEmail(en.email);
+    setEditStudentName(en.studentName);
+    setEditStudentRoll(en.rollNumber ?? '');
+    setEditStudentCollege(en.college ?? '');
+    setEditStudentPhone(en.phone ?? '');
+    setEditStudentGuardianPhone(en.guardianPhone ?? '');
+    setEditStudentSectionTime(en.sectionTime ?? '');
+    setEditStudentSscGpa(en.sscGpa ?? '');
+    setEditStudentAddress(en.address ?? '');
+    setEditStudentStatus(en.status);
+  };
+
+  const handleSaveStudentProfileEdit = async (e: React.FormEvent, en: Enrollment) => {
+    e.preventDefault();
+    if (!editStudentName.trim()) {
+      setErrorMsg('Student name cannot be empty.');
+      return;
+    }
+    setBusy(true);
+    try {
+      await addOrUpdateEnrollment({
+        identifier: en.email,
+        studentName: editStudentName,
+        rollNumber: editStudentRoll,
+        college: editStudentCollege,
+        phone: editStudentPhone,
+        guardianPhone: editStudentGuardianPhone,
+        sectionTime: editStudentSectionTime,
+        sscGpa: editStudentSscGpa,
+        address: editStudentAddress,
+        status: editStudentStatus,
+      });
+      setEditingStudentEmail(null);
+      showToast(`${editStudentName} profile updated.`);
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : 'Failed to update student profile.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const resetResultForm = () => {
+    setEditingResultId(null);
+    setResultExamTitle('');
+    setResultCqMarks('');
+    setResultMcqMarks('');
+    setResultObtainedMarks('');
+    setResultTotalMarks('100');
+    setResultHighestMarks('');
+    setResultMeritRank('');
+    setResultRemarks('');
+  };
+
+  const handleEditResultClick = (res: StudentResult) => {
+    setEditingResultId(res.id);
+    setResultStudentEmail(res.studentEmail);
+    setResultExamTitle(res.examTitle);
+    setResultChapterNumber(res.chapterNumber ?? 0);
+    setResultExamDate(res.examDate);
+    setResultCqMarks(res.cqMarks !== undefined ? String(res.cqMarks) : '');
+    setResultMcqMarks(res.mcqMarks !== undefined ? String(res.mcqMarks) : '');
+    setResultObtainedMarks(String(res.obtainedMarks));
+    setResultTotalMarks(String(res.totalMarks));
+    setResultHighestMarks(res.highestMarks !== undefined ? String(res.highestMarks) : '');
+    setResultMeritRank(res.meritRank ?? '');
+    setResultRemarks(res.remarks ?? '');
+    setTab('results');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleOpenGiveResultForStudent = (en: Enrollment) => {
+    resetResultForm();
+    setResultStudentEmail(en.email);
+    setTab('results');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const updateCqOrMcq = (nextCq: string, nextMcq: string) => {
+    setResultCqMarks(nextCq);
+    setResultMcqMarks(nextMcq);
+    if (nextCq.trim() !== '' || nextMcq.trim() !== '') {
+      const sum = (Number(nextCq) || 0) + (Number(nextMcq) || 0);
+      if (!Number.isNaN(sum)) {
+        setResultObtainedMarks(String(sum));
+      }
+    }
+  };
+
+  const handleSaveResult = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const targetStudent = allEnrollments.find(
+      (en) => en.email.toLowerCase() === resultStudentEmail.trim().toLowerCase(),
+    );
+    if (!targetStudent) {
+      setErrorMsg('প্রথমে তালিকা থেকে একজন অ্যাপ্রুভড শিক্ষার্থী নির্বাচন করুন।');
+      return;
+    }
+    if (!resultExamTitle.trim() || resultExamTitle.trim().length < 2) {
+      setErrorMsg('পরীক্ষার নাম লিখুন (কমপক্ষে ২ অক্ষর)।');
+      return;
+    }
+    const totalNum = Number(resultTotalMarks);
+    const obtainedNum = Number(resultObtainedMarks);
+    if (Number.isNaN(totalNum) || totalNum < 1 || totalNum > 500) {
+      setErrorMsg('মোট নম্বর (Total Marks) ১ থেকে ৫০০-এর মধ্যে হতে হবে।');
+      return;
+    }
+    if (Number.isNaN(obtainedNum) || obtainedNum < 0 || obtainedNum > totalNum) {
+      setErrorMsg('প্রাপ্ত নম্বর ০ থেকে মোট নম্বরের মধ্যে হতে হবে।');
+      return;
+    }
+
+    setBusy(true);
+    try {
+      const payload = {
+        studentEmail: targetStudent.email,
+        studentName: targetStudent.studentName,
+        rollNumber: targetStudent.rollNumber ?? '',
+        examTitle: resultExamTitle,
+        chapterNumber: resultChapterNumber,
+        examDate: resultExamDate,
+        cqMarks: resultCqMarks.trim() !== '' ? Number(resultCqMarks) : undefined,
+        mcqMarks: resultMcqMarks.trim() !== '' ? Number(resultMcqMarks) : undefined,
+        obtainedMarks: obtainedNum,
+        totalMarks: totalNum,
+        highestMarks:
+          resultHighestMarks.trim() !== '' ? Number(resultHighestMarks) : undefined,
+        meritRank: resultMeritRank,
+        remarks: resultRemarks,
+      };
+      if (editingResultId) {
+        await updateStudentResult(editingResultId, payload);
+        showToast(`${targetStudent.studentName}-এর রেজাল্ট আপডেট হয়েছে।`);
+      } else {
+        await publishStudentResult(payload);
+        showToast(`${targetStudent.studentName}-এর ব্যক্তিগত রেজাল্ট প্রকাশিত হয়েছে।`);
+      }
+      resetResultForm();
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : 'Failed to save student result.');
     } finally {
       setBusy(false);
     }
@@ -351,7 +542,19 @@ export function AdminStudio() {
       en.email.toLowerCase().includes(q) ||
       (en.phone ?? '').toLowerCase().includes(q) ||
       en.studentName.toLowerCase().includes(q) ||
-      (en.rollNumber ?? '').toLowerCase().includes(q)
+      (en.rollNumber ?? '').toLowerCase().includes(q) ||
+      (en.college ?? '').toLowerCase().includes(q)
+    );
+  });
+
+  const filteredResults = allResults.filter((r) => {
+    const q = resultSearch.trim().toLowerCase();
+    if (!q) return true;
+    return (
+      r.studentName.toLowerCase().includes(q) ||
+      r.studentEmail.toLowerCase().includes(q) ||
+      (r.rollNumber ?? '').toLowerCase().includes(q) ||
+      r.examTitle.toLowerCase().includes(q)
     );
   });
 
@@ -411,8 +614,19 @@ export function AdminStudio() {
                 : 'text-slate-300 hover:text-white'
             }`}
           >
-            Approve Students ({allEnrollments.length})
+            Students &amp; Profiles ({allEnrollments.length})
             {pendingRequests.length > 0 ? ` · ${pendingRequests.length} Pending` : ''}
+          </button>
+          <button
+            type="button"
+            onClick={() => setTab('results')}
+            className={`px-3.5 py-2 text-xs font-semibold rounded-md transition-colors cursor-pointer whitespace-nowrap ${
+              tab === 'results'
+                ? 'bg-[#F59E0B] text-slate-950'
+                : 'text-slate-300 hover:text-white'
+            }`}
+          >
+            Individual Results ({allResults.length})
           </button>
           <button
             type="button"
@@ -1157,6 +1371,35 @@ export function AdminStudio() {
                     </div>
                   </div>
 
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-slate-300 mb-1">
+                        Batch Time / Section
+                      </label>
+                      <input
+                        type="text"
+                        maxLength={80}
+                        placeholder="Sat-Mon-Wed 4:00 PM"
+                        value={studentSectionTime}
+                        onChange={(e) => setStudentSectionTime(e.target.value)}
+                        className="w-full px-3 py-2 text-xs text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-300 mb-1">
+                        Guardian Phone
+                      </label>
+                      <input
+                        type="tel"
+                        maxLength={24}
+                        placeholder="01XXXXXXXXX"
+                        value={studentGuardianPhone}
+                        onChange={(e) => setStudentGuardianPhone(e.target.value)}
+                        className="w-full px-3 py-2 text-xs font-mono text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                      />
+                    </div>
+                  </div>
+
                   <button
                     type="submit"
                     disabled={busy}
@@ -1206,7 +1449,7 @@ export function AdminStudio() {
                   <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
-                    placeholder="Search phone, email or name..."
+                    placeholder="Search phone, roll, college or name..."
                     value={rosterSearch}
                     onChange={(e) => setRosterSearch(e.target.value)}
                     className="pl-8 pr-3 py-1.5 text-xs text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
@@ -1222,78 +1465,547 @@ export function AdminStudio() {
                 ) : (
                   filteredEnrollments.map((en) => {
                     const displayHandle = en.phone || extractPhoneFromAuthEmail(en.email);
+                    const isEditingThis = editingStudentEmail === en.email;
                     return (
-                      <div
-                        key={en.email}
-                        className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-                      >
-                        <div className="min-w-0">
-                          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400 mb-1">
-                            <span
-                              className={`inline-flex items-center gap-1 font-semibold ${
-                                en.status === 'active' ? 'text-emerald-400' : 'text-[#FBBF24]'
-                              }`}
-                            >
-                              {en.status === 'active' ? (
-                                <CheckCircle2 className="w-3.5 h-3.5" />
-                              ) : (
-                                <Video className="w-3.5 h-3.5" />
+                      <div key={en.email} className="p-5 space-y-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400 mb-1">
+                              <span
+                                className={`inline-flex items-center gap-1 font-semibold ${
+                                  en.status === 'active' ? 'text-emerald-400' : 'text-[#FBBF24]'
+                                }`}
+                              >
+                                {en.status === 'active' ? (
+                                  <CheckCircle2 className="w-3.5 h-3.5" />
+                                ) : (
+                                  <Video className="w-3.5 h-3.5" />
+                                )}
+                                <span>{en.status === 'active' ? 'Active' : 'Suspended'}</span>
+                              </span>
+                              {en.rollNumber && (
+                                <>
+                                  <span aria-hidden="true">·</span>
+                                  <span className="font-mono text-amber-300">{en.rollNumber}</span>
+                                </>
                               )}
-                              <span>{en.status === 'active' ? 'Active' : 'Suspended'}</span>
-                            </span>
-                            {en.rollNumber && (
-                              <>
-                                <span aria-hidden="true">·</span>
-                                <span className="font-mono">{en.rollNumber}</span>
-                              </>
-                            )}
-                            {en.college && (
-                              <>
-                                <span aria-hidden="true">·</span>
-                                <span>{en.college}</span>
-                              </>
-                            )}
+                              {en.college && (
+                                <>
+                                  <span aria-hidden="true">·</span>
+                                  <span>{en.college}</span>
+                                </>
+                              )}
+                              {en.sectionTime && (
+                                <>
+                                  <span aria-hidden="true">·</span>
+                                  <span className="text-sky-300">{en.sectionTime}</span>
+                                </>
+                              )}
+                            </div>
+                            <div className="text-sm font-semibold text-slate-100 truncate">
+                              {en.studentName}
+                            </div>
+                            <div className="text-xs font-mono text-slate-400 truncate">
+                              {displayHandle}
+                              {en.guardianPhone ? ` · Guardian: ${en.guardianPhone}` : ''}
+                              {en.sscGpa ? ` · SSC: ${en.sscGpa}` : ''}
+                            </div>
                           </div>
-                          <div className="text-sm font-semibold text-slate-100 truncate">
-                            {en.studentName}
-                          </div>
-                          <div className="text-xs font-mono text-slate-400 truncate">
-                            {displayHandle}
+
+                          <div className="flex flex-wrap items-center gap-2 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => handleOpenGiveResultForStudent(en)}
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] rounded-lg transition-colors cursor-pointer whitespace-nowrap"
+                              title="Publish individual exam result"
+                            >
+                              <Award className="w-3.5 h-3.5" />
+                              <span>Give Result</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                isEditingThis
+                                  ? setEditingStudentEmail(null)
+                                  : openStudentProfileEditor(en)
+                              }
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium border border-slate-700 rounded-lg hover:border-sky-500 text-sky-300 bg-[#0B1118] transition-colors cursor-pointer whitespace-nowrap"
+                            >
+                              <Pencil className="w-3 h-3" />
+                              <span>{isEditingThis ? 'Close' : 'Edit Profile'}</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                void addOrUpdateEnrollment({
+                                  identifier: en.phone || en.email,
+                                  studentName: en.studentName,
+                                  rollNumber: en.rollNumber,
+                                  college: en.college,
+                                  phone: en.phone,
+                                  status: en.status === 'active' ? 'suspended' : 'active',
+                                })
+                              }
+                              className="px-2.5 py-1.5 text-xs font-medium border border-slate-700 rounded-lg hover:border-slate-500 text-slate-200 bg-[#0B1118] transition-colors cursor-pointer whitespace-nowrap"
+                            >
+                              {en.status === 'active' ? 'Suspend' : 'Activate'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => void removeEnrollment(en.email)}
+                              className="p-1.5 text-slate-400 hover:text-red-400 rounded-lg hover:bg-red-950/60 transition-colors cursor-pointer"
+                              title="Remove student"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2 shrink-0">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              void addOrUpdateEnrollment({
-                                identifier: en.phone || en.email,
-                                studentName: en.studentName,
-                                rollNumber: en.rollNumber,
-                                college: en.college,
-                                phone: en.phone,
-                                status: en.status === 'active' ? 'suspended' : 'active',
-                              })
-                            }
-                            className="px-3 py-1.5 text-xs font-medium border border-slate-700 rounded-lg hover:border-slate-500 text-slate-200 bg-[#0B1118] transition-colors cursor-pointer whitespace-nowrap"
+                        {isEditingThis && (
+                          <form
+                            onSubmit={(e) => void handleSaveStudentProfileEdit(e, en)}
+                            className="p-4 rounded-xl border border-slate-700 bg-[#0B1118] space-y-3"
                           >
-                            {en.status === 'active' ? 'Suspend' : 'Activate'}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => void removeEnrollment(en.email)}
-                            className="p-1.5 text-slate-400 hover:text-red-400 rounded-lg hover:bg-red-950/60 transition-colors cursor-pointer"
-                            title="Remove student"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
+                            <div className="text-xs font-semibold text-sky-300">
+                              Edit Complete Student Profile ({displayHandle})
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              <div>
+                                <label className="block text-[11px] text-slate-400 mb-1">
+                                  Full Name
+                                </label>
+                                <input
+                                  type="text"
+                                  required
+                                  maxLength={100}
+                                  value={editStudentName}
+                                  onChange={(e) => setEditStudentName(e.target.value)}
+                                  className={inputClass}
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[11px] text-slate-400 mb-1">
+                                  Batch Roll
+                                </label>
+                                <input
+                                  type="text"
+                                  maxLength={32}
+                                  placeholder="HSC28-042"
+                                  value={editStudentRoll}
+                                  onChange={(e) => setEditStudentRoll(e.target.value)}
+                                  className={`${inputClass} font-mono`}
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[11px] text-slate-400 mb-1">
+                                  Batch Time / Section
+                                </label>
+                                <input
+                                  type="text"
+                                  maxLength={80}
+                                  placeholder="Sat-Mon-Wed 4:00 PM"
+                                  value={editStudentSectionTime}
+                                  onChange={(e) => setEditStudentSectionTime(e.target.value)}
+                                  className={inputClass}
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[11px] text-slate-400 mb-1">
+                                  College Name
+                                </label>
+                                <input
+                                  type="text"
+                                  maxLength={120}
+                                  value={editStudentCollege}
+                                  onChange={(e) => setEditStudentCollege(e.target.value)}
+                                  className={inputClass}
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[11px] text-slate-400 mb-1">
+                                  Student Phone
+                                </label>
+                                <input
+                                  type="tel"
+                                  maxLength={24}
+                                  value={editStudentPhone}
+                                  onChange={(e) => setEditStudentPhone(e.target.value)}
+                                  className={`${inputClass} font-mono`}
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[11px] text-slate-400 mb-1">
+                                  Guardian Phone
+                                </label>
+                                <input
+                                  type="tel"
+                                  maxLength={24}
+                                  value={editStudentGuardianPhone}
+                                  onChange={(e) => setEditStudentGuardianPhone(e.target.value)}
+                                  className={`${inputClass} font-mono`}
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[11px] text-slate-400 mb-1">
+                                  SSC GPA / Score
+                                </label>
+                                <input
+                                  type="text"
+                                  maxLength={40}
+                                  placeholder="GPA 5.00"
+                                  value={editStudentSscGpa}
+                                  onChange={(e) => setEditStudentSscGpa(e.target.value)}
+                                  className={inputClass}
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[11px] text-slate-400 mb-1">
+                                  Address
+                                </label>
+                                <input
+                                  type="text"
+                                  maxLength={200}
+                                  value={editStudentAddress}
+                                  onChange={(e) => setEditStudentAddress(e.target.value)}
+                                  className={inputClass}
+                                />
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-end gap-2 pt-1">
+                              <button
+                                type="button"
+                                onClick={() => setEditingStudentEmail(null)}
+                                className="px-3 py-1.5 text-xs text-slate-400 hover:text-slate-100 cursor-pointer"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                type="submit"
+                                disabled={busy}
+                                className="px-4 py-1.5 text-xs font-semibold text-slate-950 bg-[#38BDF8] hover:bg-sky-300 disabled:opacity-50 rounded-lg cursor-pointer"
+                              >
+                                Save Profile
+                              </button>
+                            </div>
+                          </form>
+                        )}
                       </div>
                     );
                   })
                 )}
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tab 4: Individual Exam Results */}
+      {tab === 'results' && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <form
+            onSubmit={handleSaveResult}
+            className="lg:col-span-5 bg-[#131C28] border border-slate-800 rounded-xl p-6 space-y-4"
+          >
+            <div className="flex items-center justify-between">
+              <h3 className="font-display text-lg font-bold text-slate-50">
+                {editingResultId ? 'Edit Student Result' : 'Publish Individual Exam Result'}
+              </h3>
+              {editingResultId && (
+                <button
+                  type="button"
+                  onClick={resetResultForm}
+                  className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-slate-100 cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                  <span>Cancel Edit</span>
+                </button>
+              )}
+            </div>
+            <p className="text-xs text-slate-400">
+              প্রতিটি শিক্ষার্থীর রেজাল্ট সম্পূর্ণ প্রাইভেট—শুধুমাত্র ওই শিক্ষার্থী তার নিজের প্রোফাইল ট্যাবে দেখতে পাবে।
+            </p>
+
+            <div>
+              <label className="block text-xs font-medium text-slate-300 mb-1">
+                Select Student (শিক্ষার্থী নির্বাচন করুন)
+              </label>
+              <select
+                required
+                disabled={Boolean(editingResultId)}
+                value={resultStudentEmail}
+                onChange={(e) => setResultStudentEmail(e.target.value)}
+                className="w-full px-3 py-2 text-xs text-slate-100 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B] disabled:opacity-60"
+              >
+                <option value="">-- Choose an enrolled student --</option>
+                {allEnrollments.map((en) => {
+                  const handle = en.phone || extractPhoneFromAuthEmail(en.email);
+                  return (
+                    <option key={en.email} value={en.email}>
+                      {en.studentName}
+                      {en.rollNumber ? ` (${en.rollNumber})` : ''} — {handle}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-slate-300 mb-1">
+                Exam Title (পরীক্ষার নাম)
+              </label>
+              <input
+                type="text"
+                required
+                maxLength={140}
+                placeholder="e.g. Chapter 2 Vector Weekly CQ + MCQ Exam"
+                value={resultExamTitle}
+                onChange={(e) => setResultExamTitle(e.target.value)}
+                className={inputClass}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1">
+                  Chapter (অধ্যায়)
+                </label>
+                <select
+                  value={resultChapterNumber}
+                  onChange={(e) => setResultChapterNumber(Number(e.target.value))}
+                  className="w-full px-3 py-2 text-xs text-slate-100 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                >
+                  <option value={0}>Combined / Full Paper</option>
+                  {HSC28_PHYSICS_CHAPTERS.map((ch) => (
+                    <option key={ch.number} value={ch.number}>
+                      Ch {ch.number}: {ch.titleEn}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1">
+                  Exam Date
+                </label>
+                <input
+                  type="date"
+                  required
+                  value={resultExamDate}
+                  onChange={(e) => setResultExamDate(e.target.value)}
+                  className="w-full px-3 py-2 text-xs font-mono text-slate-100 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1">
+                  CQ Marks (ঐচ্ছিক)
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  min={0}
+                  max={500}
+                  placeholder="e.g. 42"
+                  value={resultCqMarks}
+                  onChange={(e) => updateCqOrMcq(e.target.value, resultMcqMarks)}
+                  className={`${inputClass} font-mono`}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1">
+                  MCQ Marks (ঐচ্ছিক)
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  min={0}
+                  max={500}
+                  placeholder="e.g. 23"
+                  value={resultMcqMarks}
+                  onChange={(e) => updateCqOrMcq(resultCqMarks, e.target.value)}
+                  className={`${inputClass} font-mono`}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1">
+                  Obtained Marks *
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  required
+                  min={0}
+                  max={500}
+                  placeholder="65"
+                  value={resultObtainedMarks}
+                  onChange={(e) => setResultObtainedMarks(e.target.value)}
+                  className={`${inputClass} font-mono`}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1">
+                  Total Marks *
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  required
+                  min={1}
+                  max={500}
+                  placeholder="100"
+                  value={resultTotalMarks}
+                  onChange={(e) => setResultTotalMarks(e.target.value)}
+                  className={`${inputClass} font-mono`}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1">
+                  Batch Highest
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  min={0}
+                  max={500}
+                  placeholder="94"
+                  value={resultHighestMarks}
+                  onChange={(e) => setResultHighestMarks(e.target.value)}
+                  className={`${inputClass} font-mono`}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-slate-300 mb-1">
+                Merit Rank / Position (ঐচ্ছিক)
+              </label>
+              <input
+                type="text"
+                maxLength={40}
+                placeholder="e.g. 3rd (Top 5%) বা Merit #05"
+                value={resultMeritRank}
+                onChange={(e) => setResultMeritRank(e.target.value)}
+                className={inputClass}
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-slate-300 mb-1">
+                Wasim Sir&apos;s Remarks (ব্যক্তিগত মন্তব্য)
+              </label>
+              <textarea
+                rows={2}
+                maxLength={500}
+                placeholder="ভালো করেছে, তবে গ্রাফ ও একক নিয়ে আরও সতর্ক হতে হবে..."
+                value={resultRemarks}
+                onChange={(e) => setResultRemarks(e.target.value)}
+                className={inputClass}
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={busy || allEnrollments.length === 0}
+              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] disabled:opacity-50 rounded-lg transition-colors cursor-pointer"
+            >
+              <Award className="w-4 h-4" />
+              <span>{editingResultId ? 'Save Result Changes' : 'Publish Individual Result'}</span>
+            </button>
+          </form>
+
+          <div className="lg:col-span-7 bg-[#131C28] border border-slate-800 rounded-xl overflow-hidden">
+            <div className="p-5 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <h3 className="font-display text-lg font-bold text-slate-50">
+                Published Student Results ({filteredResults.length})
+              </h3>
+              <div className="relative">
+                <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Search student, roll or exam..."
+                  value={resultSearch}
+                  onChange={(e) => setResultSearch(e.target.value)}
+                  className="pl-8 pr-3 py-1.5 text-xs text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                />
+              </div>
+            </div>
+
+            {filteredResults.length === 0 ? (
+              <div className="p-10 text-center text-sm text-slate-400">
+                No individual exam results published yet.
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-800">
+                {filteredResults.map((res) => {
+                  const pct =
+                    res.totalMarks > 0
+                      ? Math.round((res.obtainedMarks / res.totalMarks) * 100)
+                      : 0;
+                  return (
+                    <div
+                      key={res.id}
+                      className="p-5 flex items-start justify-between gap-4"
+                    >
+                      <div className="min-w-0 space-y-1">
+                        <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
+                          <span className="font-mono text-sky-300">{res.examDate}</span>
+                          <span aria-hidden="true">·</span>
+                          <span className="font-semibold text-slate-100">{res.studentName}</span>
+                          {res.rollNumber && (
+                            <>
+                              <span aria-hidden="true">·</span>
+                              <span className="font-mono text-amber-300">{res.rollNumber}</span>
+                            </>
+                          )}
+                          {res.meritRank && (
+                            <>
+                              <span aria-hidden="true">·</span>
+                              <span className="text-emerald-300 font-medium">{res.meritRank}</span>
+                            </>
+                          )}
+                        </div>
+                        <div className="font-semibold text-sm text-slate-100">{res.examTitle}</div>
+                        <div className="flex flex-wrap items-center gap-3 text-xs text-slate-300 font-mono">
+                          <span className="text-[#FBBF24] font-semibold">
+                            Score: {res.obtainedMarks}/{res.totalMarks} ({pct}%)
+                          </span>
+                          {res.cqMarks !== undefined && <span>CQ: {res.cqMarks}</span>}
+                          {res.mcqMarks !== undefined && <span>MCQ: {res.mcqMarks}</span>}
+                          {res.highestMarks !== undefined && (
+                            <span className="text-emerald-300">Highest: {res.highestMarks}</span>
+                          )}
+                        </div>
+                        {res.remarks && (
+                          <p className="text-xs text-slate-400">{res.remarks}</p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => handleEditResultClick(res)}
+                          className="p-2 text-slate-400 hover:text-sky-300 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+                          title="Edit result"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void removeStudentResult(res.id)}
+                          className="p-2 text-slate-400 hover:text-red-400 rounded-lg hover:bg-red-950/60 transition-colors cursor-pointer"
+                          title="Delete result"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       )}

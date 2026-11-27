@@ -150,11 +150,11 @@ export function GravityOrbitLab() {
           ctx.fill();
           ctx.restore();
 
-          // Labels
+          // Labels (pure symbols)
           ctx.fillStyle = '#CBD5E1';
           ctx.font = '11px "IBM Plex Mono", monospace';
-          ctx.fillText(`h = ${altitudeKm.toLocaleString()} km`, 18, 26);
-          ctx.fillText(`v_c = ${metrics.vOrbital.toFixed(2)} km/s | v_e = ${metrics.vEscape.toFixed(2)} km/s`, 18, height - 16);
+          ctx.fillText('h', 18, 26);
+          ctx.fillText('v_c  |  v_e', 18, height - 16);
           ctx.restore();
         }
       }
@@ -167,7 +167,7 @@ export function GravityOrbitLab() {
 
   return (
     <LabShell
-      formula="v_c = √(GM / (R + h))   |   v_e = √(2GM / (R + h))"
+      symbolGuide="h = উচ্চতা · v = নিক্ষেপণ বেগ · v_c = কক্ষীয় বেগ · v_e = মুক্তিবেগ · g′ = অভিকর্ষজ ত্বরণ"
       running={running}
       onToggleRun={() => setRunning((r) => !r)}
       onReset={() => {
@@ -317,14 +317,14 @@ export function YoungModulusLab() {
 
     ctx.fillStyle = '#FBBF24';
     ctx.font = 'bold 11px "IBM Plex Mono", monospace';
-    ctx.fillText(`ΔL = ${metrics.deltaLMm.toFixed(2)} mm`, loupeX - 44, loupeY + loupeR + 20);
+    ctx.fillText('ΔL', loupeX - 8, loupeY + loupeR + 20);
 
     ctx.restore();
   }, [massKg, lengthM, diameterMm, metrics]);
 
   return (
     <LabShell
-      formula="Y = (F L) / (A ΔL)   |   U = ½ F ΔL"
+      symbolGuide="L = আদি দৈর্ঘ্য · ΔL = দৈর্ঘ্য বৃদ্ধি · d = তারের ব্যাস · m = ঝুলানো ভর"
       onReset={() => {
         setMassKg(12);
         setLengthM(2.5);
@@ -501,7 +501,7 @@ export function CapillaryRiseLab() {
 
           ctx.fillStyle = '#FBBF24';
           ctx.font = 'bold 11px "IBM Plex Mono", monospace';
-          ctx.fillText(`h = ${hMm.toFixed(1)} mm`, tubeX + tubeW / 2 + 30, (waterBaseY + colTopY) / 2 + 4);
+          ctx.fillText('h', tubeX + tubeW / 2 + 28, (waterBaseY + colTopY) / 2 + 4);
 
           ctx.restore();
         }
@@ -515,7 +515,7 @@ export function CapillaryRiseLab() {
 
   return (
     <LabShell
-      formula="h = (2 T cos θ) / (r ρ g)"
+      symbolGuide="h = তরলের উত্থান উচ্চতা · r = নলের ব্যাসার্ধ · T = পৃষ্ঠটান · θ = স্পর্শ কোণ"
       onReset={() => {
         setRadiusMm(0.4);
         setSurfaceTension(0.073);
@@ -669,7 +669,6 @@ export function PendulumShmLab() {
           ctx.font = 'bold 11px "IBM Plex Mono", monospace';
           ctx.fillText('Ek', bx + 6, barBaseY + 16);
           ctx.fillText('Ep', bx + 46, barBaseY + 16);
-          ctx.fillText(`T = ${metrics.period.toFixed(2)} s`, 18, 28);
           ctx.restore();
         }
       }
@@ -682,7 +681,7 @@ export function PendulumShmLab() {
 
   return (
     <LabShell
-      formula="T = 2π √(L / g)   |   E = Ek + Ep = ½ m ω² A²"
+      symbolGuide="L = কার্যকর দৈর্ঘ্য · T = দোলনকাল · θ₀ = কৌণিক বিস্তার · Ek = গতিশক্তি · Ep = বিভব শক্তি"
       running={running}
       onToggleRun={() => setRunning((r) => !r)}
       onReset={() => {
@@ -813,7 +812,7 @@ export function WaveBeatsLab() {
 
           ctx.fillStyle = '#CBD5E1';
           ctx.font = '11px "IBM Plex Mono", monospace';
-          ctx.fillText(`বিট কম্পাঙ্ক N = |f₁ − f₂| = ${beatFreq} Hz`, 18, 28);
+          ctx.fillText('N (বিট)', 18, 28);
           ctx.restore();
         }
       }
@@ -826,7 +825,7 @@ export function WaveBeatsLab() {
 
   return (
     <LabShell
-      formula="N = |f₁ − f₂|"
+      symbolGuide="f₁ = ১ম কম্পাঙ্ক · f₂ = ২য় কম্পাঙ্ক · N = প্রতি সেকেন্ডে বিট সংখ্যা"
       running={running}
       onToggleRun={() => setRunning((r) => !r)}
       onReset={() => {
@@ -1044,14 +1043,14 @@ export function DopplerEffectLab() {
 
           ctx.fillStyle = '#F8FAFC';
           ctx.font = 'bold 11px "IBM Plex Mono", monospace';
-          ctx.fillText(`শ্রোতা ১ (পিছনে)`, 14, midY - 22);
+          ctx.fillText('শ্রোতা ১ (পিছনে)', 14, midY - 22);
           ctx.fillStyle = '#F87171';
-          ctx.fillText(`${fReceding.toFixed(0)} Hz (কম কম্পাঙ্ক)`, 14, midY + 28);
+          ctx.fillText('f′ (কম কম্পাঙ্ক)', 14, midY + 28);
 
           ctx.fillStyle = '#F8FAFC';
-          ctx.fillText(`শ্রোতা ২ (সামনে)`, width - 150, midY - 22);
+          ctx.fillText('শ্রোতা ২ (সামনে)', width - 135, midY - 22);
           ctx.fillStyle = '#34D399';
-          ctx.fillText(`${fApproaching.toFixed(0)} Hz (উচ্চ কম্পাঙ্ক)`, width - 165, midY + 28);
+          ctx.fillText('f′ (উচ্চ কম্পাঙ্ক)', width - 135, midY + 28);
 
           ctx.restore();
         }
@@ -1065,7 +1064,7 @@ export function DopplerEffectLab() {
 
   return (
     <LabShell
-      formula="f′ = f × [v / (v ∓ v_s)]"
+      symbolGuide="f = মূল কম্পাঙ্ক · f′ = শ্রুত আপাত কম্পাঙ্ক · v_s = উৎসের দ্রুতি · v = শব্দের বেগ"
       running={running}
       onToggleRun={() => setRunning((r) => !r)}
       onReset={() => {
@@ -1215,9 +1214,6 @@ export function IdealGasLab() {
             }
           }
 
-          ctx.fillStyle = '#CBD5E1';
-          ctx.font = '11px "IBM Plex Mono", monospace';
-          ctx.fillText(`T = ${tempK} K | P = ${pressureKPa.toFixed(1)} kPa | c_rms = ${cRms.toFixed(0)} m/s`, 18, 26);
           ctx.restore();
         }
       }
@@ -1230,7 +1226,7 @@ export function IdealGasLab() {
 
   return (
     <LabShell
-      formula="PV = nRT   |   c_rms = √(3RT / M)"
+      symbolGuide="P = চাপ · V = আয়তন · T = পরম তাপমাত্রা · n = মোল সংখ্যা · c_rms = মূল গড় বর্গবেগ"
       running={running}
       onToggleRun={() => setRunning((r) => !r)}
       onReset={() => {

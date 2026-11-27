@@ -146,10 +146,25 @@ export function sanitizeNoticeVideoUrl(raw: string): string {
   }
 }
 
-export async function compressNoticeImage(file: File): Promise<string> {
+export function sanitizeProfilePhotoUrl(raw: string): string {
+  const trimmed = raw.trim();
+  if (!trimmed) return '';
+  if (/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(trimmed)) {
+    return trimmed.length <= 300000 ? trimmed : '';
+  }
+  return sanitizeNoticeImageUrl(trimmed).slice(0, 500);
+}
+
+export async function compressNoticeImage(
+  file: File,
+  options?: { maxSide?: number; maxLength?: number },
+): Promise<string> {
   if (!file.type.startsWith('image/')) {
     throw new Error('অনুগ্রহ করে একটি বৈধ ছবি (JPG, PNG বা WebP) নির্বাচন করুন।');
   }
+
+  const maxSide = options?.maxSide ?? 1280;
+  const maxLength = options?.maxLength ?? 460000;
 
   const dataUrl = await new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
@@ -165,7 +180,6 @@ export async function compressNoticeImage(file: File): Promise<string> {
     image.src = dataUrl;
   });
 
-  const maxSide = 1280;
   let width = img.naturalWidth || img.width;
   let height = img.naturalHeight || img.height;
   if (width > maxSide || height > maxSide) {
@@ -188,7 +202,7 @@ export async function compressNoticeImage(file: File): Promise<string> {
   const qualities = [0.82, 0.72, 0.6, 0.48, 0.36];
   for (const q of qualities) {
     const result = canvas.toDataURL('image/jpeg', q);
-    if (result.length <= 460000) {
+    if (result.length <= maxLength) {
       return result;
     }
   }
@@ -203,7 +217,7 @@ export async function compressNoticeImage(file: File): Promise<string> {
     sCtx.fillRect(0, 0, smallCanvas.width, smallCanvas.height);
     sCtx.drawImage(img, 0, 0, smallCanvas.width, smallCanvas.height);
     const smallResult = smallCanvas.toDataURL('image/jpeg', 0.65);
-    if (smallResult.length <= 460000) {
+    if (smallResult.length <= maxLength) {
       return smallResult;
     }
   }

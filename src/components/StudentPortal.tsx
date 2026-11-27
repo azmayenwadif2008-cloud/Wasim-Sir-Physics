@@ -12,6 +12,7 @@ import {
   Play,
   Search,
   ShieldCheck,
+  UserCheck,
   UserPlus,
   Video,
   XCircle,
@@ -24,6 +25,7 @@ import type { ClassStream, PaymentMethod, RecordedClass } from '../types/portal'
 import { AdminStudio } from './AdminStudio';
 import { NoticeMediaViewer } from './NoticeMediaViewer';
 import { ChapterEmbeddedLab } from './ProjectileLab';
+import { StudentProfileResults } from './StudentProfileResults';
 
 interface StudentPortalProps {
   preselectedClassId?: string | null;
@@ -38,6 +40,7 @@ export function StudentPortal({ preselectedClassId }: StudentPortalProps) {
     needsAdminEmailVerification,
     myEnrollment,
     myRequest,
+    myResults,
     classes,
     notices,
     completedClassIds,
@@ -71,7 +74,7 @@ export function StudentPortal({ preselectedClassId }: StudentPortalProps) {
   const [authBusy, setAuthBusy] = useState(false);
 
   // Portal workspace state
-  const [portalTab, setPortalTab] = useState<'classroom' | 'notices' | 'studio'>('classroom');
+  const [portalTab, setPortalTab] = useState<'classroom' | 'notices' | 'profile' | 'studio'>('classroom');
   const [adminDefaulted, setAdminDefaulted] = useState(false);
   const [selectedClass, setSelectedClass] = useState<RecordedClass | null>(null);
   const [activeStream, setActiveStream] = useState<ClassStream | null>(null);
@@ -665,16 +668,18 @@ export function StudentPortal({ preselectedClassId }: StudentPortalProps) {
           </div>
           <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-slate-50">
             {portalTab === 'studio' && isAdmin
-              ? 'Admin Panel — Manage Students & Upload Classes'
-              : hasVaultAccess
-                ? 'স্টুডেন্ট প্যানেল · এইচএসসি ২০২৮ পদার্থবিজ্ঞান'
-                : 'ওয়াসিম স্যারের অনুমোদনের অপেক্ষায়'}
+              ? 'Admin Panel — Manage Students, Results & Classes'
+              : portalTab === 'profile' && hasVaultAccess
+                ? 'আমার প্রোফাইল ও ব্যক্তিগত রেজাল্ট'
+                : hasVaultAccess
+                  ? 'স্টুডেন্ট প্যানেল · এইচএসসি ২০২৮ পদার্থবিজ্ঞান'
+                  : 'ওয়াসিম স্যারের অনুমোদনের অপেক্ষায়'}
           </h1>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
           {hasVaultAccess && (
-            <div className="inline-flex items-center gap-1 p-1 bg-[#131C28] border border-slate-800 rounded-lg">
+            <div className="inline-flex items-center gap-1 p-1 bg-[#131C28] border border-slate-800 rounded-lg overflow-x-auto max-w-full">
               {isAdmin && (
                 <button
                   type="button"
@@ -698,6 +703,20 @@ export function StudentPortal({ preselectedClassId }: StudentPortalProps) {
                 }`}
               >
                 {isAdmin ? 'Student Panel Preview' : 'ক্লাসরুম'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setPortalTab('profile')}
+                className={`px-3.5 py-1.5 text-xs font-semibold rounded-md transition-colors cursor-pointer whitespace-nowrap inline-flex items-center gap-1.5 ${
+                  portalTab === 'profile'
+                    ? 'bg-[#F59E0B] text-slate-950'
+                    : 'text-slate-300 hover:text-white'
+                }`}
+              >
+                <UserCheck className="w-3.5 h-3.5" />
+                <span>
+                  প্রোফাইল ও রেজাল্ট{myResults.length > 0 ? ` (${myResults.length})` : ''}
+                </span>
               </button>
               <button
                 type="button"
@@ -1236,6 +1255,8 @@ export function StudentPortal({ preselectedClassId }: StudentPortalProps) {
           )}
         </div>
       )}
+
+      {hasVaultAccess && portalTab === 'profile' && <StudentProfileResults />}
 
       {hasVaultAccess && portalTab === 'notices' && (
         <div className="bg-[#131C28] border border-slate-800 rounded-xl divide-y divide-slate-800">

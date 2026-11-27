@@ -8,7 +8,8 @@ export interface LabMetric {
 }
 
 interface LabShellProps {
-  formula: string;
+  formula?: string;
+  symbolGuide?: string;
   canvas: ReactNode;
   metrics: LabMetric[];
   controls: ReactNode;
@@ -20,7 +21,7 @@ interface LabShellProps {
 }
 
 export function LabShell({
-  formula,
+  symbolGuide,
   canvas,
   metrics,
   controls,
@@ -36,8 +37,8 @@ export function LabShell({
       <div className="lg:col-span-7 flex flex-col border-b lg:border-b-0 lg:border-r border-slate-800">
         <div className="px-3 sm:px-5 py-2.5 sm:py-3 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-[#101824]">
           <div className="min-w-0 flex-1">
-            <span className="text-[11px] sm:text-xs font-mono text-sky-300 font-medium tracking-tight break-words leading-relaxed block">
-              {formula}
+            <span className="text-[11px] sm:text-xs font-sans text-sky-300 font-medium tracking-tight break-words leading-relaxed block">
+              {symbolGuide ?? 'ইন্টারঅ্যাক্টিভ ফিজিক্স সিমুলেশন'}
             </span>
           </div>
           <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">

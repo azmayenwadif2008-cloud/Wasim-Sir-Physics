@@ -75,7 +75,7 @@ service cloud.firestore {
 
     function isValidEnrollment(data, emailKey) {
       return data.keys().hasAll(['email', 'studentName', 'batch', 'status', 'addedByUid', 'createdAt', 'updatedAt'])
-        && data.keys().hasOnly(['email', 'studentName', 'batch', 'rollNumber', 'college', 'phone', 'status', 'addedByUid', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['email', 'studentName', 'batch', 'rollNumber', 'college', 'phone', 'guardianPhone', 'sectionTime', 'sscGpa', 'address', 'photoUrl', 'status', 'addedByUid', 'createdAt', 'updatedAt'])
         && data.email is string && data.email.lower() == emailKey && data.email.size() <= 128
         && data.studentName is string && data.studentName.size() >= 1 && data.studentName.size() <= 100
         && data.batch == 'HSC-28'
@@ -84,6 +84,11 @@ service cloud.firestore {
         && (!('rollNumber' in data) || (data.rollNumber is string && data.rollNumber.size() <= 32))
         && (!('college' in data) || (data.college is string && data.college.size() <= 120))
         && (!('phone' in data) || (data.phone is string && data.phone.size() <= 24))
+        && (!('guardianPhone' in data) || (data.guardianPhone is string && data.guardianPhone.size() <= 24))
+        && (!('sectionTime' in data) || (data.sectionTime is string && data.sectionTime.size() <= 80))
+        && (!('sscGpa' in data) || (data.sscGpa is string && data.sscGpa.size() <= 40))
+        && (!('address' in data) || (data.address is string && data.address.size() <= 200))
+        && (!('photoUrl' in data) || (data.photoUrl is string && data.photoUrl.size() <= 300000 && (data.photoUrl == '' || data.photoUrl.matches('^https://.*') || data.photoUrl.matches('^data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$'))))
         && data.createdAt is timestamp
         && data.updatedAt is timestamp;
     }
@@ -156,6 +161,29 @@ service cloud.firestore {
         && data.updatedAt is timestamp;
     }
 
+    function isValidStudentResult(data, resultId) {
+      return data.keys().hasAll(['id', 'studentEmail', 'studentName', 'examTitle', 'examDate', 'obtainedMarks', 'totalMarks', 'authorUid', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['id', 'studentEmail', 'studentName', 'rollNumber', 'examTitle', 'chapterNumber', 'examDate', 'cqMarks', 'mcqMarks', 'obtainedMarks', 'totalMarks', 'highestMarks', 'meritRank', 'remarks', 'authorUid', 'createdAt', 'updatedAt'])
+        && data.id == resultId && isValidId(data.id)
+        && isValidEmailKey(data.studentEmail)
+        && data.studentName is string && data.studentName.size() >= 1 && data.studentName.size() <= 100
+        && (!('rollNumber' in data) || (data.rollNumber is string && data.rollNumber.size() <= 32))
+        && data.examTitle is string && data.examTitle.size() >= 2 && data.examTitle.size() <= 140
+        && (!('chapterNumber' in data) || (data.chapterNumber is int && data.chapterNumber >= 0 && data.chapterNumber <= 20))
+        && data.examDate is string && data.examDate.size() >= 4 && data.examDate.size() <= 32
+        && (!('cqMarks' in data) || (data.cqMarks is number && data.cqMarks >= 0 && data.cqMarks <= 500))
+        && (!('mcqMarks' in data) || (data.mcqMarks is number && data.mcqMarks >= 0 && data.mcqMarks <= 500))
+        && data.obtainedMarks is number && data.obtainedMarks >= 0 && data.obtainedMarks <= 500
+        && data.totalMarks is number && data.totalMarks >= 1 && data.totalMarks <= 500
+        && data.obtainedMarks <= data.totalMarks
+        && (!('highestMarks' in data) || (data.highestMarks is number && data.highestMarks >= 0 && data.highestMarks <= 500))
+        && (!('meritRank' in data) || (data.meritRank is string && data.meritRank.size() <= 40))
+        && (!('remarks' in data) || (data.remarks is string && data.remarks.size() <= 500))
+        && isValidId(data.authorUid)
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
     // --- Collection Rules ---
 
     match /admins/{uid} {
@@ -180,13 +208,23 @@ service cloud.firestore {
         && incoming().addedByUid == request.auth.uid
         && incoming().createdAt == request.time
         && incoming().updatedAt == request.time;
-      allow update: if isAdmin() && isValidEmailKey(emailKey)
+      allow update: if isValidEmailKey(emailKey)
         && isValidEnrollment(incoming(), emailKey)
         && incoming().email == existing().email
+        && incoming().batch == existing().batch
         && incoming().addedByUid == existing().addedByUid
         && incoming().createdAt == existing().createdAt
         && incoming().updatedAt == request.time
-        && incoming().diff(existing()).affectedKeys().hasOnly(['studentName', 'rollNumber', 'college', 'phone', 'status', 'updatedAt']);
+        && (
+          (isAdmin() && incoming().diff(existing()).affectedKeys().hasOnly(['studentName', 'rollNumber', 'college', 'phone', 'guardianPhone', 'sectionTime', 'sscGpa', 'address', 'photoUrl', 'status', 'updatedAt']))
+          || (
+            isVerifiedAccount()
+            && request.auth.token.email.lower() == emailKey
+            && existing().status == 'active'
+            && incoming().status == existing().status
+            && incoming().diff(existing()).affectedKeys().hasOnly(['studentName', 'college', 'phone', 'guardianPhone', 'sscGpa', 'address', 'photoUrl', 'updatedAt'])
+          )
+        );
       allow delete: if isAdmin() && isValidEmailKey(emailKey);
     }
 
@@ -296,6 +334,30 @@ service cloud.firestore {
         && incoming().updatedAt == request.time
         && incoming().diff(existing()).affectedKeys().hasOnly(['completed', 'updatedAt']);
       allow delete: if isVerifiedAccount() && isValidId(uid) && isValidId(classId) && request.auth.uid == uid;
+    }
+
+    match /studentResults/{resultId} {
+      allow get: if isValidId(resultId) && (
+        isAdmin() || (isVerifiedAccount() && existing().studentEmail == request.auth.token.email.lower())
+      );
+      allow list: if isAdmin() || (
+        isVerifiedAccount() && resource.data.studentEmail == request.auth.token.email.lower()
+      );
+      allow create: if isAdmin() && isValidId(resultId)
+        && isValidStudentResult(incoming(), resultId)
+        && exists(/databases/$(database)/documents/enrollments/$(incoming().studentEmail))
+        && incoming().authorUid == request.auth.uid
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isAdmin() && isValidId(resultId)
+        && isValidStudentResult(incoming(), resultId)
+        && incoming().id == existing().id
+        && incoming().studentEmail == existing().studentEmail
+        && incoming().authorUid == existing().authorUid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly(['studentName', 'rollNumber', 'examTitle', 'chapterNumber', 'examDate', 'cqMarks', 'mcqMarks', 'obtainedMarks', 'totalMarks', 'highestMarks', 'meritRank', 'remarks', 'updatedAt']);
+      allow delete: if isAdmin() && isValidId(resultId);
     }
   }
 }

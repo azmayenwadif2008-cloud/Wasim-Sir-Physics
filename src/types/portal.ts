@@ -13,6 +13,11 @@ export interface Enrollment {
   rollNumber?: string;
   college?: string;
   phone?: string;
+  guardianPhone?: string;
+  sectionTime?: string;
+  sscGpa?: string;
+  address?: string;
+  photoUrl?: string;
   status: EnrollmentStatus;
   addedByUid: string;
   createdAt: Timestamp;
@@ -74,6 +79,26 @@ export interface LectureProgress {
   uid: string;
   classId: string;
   completed: boolean;
+  updatedAt: Timestamp;
+}
+
+export interface StudentResult {
+  id: string;
+  studentEmail: string;
+  studentName: string;
+  rollNumber?: string;
+  examTitle: string;
+  chapterNumber?: number;
+  examDate: string;
+  cqMarks?: number;
+  mcqMarks?: number;
+  obtainedMarks: number;
+  totalMarks: number;
+  highestMarks?: number;
+  meritRank?: string;
+  remarks?: string;
+  authorUid: string;
+  createdAt: Timestamp;
   updatedAt: Timestamp;
 }
 

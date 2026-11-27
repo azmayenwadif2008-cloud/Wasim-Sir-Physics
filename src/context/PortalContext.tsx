@@ -41,6 +41,7 @@ import {
 import {
   sanitizeNoticeImageUrl,
   sanitizeNoticeVideoUrl,
+  sanitizeProfilePhotoUrl,
   slugifyId,
 } from '../lib/videoUtils';
 import type {
@@ -53,6 +54,7 @@ import type {
   NoticeCategory,
   PaymentMethod,
   RecordedClass,
+  StudentResult,
 } from '../types/portal';
 
 export interface ClassInput {
@@ -77,6 +79,22 @@ export interface NoticeInput {
   videoUrl?: string;
 }
 
+export interface StudentResultInput {
+  studentEmail: string;
+  studentName: string;
+  rollNumber?: string;
+  examTitle: string;
+  chapterNumber?: number;
+  examDate: string;
+  cqMarks?: number;
+  mcqMarks?: number;
+  obtainedMarks: number;
+  totalMarks: number;
+  highestMarks?: number;
+  meritRank?: string;
+  remarks?: string;
+}
+
 interface PortalContextValue {
   user: User | null;
   authReady: boolean;
@@ -85,11 +103,13 @@ interface PortalContextValue {
   needsAdminEmailVerification: boolean;
   myEnrollment: Enrollment | null;
   myRequest: EnrollmentRequest | null;
+  myResults: StudentResult[];
   classes: RecordedClass[];
   notices: Notice[];
   completedClassIds: Set<string>;
   allEnrollments: Enrollment[];
   allRequests: EnrollmentRequest[];
+  allResults: StudentResult[];
   loadingData: boolean;
   authError: string | null;
   needsEmailProviderEnable: boolean;
@@ -117,6 +137,15 @@ interface PortalContextValue {
     paymentMethod?: PaymentMethod;
     transactionId?: string;
   }) => Promise<void>;
+  updateMyProfile: (input: {
+    studentName: string;
+    college?: string;
+    phone?: string;
+    guardianPhone?: string;
+    sscGpa?: string;
+    address?: string;
+    photoUrl?: string;
+  }) => Promise<void>;
   publishRecordedClass: (input: ClassInput) => Promise<void>;
   updateRecordedClass: (classId: string, input: ClassInput) => Promise<void>;
   removeRecordedClass: (classId: string) => Promise<void>;
@@ -129,6 +158,11 @@ interface PortalContextValue {
     rollNumber?: string;
     college?: string;
     phone?: string;
+    guardianPhone?: string;
+    sectionTime?: string;
+    sscGpa?: string;
+    address?: string;
+    photoUrl?: string;
     status: 'active' | 'suspended';
   }) => Promise<void>;
   bulkAddEnrollments: (identifiers: string[]) => Promise<number>;
@@ -137,6 +171,9 @@ interface PortalContextValue {
     request: EnrollmentRequest,
     decision: 'approved' | 'rejected',
   ) => Promise<void>;
+  publishStudentResult: (input: StudentResultInput) => Promise<void>;
+  updateStudentResult: (resultId: string, input: StudentResultInput) => Promise<void>;
+  removeStudentResult: (resultId: string) => Promise<void>;
   seedDemoContent: () => Promise<void>;
 }
 
@@ -149,6 +186,7 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
   const [isAdminDoc, setIsAdminDoc] = useState(false);
   const [myEnrollment, setMyEnrollment] = useState<Enrollment | null>(null);
   const [myRequest, setMyRequest] = useState<EnrollmentRequest | null>(null);
+  const [myResults, setMyResults] = useState<StudentResult[]>([]);
   const [enrollmentChecked, setEnrollmentChecked] = useState(false);
 
   const [classes, setClasses] = useState<RecordedClass[]>([]);
@@ -156,6 +194,7 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
   const [completedClassIds, setCompletedClassIds] = useState<Set<string>>(new Set());
   const [allEnrollments, setAllEnrollments] = useState<Enrollment[]>([]);
   const [allRequests, setAllRequests] = useState<EnrollmentRequest[]>([]);
+  const [allResults, setAllResults] = useState<StudentResult[]>([]);
   const [loadingData, setLoadingData] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
   const [needsEmailProviderEnable, setNeedsEmailProviderEnable] = useState(false);
@@ -243,6 +282,7 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
     if (!user || !isVerifiedAccount || !normalizedEmail) {
       setMyEnrollment(null);
       setMyRequest(null);
+      setMyResults([]);
       setCompletedClassIds(new Set());
       setEnrollmentChecked(true);
       return;
@@ -288,10 +328,32 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
       },
     );
 
+    const myResultsPath = `studentResults/${normalizedEmail}`;
+    const unsubMyResults = onSnapshot(
+      query(collection(db, 'studentResults'), where('studentEmail', '==', normalizedEmail)),
+      (snap) => {
+        const items = snap.docs
+          .map((d) => d.data() as StudentResult)
+          .sort((a, b) => {
+            if (a.examDate !== b.examDate) {
+              return b.examDate.localeCompare(a.examDate);
+            }
+            const tA = a.createdAt?.toMillis?.() ?? 0;
+            const tB = b.createdAt?.toMillis?.() ?? 0;
+            return tB - tA;
+          });
+        setMyResults(items);
+      },
+      (error) => {
+        handleFirestoreError(error, OperationType.LIST, myResultsPath);
+      },
+    );
+
     return () => {
       unsubEnrollment();
       unsubRequest();
       unsubProgress();
+      unsubMyResults();
     };
   }, [authReady, user, isVerifiedAccount, normalizedEmail]);
 
@@ -358,11 +420,12 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
     };
   }, [authReady, enrollmentChecked, isAdmin, isPaidStudent]);
 
-  // 4. Admin Roster & Pending Requests Listeners
+  // 4. Admin Roster, Pending Requests & Individual Results Listeners
   useEffect(() => {
     if (!authReady || !isAdmin) {
       setAllEnrollments([]);
       setAllRequests([]);
+      setAllResults([]);
       return;
     }
 
@@ -386,9 +449,20 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
       },
     );
 
+    const unsubResults = onSnapshot(
+      query(collection(db, 'studentResults'), orderBy('createdAt', 'desc')),
+      (snap) => {
+        setAllResults(snap.docs.map((d) => d.data() as StudentResult));
+      },
+      (error) => {
+        handleFirestoreError(error, OperationType.LIST, 'studentResults');
+      },
+    );
+
     return () => {
       unsubEnrollments();
       unsubRequests();
+      unsubResults();
     };
   }, [authReady, isAdmin]);
 
@@ -780,12 +854,50 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
     return null;
   };
 
+  const updateMyProfile = async (input: {
+    studentName: string;
+    college?: string;
+    phone?: string;
+    guardianPhone?: string;
+    sscGpa?: string;
+    address?: string;
+    photoUrl?: string;
+  }) => {
+    if (!user || !isVerifiedAccount || !normalizedEmail || !myEnrollment) {
+      throw new Error('প্রোফাইল আপডেট করতে ভেরিফায়েড শিক্ষার্থী অ্যাকাউন্ট প্রয়োজন।');
+    }
+    const path = `enrollments/${normalizedEmail}`;
+    const safePhoto =
+      input.photoUrl !== undefined
+        ? sanitizeProfilePhotoUrl(input.photoUrl)
+        : (myEnrollment.photoUrl ?? '');
+    try {
+      await updateDoc(doc(db, 'enrollments', normalizedEmail), {
+        studentName: input.studentName.trim().slice(0, 100) || myEnrollment.studentName,
+        college: (input.college ?? '').trim().slice(0, 120),
+        phone: (input.phone ?? '').trim().slice(0, 24),
+        guardianPhone: (input.guardianPhone ?? '').trim().slice(0, 24),
+        sscGpa: (input.sscGpa ?? '').trim().slice(0, 40),
+        address: (input.address ?? '').trim().slice(0, 200),
+        photoUrl: safePhoto,
+        updatedAt: serverTimestamp(),
+      });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, path);
+    }
+  };
+
   const addOrUpdateEnrollment = async (input: {
     identifier: string;
     studentName: string;
     rollNumber?: string;
     college?: string;
     phone?: string;
+    guardianPhone?: string;
+    sectionTime?: string;
+    sscGpa?: string;
+    address?: string;
+    photoUrl?: string;
     status: 'active' | 'suspended';
   }) => {
     if (!user || !isAdmin) throw new Error('Admin access required.');
@@ -798,11 +910,20 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
     try {
       const existingSnap = await getDoc(doc(db, 'enrollments', resolved.emailKey));
       if (existingSnap.exists()) {
+        const prev = existingSnap.data() as Enrollment;
         await updateDoc(doc(db, 'enrollments', resolved.emailKey), {
           studentName: input.studentName.trim().slice(0, 100),
-          rollNumber: (input.rollNumber ?? '').trim().slice(0, 32),
-          college: (input.college ?? '').trim().slice(0, 120),
+          rollNumber: (input.rollNumber ?? prev.rollNumber ?? '').trim().slice(0, 32),
+          college: (input.college ?? prev.college ?? '').trim().slice(0, 120),
           phone: resolved.phone.slice(0, 24),
+          guardianPhone: (input.guardianPhone ?? prev.guardianPhone ?? '').trim().slice(0, 24),
+          sectionTime: (input.sectionTime ?? prev.sectionTime ?? '').trim().slice(0, 80),
+          sscGpa: (input.sscGpa ?? prev.sscGpa ?? '').trim().slice(0, 40),
+          address: (input.address ?? prev.address ?? '').trim().slice(0, 200),
+          photoUrl:
+            input.photoUrl !== undefined
+              ? sanitizeProfilePhotoUrl(input.photoUrl)
+              : (prev.photoUrl ?? ''),
           status: input.status,
           updatedAt: serverTimestamp(),
         });
@@ -814,6 +935,11 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
           rollNumber: (input.rollNumber ?? '').trim().slice(0, 32),
           college: (input.college ?? '').trim().slice(0, 120),
           phone: resolved.phone.slice(0, 24),
+          guardianPhone: (input.guardianPhone ?? '').trim().slice(0, 24),
+          sectionTime: (input.sectionTime ?? '').trim().slice(0, 80),
+          sscGpa: (input.sscGpa ?? '').trim().slice(0, 40),
+          address: (input.address ?? '').trim().slice(0, 200),
+          photoUrl: sanitizeProfilePhotoUrl(input.photoUrl ?? ''),
           status: input.status,
           addedByUid: user.uid,
           createdAt: serverTimestamp(),
@@ -913,6 +1039,87 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const publishStudentResult = async (input: StudentResultInput) => {
+    if (!user || !isAdmin) throw new Error('Admin access required.');
+    const studentEmail = input.studentEmail.trim().toLowerCase();
+    const resultId = `${slugifyId(input.examTitle).slice(0, 40)}-${Date.now().toString(36)}`;
+    const totalMarks = Math.max(1, Math.min(500, Number(input.totalMarks) || 1));
+    const obtainedMarks = Math.max(0, Math.min(totalMarks, Number(input.obtainedMarks) || 0));
+    const payload: Record<string, unknown> = {
+      id: resultId,
+      studentEmail,
+      studentName: input.studentName.trim().slice(0, 100),
+      rollNumber: (input.rollNumber ?? '').trim().slice(0, 32),
+      examTitle: input.examTitle.trim().slice(0, 140),
+      chapterNumber: Math.max(0, Math.min(20, Math.round(Number(input.chapterNumber) || 0))),
+      examDate: input.examDate.trim().slice(0, 32) || new Date().toISOString().slice(0, 10),
+      obtainedMarks,
+      totalMarks,
+      meritRank: (input.meritRank ?? '').trim().slice(0, 40),
+      remarks: (input.remarks ?? '').trim().slice(0, 500),
+      authorUid: user.uid,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    };
+    if (input.cqMarks !== undefined && !Number.isNaN(Number(input.cqMarks))) {
+      payload.cqMarks = Math.max(0, Math.min(500, Number(input.cqMarks)));
+    }
+    if (input.mcqMarks !== undefined && !Number.isNaN(Number(input.mcqMarks))) {
+      payload.mcqMarks = Math.max(0, Math.min(500, Number(input.mcqMarks)));
+    }
+    if (input.highestMarks !== undefined && !Number.isNaN(Number(input.highestMarks))) {
+      payload.highestMarks = Math.max(0, Math.min(500, Number(input.highestMarks)));
+    }
+
+    try {
+      await setDoc(doc(db, 'studentResults', resultId), payload);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.CREATE, `studentResults/${resultId}`);
+    }
+  };
+
+  const updateStudentResult = async (resultId: string, input: StudentResultInput) => {
+    if (!user || !isAdmin) throw new Error('Admin access required.');
+    const totalMarks = Math.max(1, Math.min(500, Number(input.totalMarks) || 1));
+    const obtainedMarks = Math.max(0, Math.min(totalMarks, Number(input.obtainedMarks) || 0));
+    const payload: Record<string, unknown> = {
+      studentName: input.studentName.trim().slice(0, 100),
+      rollNumber: (input.rollNumber ?? '').trim().slice(0, 32),
+      examTitle: input.examTitle.trim().slice(0, 140),
+      chapterNumber: Math.max(0, Math.min(20, Math.round(Number(input.chapterNumber) || 0))),
+      examDate: input.examDate.trim().slice(0, 32) || new Date().toISOString().slice(0, 10),
+      obtainedMarks,
+      totalMarks,
+      meritRank: (input.meritRank ?? '').trim().slice(0, 40),
+      remarks: (input.remarks ?? '').trim().slice(0, 500),
+      updatedAt: serverTimestamp(),
+    };
+    if (input.cqMarks !== undefined && !Number.isNaN(Number(input.cqMarks))) {
+      payload.cqMarks = Math.max(0, Math.min(500, Number(input.cqMarks)));
+    }
+    if (input.mcqMarks !== undefined && !Number.isNaN(Number(input.mcqMarks))) {
+      payload.mcqMarks = Math.max(0, Math.min(500, Number(input.mcqMarks)));
+    }
+    if (input.highestMarks !== undefined && !Number.isNaN(Number(input.highestMarks))) {
+      payload.highestMarks = Math.max(0, Math.min(500, Number(input.highestMarks)));
+    }
+
+    try {
+      await updateDoc(doc(db, 'studentResults', resultId), payload);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, `studentResults/${resultId}`);
+    }
+  };
+
+  const removeStudentResult = async (resultId: string) => {
+    if (!isAdmin) throw new Error('Admin access required.');
+    try {
+      await deleteDoc(doc(db, 'studentResults', resultId));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `studentResults/${resultId}`);
+    }
+  };
+
   const seedDemoContent = async () => {
     if (!user || !isAdmin) throw new Error('Admin access required.');
     const batch = writeBatch(db);
@@ -974,11 +1181,13 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
       needsAdminEmailVerification,
       myEnrollment,
       myRequest,
+      myResults,
       classes,
       notices,
       completedClassIds,
       allEnrollments,
       allRequests,
+      allResults,
       loadingData,
       authError,
       needsEmailProviderEnable,
@@ -995,6 +1204,7 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
       fetchClassStream,
       toggleLectureCompleted,
       submitEnrollmentRequest,
+      updateMyProfile,
       publishRecordedClass,
       updateRecordedClass,
       removeRecordedClass,
@@ -1005,6 +1215,9 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
       bulkAddEnrollments,
       removeEnrollment,
       resolveEnrollmentRequest,
+      publishStudentResult,
+      updateStudentResult,
+      removeStudentResult,
       seedDemoContent,
     }),
     [
@@ -1016,11 +1229,13 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
       needsAdminEmailVerification,
       myEnrollment,
       myRequest,
+      myResults,
       classes,
       notices,
       completedClassIds,
       allEnrollments,
       allRequests,
+      allResults,
       loadingData,
       authError,
       needsEmailProviderEnable,

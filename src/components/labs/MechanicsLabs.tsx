@@ -171,7 +171,7 @@ export function VernierCalipersLab() {
 
   return (
     <LabShell
-      formula="L = M + (V × VC) − (±e)"
+      symbolGuide="L = প্রকৃত দৈর্ঘ্য · M = প্রধান স্কেল · V = ভার্নিয়ার সমপাতন · VC = ভার্নিয়ার ধ্রুবক"
       onReset={() => {
         setTrueLengthCm(2.36);
         setVcCm(0.01);
@@ -404,7 +404,7 @@ export function ScrewGaugeLab() {
 
   return (
     <LabShell
-      formula="d = M + (C × LC)   |   LC = Pitch / CircularDivs"
+      symbolGuide="d = তারের ব্যাস · M = রৈখিক স্কেল · C = বৃত্তাকার স্কেল · LC = লঘিষ্ঠ ধ্রুবক"
       running={running}
       onToggleRun={() => setRunning((r) => !r)}
       onReset={() => {
@@ -696,15 +696,15 @@ export function VectorRiverLab() {
             ctx.fillText(text, clampedX, clampedY + 1);
           };
 
-          // Smart collision-free badge placements with distinct offsets
-          drawLabelBadge(boatX + 18, boatY - 16, `α = ${angleDeg.toFixed(1)}°`, '#FBBF24');
-          drawLabelBadge(boatX + uDx * 0.5 - 20, boatY + 22, `u = ${riverCurrent} m/s (স্রোত)`, '#38BDF8');
-          drawLabelBadge(boatX + vDx - 82, boatY + vDy + 10, `v = ${boatSpeed} m/s (নৌকা)`, '#F59E0B');
-          drawLabelBadge(boatX + rDx + 14, boatY + rDy - 18, `R = ${metrics.resultant.toFixed(1)} m/s (লব্ধি)`, '#34D399');
+          // Smart collision-free symbol labels
+          drawLabelBadge(boatX + 18, boatY - 16, 'α', '#FBBF24');
+          drawLabelBadge(boatX + uDx * 0.5 - 20, boatY + 22, 'u (স্রোত)', '#38BDF8');
+          drawLabelBadge(boatX + vDx - 48, boatY + vDy + 10, 'v (নৌকা)', '#F59E0B');
+          drawLabelBadge(boatX + rDx + 14, boatY + rDy - 18, 'R (লব্ধি)', '#34D399');
 
           ctx.fillStyle = '#CBD5E1';
           ctx.font = '11px "IBM Plex Mono", monospace';
-          ctx.fillText(`নদীর প্রস্থ d = ${riverWidth} m`, 14, topBankY + 18);
+          ctx.fillText('d (নদীর প্রস্থ)', 14, topBankY + 18);
           ctx.restore();
         }
       }
@@ -718,7 +718,7 @@ export function VectorRiverLab() {
 
   return (
     <LabShell
-      formula="t = d / (v sin α)   |   R = √(u² + v² + 2uv cos α)"
+      symbolGuide="u = স্রোতের বেগ · v = নৌকার বেগ · R = লব্ধি বেগ · d = নদীর প্রস্থ · α = রওনা কোণ"
       running={running}
       onToggleRun={() => setRunning((r) => !r)}
       onReset={() => {
@@ -1203,18 +1203,16 @@ export function VectorRainLab() {
           // v_mr: placed OUTSIDE to the right of the hypotenuse
           drawHudBadge(rightX + 6, originY + vrLen * 0.5, 'v_mr', '#34D399');
 
-          // Angle theta readout
+          // Angle theta symbol readout
           ctx.fillStyle = '#FBBF24';
           ctx.font = 'bold 10px "IBM Plex Mono", monospace';
-          ctx.fillText(`θ_opt = ${optimumAngleDeg.toFixed(1)}°`, hudX + 12, hudH + hudY - 10);
+          ctx.fillText('θ', hudX + 12, hudH + hudY - 10);
 
           // Shield status tag in top-left
           ctx.fillStyle = shieldEfficiency >= 85 ? '#34D399' : shieldEfficiency >= 55 ? '#FBBF24' : '#F87171';
           ctx.font = 'bold 11px "Noto Sans Bengali", sans-serif';
           ctx.fillText(
-            shieldEfficiency >= 85
-              ? `● সুরক্ষিত (${shieldEfficiency}%)`
-              : `▲ বৃষ্টি গায়ে লাগবে (${shieldEfficiency}%)`,
+            shieldEfficiency >= 85 ? '● সুরক্ষিত' : '▲ বৃষ্টি গায়ে লাগবে',
             16,
             28,
           );
@@ -1231,7 +1229,7 @@ export function VectorRainLab() {
 
   return (
     <LabShell
-      formula={`tan θ = v_m / v_r   |   v_mr = ${relSpeed.toFixed(1)} m/s`}
+      symbolGuide="v_r = বৃষ্টির বেগ · v_m = মানুষের বেগ · v_mr = আপেক্ষিক বেগ · θ = ছাতার কোণ"
       running={running}
       onToggleRun={() => setRunning((r) => !r)}
       onReset={() => {
@@ -1450,11 +1448,6 @@ export function ProjectileLabCanvas({ initialPreset }: { initialPreset?: 'defaul
             ctx.moveTo(gx, padTop);
             ctx.lineTo(gx, groundY);
             ctx.stroke();
-            const meterVal = ((worldMaxX / gridCols) * c).toFixed(0);
-            ctx.fillStyle = 'rgba(148, 163, 184, 0.35)';
-            ctx.font = '8.5px "IBM Plex Mono", monospace';
-            ctx.textAlign = 'center';
-            ctx.fillText(`${meterVal}m`, gx, groundY + 11);
           }
           for (let r = 0; r <= gridRows; r++) {
             const gy = padTop + (plotH / gridRows) * r;
@@ -1570,20 +1563,21 @@ export function ProjectileLabCanvas({ initialPreset }: { initialPreset?: 'defaul
             ctx.closePath();
             ctx.fill();
 
-            // Apex badges (Top Height H and Peak condition vy = 0)
+            // Apex labels (pure symbols only, trajectory completely unobstructed)
             drawBadge(
               apexPxX,
               apexPxY - 14,
-              `সর্বোচ্চ উচ্চতা H = (v₀² sin² θ₀)/(2g) = ${metrics.maxHeight.toFixed(1)} m`,
-              '#FBBF24',
-              '#F59E0B'
+              'vᵧ = 0',
+              '#CBD5E1',
+              '#475569'
             );
             drawBadge(
-              apexPxX,
+              dimBarX + 8,
               (groundY + apexPxY) / 2,
-              'শীর্ষে: vy = 0 m/s',
-              '#94A3B8',
-              '#475569'
+              'H',
+              '#FBBF24',
+              '#F59E0B',
+              'left'
             );
           }
 
@@ -1652,7 +1646,7 @@ export function ProjectileLabCanvas({ initialPreset }: { initialPreset?: 'defaul
             drawBadge(
               centerRx,
               rDimY + 14,
-              `পাল্লা R = (v₀² sin 2θ₀)/g = ${metrics.range.toFixed(1)} m`,
+              'R',
               '#38BDF8'
             );
           }
@@ -1791,34 +1785,34 @@ export function ProjectileLabCanvas({ initialPreset }: { initialPreset?: 'defaul
             ctx.closePath();
             ctx.fill();
 
-            // Dedicated Non-Overlapping Component Badges:
+            // Dedicated Non-Overlapping Symbol Badges (pure symbols, no numbers):
             // 1. θ0 badge placed along bisector angle
             const bisectAng = -radAngle / 2;
             const thetaBx = cannonOriginX + (arcR + 18) * Math.cos(bisectAng);
             const thetaBy = cannonOriginY + (arcR + 18) * Math.sin(bisectAng);
-            drawBadge(thetaBx, thetaBy, `θ₀ = ${angleDeg}°`, '#FBBF24', '#F59E0B');
+            drawBadge(thetaBx, thetaBy, 'θ₀', '#FBBF24', '#F59E0B');
 
-            // 2. v0 badge placed past arrow tip
+            // 2. u (initial velocity) badge placed past arrow tip
             drawBadge(
-              v0TipX + 16 * Math.cos(v0Ang),
-              v0TipY + 16 * Math.sin(v0Ang),
-              `v₀ = ${velocity} m/s (আদিবেগ)`,
+              v0TipX + 14 * Math.cos(v0Ang),
+              v0TipY + 14 * Math.sin(v0Ang),
+              'u',
               '#F59E0B'
             );
 
-            // 3. v0x badge below ground arrow
+            // 3. ux badge cleanly below ground line
             drawBadge(
               cannonOriginX + (v0Scale * Math.cos(radAngle)) / 2,
-              cannonOriginY - 14,
-              `v₀ₓ = v₀ cos θ₀ = ${metrics.vx.toFixed(1)} m/s`,
+              cannonOriginY + 14,
+              'uₓ',
               '#38BDF8'
             );
 
-            // 4. v0y badge to left of vertical arrow
+            // 4. uy badge to left of vertical arrow
             drawBadge(
               cannonOriginX - 10,
               cannonOriginY - (v0Scale * Math.sin(radAngle)) / 2,
-              `v₀ᵧ = v₀ sin θ₀ = ${metrics.vy0.toFixed(1)} m/s`,
+              'uᵧ',
               '#34D399',
               '#10B981',
               'right'
@@ -1858,14 +1852,14 @@ export function ProjectileLabCanvas({ initialPreset }: { initialPreset?: 'defaul
             }
           }
 
-          // Instantaneous velocity arrows on moving ball (when components enabled)
+          // Instantaneous velocity arrows & crisp symbol labels on moving ball
           if (showComponents && t > 0 && t < T) {
             const vInstScale = 1.4;
             const instVxLen = metrics.vx * vInstScale;
             const instVyLen = currentVy * vInstScale;
 
             // Instantaneous vx (horizontal)
-            ctx.strokeStyle = 'rgba(56, 189, 248, 0.8)';
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.85)';
             ctx.lineWidth = 1.8;
             ctx.beginPath();
             ctx.moveTo(ballPxX, ballPxY);
@@ -1873,7 +1867,8 @@ export function ProjectileLabCanvas({ initialPreset }: { initialPreset?: 'defaul
             ctx.stroke();
 
             // Instantaneous vy (vertical)
-            ctx.strokeStyle = currentVy >= 0 ? 'rgba(16, 185, 129, 0.8)' : 'rgba(239, 68, 68, 0.8)';
+            const vyColor = currentVy >= 0 ? 'rgba(16, 185, 129, 0.85)' : 'rgba(239, 68, 68, 0.85)';
+            ctx.strokeStyle = vyColor;
             ctx.lineWidth = 1.8;
             ctx.beginPath();
             ctx.moveTo(ballPxX, ballPxY);
@@ -1887,6 +1882,20 @@ export function ProjectileLabCanvas({ initialPreset }: { initialPreset?: 'defaul
             ctx.moveTo(ballPxX, ballPxY);
             ctx.lineTo(ballPxX + instVxLen, ballPxY - instVyLen);
             ctx.stroke();
+
+            // Clean inline symbol labels (no bulky boxes hiding the projectile)
+            ctx.font = 'bold 10px "IBM Plex Mono", monospace';
+            ctx.textAlign = 'left';
+            ctx.fillStyle = '#38BDF8';
+            ctx.fillText('vₓ', ballPxX + instVxLen + 4, ballPxY + 3);
+
+            if (Math.abs(instVyLen) > 6) {
+              ctx.fillStyle = currentVy >= 0 ? '#34D399' : '#F87171';
+              ctx.fillText('vᵧ', ballPxX - 16, ballPxY - instVyLen + (currentVy >= 0 ? -3 : 10));
+            }
+
+            ctx.fillStyle = '#FBBF24';
+            ctx.fillText('v', ballPxX + instVxLen + 5, ballPxY - instVyLen - 4);
           }
 
           // Projectile Metallic Sphere with 3D Radial Glow
@@ -1903,15 +1912,6 @@ export function ProjectileLabCanvas({ initialPreset }: { initialPreset?: 'defaul
           ctx.lineWidth = 1.4;
           ctx.stroke();
 
-          // Real-time speed badge hovering right above the projectile
-          drawBadge(
-            ballPxX,
-            ballPxY - 16,
-            `|v| = ${currentSpeed.toFixed(1)} m/s (t = ${t.toFixed(2)}s)`,
-            '#F8FAFC',
-            '#F59E0B'
-          );
-
           ctx.restore();
         }
       }
@@ -1925,7 +1925,7 @@ export function ProjectileLabCanvas({ initialPreset }: { initialPreset?: 'defaul
 
   return (
     <LabShell
-      formula="y = x tan θ₀ − (g x²) / (2 v₀² cos² θ₀)   |   R = (v₀² sin 2θ₀) / g   |   H = (v₀² sin² θ₀) / (2g)"
+      symbolGuide="u (v₀) = আদিবেগ · uₓ, uᵧ = আদি উপাংশ · v = তাৎক্ষণিক বেগ · vₓ, vᵧ = উপাংশ · H = সর্বোচ্চ উচ্চতা · R = পাল্লা"
       running={running}
       onToggleRun={() => setRunning((r) => !r)}
       onReset={() => {
@@ -2065,7 +2065,7 @@ export function ProjectileLabCanvas({ initialPreset }: { initialPreset?: 'defaul
           {/* Sliders & Manual Numeric Inputs */}
           <LabParamControl
             id="p-v0"
-            label="আদিবেগ (v₀)"
+            label="আদিবেগ u (v₀)"
             value={velocity}
             min={10}
             max={60}
@@ -2213,7 +2213,7 @@ export function CircularMotionLab() {
           ctx.lineTo(px + acDirX * acLen, py + acDirY * acLen);
           ctx.stroke();
           ctx.font = 'bold 10px "IBM Plex Mono", monospace';
-          ctx.fillText(`a_c = ${ac.toFixed(1)} m/s²`, px + acDirX * (acLen + 10) - 20, py + acDirY * (acLen + 10));
+          ctx.fillText('a_c', px + acDirX * (acLen + 10) - 8, py + acDirY * (acLen + 10));
 
           // Tangential Velocity Vector Arrow
           ctx.strokeStyle = '#38BDF8';
@@ -2227,7 +2227,7 @@ export function CircularMotionLab() {
           ctx.moveTo(px, py);
           ctx.lineTo(px + (tanDirX / normTan) * vLen, py + (tanDirY / normTan) * vLen);
           ctx.stroke();
-          ctx.fillText(`v = ${speed} m/s`, px + (tanDirX / normTan) * (vLen + 8), py + (tanDirY / normTan) * (vLen + 8));
+          ctx.fillText('v', px + (tanDirX / normTan) * (vLen + 8), py + (tanDirY / normTan) * (vLen + 8));
 
           // 3D Race Car Driving along the Track Tangent
           const carAngle = Math.atan2(tanDirY, tanDirX);
@@ -2303,7 +2303,7 @@ export function CircularMotionLab() {
 
   return (
     <LabShell
-      formula="a_c = v² / r   |   F_c = m v² / r"
+      symbolGuide="v = রৈখিক দ্রুতি · a_c = কেন্দ্রমুখী ত্বরণ · r = বৃত্তের ব্যাসার্ধ · ω = কৌণিক দ্রুতি"
       running={running}
       onToggleRun={() => setRunning((r) => !r)}
       onReset={() => {
@@ -2634,7 +2634,7 @@ export function RoadBankingLab() {
             ctx.setLineDash([]);
             ctx.fillStyle = '#38BDF8';
             ctx.font = '10px "IBM Plex Mono", monospace';
-            ctx.fillText(`R = ${radius} m`, cx + rx * 0.42, cy - 6);
+            ctx.fillText('R', cx + rx * 0.48, cy - 6);
 
             // Center Pivot Pole
             ctx.fillStyle = '#F59E0B';
@@ -2970,9 +2970,7 @@ export function RoadBankingLab() {
             ctx.fillStyle = metrics.isSafe ? '#34D399' : '#F87171';
             ctx.font = 'bold 12px "Noto Sans Bengali", sans-serif';
             ctx.fillText(
-              metrics.isSafe
-                ? `● গাড়ি নিরাপদে ঘুরছে (${speed} m/s ≤ ${metrics.safeMaxSpeed.toFixed(1)} m/s)`
-                : `▲ টায়ার স্কিড! গতি কমান (${speed} m/s > ${metrics.safeMaxSpeed.toFixed(1)} m/s)`,
+              metrics.isSafe ? '● গাড়ি নিরাপদে ঘুরছে' : '▲ টায়ার স্কিড! গতি কমান',
               18,
               28,
             );
@@ -3165,11 +3163,11 @@ export function RoadBankingLab() {
             ctx.stroke();
             ctx.fillStyle = '#F59E0B';
             ctx.font = 'bold 11px "IBM Plex Mono", monospace';
-            ctx.fillText(`h = ${metrics.elevationHeightM.toFixed(2)} m`, endX + 24, (baseY + topY) / 2);
+            ctx.fillText('h', endX + 24, (baseY + topY) / 2);
 
-            // Base width b Dimension Line
+            // Base width w Dimension Line
             ctx.fillStyle = '#94A3B8';
-            ctx.fillText(`w = ${metrics.roadWidthM} m`, (startX + endX) / 2 - 25, baseY + 20);
+            ctx.fillText('w', (startX + endX) / 2, baseY + 20);
 
             // Angle arc at bottom-left
             ctx.strokeStyle = '#38BDF8';
@@ -3179,7 +3177,7 @@ export function RoadBankingLab() {
             ctx.stroke();
             ctx.fillStyle = '#38BDF8';
             ctx.font = 'bold 12px "IBM Plex Mono", monospace';
-            ctx.fillText(`θ = ${bankDeg}°`, startX + 50, baseY - 12);
+            ctx.fillText('θ', startX + 50, baseY - 12);
 
             // Car on the incline
             const carMidX = (startX + endX) * 0.52;
@@ -3214,7 +3212,7 @@ export function RoadBankingLab() {
             ctx.lineTo(carMidX, carMidY + 65);
             ctx.stroke();
             ctx.fillStyle = '#94A3B8';
-            ctx.fillText('W = mg', carMidX + 8, carMidY + 62);
+            ctx.fillText('mg', carMidX + 8, carMidY + 62);
 
             // 2. Normal force N perpendicular to slope
             const nx = carMidX - 75 * Math.sin(bankRad);
@@ -3235,7 +3233,7 @@ export function RoadBankingLab() {
             ctx.lineTo(carMidX, ny);
             ctx.stroke();
             ctx.fillStyle = '#38BDF8';
-            ctx.fillText('N cos θ = mg', carMidX + 8, ny);
+            ctx.fillText('N cos θ', carMidX + 8, ny);
 
             // 4. N sin theta horizontal (centripetal force)
             ctx.strokeStyle = '#10B981';
@@ -3245,12 +3243,7 @@ export function RoadBankingLab() {
             ctx.lineTo(nx, carMidY - 10);
             ctx.stroke();
             ctx.fillStyle = '#10B981';
-            ctx.fillText('N sin θ = mv²/r', nx - 65, carMidY - 16);
-
-            // Formula Callout
-            ctx.fillStyle = '#F8FAFC';
-            ctx.font = 'bold 12px "IBM Plex Mono", monospace';
-            ctx.fillText('tan θ = v² / (r g)   ⟹   h = w × sin θ', 22, 38);
+            ctx.fillText('N sin θ', nx - 46, carMidY - 16);
           }
 
           // ------------------------------------------------------------------
@@ -3300,7 +3293,7 @@ export function RoadBankingLab() {
 
   return (
     <LabShell
-      formula="tan θ = v² / (R g)   |   v_max = √[R g (tan θ + μ) / (1 − μ tan θ)]"
+      symbolGuide="v = গাড়ির বেগ · R = বাঁকের ব্যাসার্ধ · θ = ব্যাংকিং কোণ · N = প্রতিক্রিয়া বল · mg = ওজন"
       running={running}
       onToggleRun={() => setRunning((r) => !r)}
       onReset={() => {
@@ -3548,9 +3541,6 @@ export function WellPumpLab() {
           ctx.lineTo(width - 40, pumpY + 14);
           ctx.stroke();
 
-          ctx.fillStyle = '#CBD5E1';
-          ctx.font = '11px "IBM Plex Mono", monospace';
-          ctx.fillText(`h_avg = ${metrics.hAvg.toFixed(2)} m | W = ${metrics.workKJ.toFixed(1)} kJ`, 18, 28);
           ctx.restore();
         }
       }
@@ -3564,7 +3554,7 @@ export function WellPumpLab() {
 
   return (
     <LabShell
-      formula="W = m g h_avg   |   P_out = W / t   |   η = P_out / P_in"
+      symbolGuide="H = কুয়ার গভীরতা · h_avg = গড় সরণ · W = কৃতকাজ · P_out = কার্যকর ক্ষমতা · η = কর্মদক্ষতা"
       running={running}
       onToggleRun={() => setRunning((r) => !r)}
       onReset={() => {

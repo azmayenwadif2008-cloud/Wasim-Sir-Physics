@@ -60,6 +60,26 @@
           "type": "string",
           "maxLength": 24
         },
+        "guardianPhone": {
+          "type": "string",
+          "maxLength": 24
+        },
+        "sectionTime": {
+          "type": "string",
+          "maxLength": 80
+        },
+        "sscGpa": {
+          "type": "string",
+          "maxLength": 40
+        },
+        "address": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "photoUrl": {
+          "type": "string",
+          "maxLength": 300000
+        },
         "status": {
           "type": "string",
           "enum": ["active", "suspended"]
@@ -358,6 +378,95 @@
         }
       },
       "required": ["uid", "classId", "completed", "updatedAt"]
+    },
+    "StudentResult": {
+      "title": "StudentResult",
+      "description": "Individual exam result and teacher feedback published by Wasim Sir for a specific student.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "studentEmail": {
+          "type": "string",
+          "format": "email",
+          "minLength": 5,
+          "maxLength": 128
+        },
+        "studentName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "rollNumber": {
+          "type": "string",
+          "maxLength": 32
+        },
+        "examTitle": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 140
+        },
+        "chapterNumber": {
+          "type": "integer"
+        },
+        "examDate": {
+          "type": "string",
+          "maxLength": 32
+        },
+        "cqMarks": {
+          "type": "number"
+        },
+        "mcqMarks": {
+          "type": "number"
+        },
+        "obtainedMarks": {
+          "type": "number"
+        },
+        "totalMarks": {
+          "type": "number"
+        },
+        "highestMarks": {
+          "type": "number"
+        },
+        "meritRank": {
+          "type": "string",
+          "maxLength": 40
+        },
+        "remarks": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "authorUid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "studentEmail",
+        "studentName",
+        "examTitle",
+        "examDate",
+        "obtainedMarks",
+        "totalMarks",
+        "authorUid",
+        "createdAt",
+        "updatedAt"
+      ]
     }
   },
   "firestore": {
@@ -388,6 +497,10 @@
     "/studentProgress/{uid}/lectures/{classId}": {
       "schema": { "$ref": "#/entities/LectureProgress" },
       "description": "Per-student lecture completion progress."
+    },
+    "/studentResults/{resultId}": {
+      "schema": { "$ref": "#/entities/StudentResult" },
+      "description": "Private individual exam results readable only by the student owner and admin."
     }
   }
 }
