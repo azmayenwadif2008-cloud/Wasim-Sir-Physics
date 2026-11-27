@@ -24,6 +24,10 @@
     />
     <link rel="manifest" href="/site.webmanifest" />
 
+    <!-- Google Search Site Name & App Metadata -->
+    <meta name="application-name" content="Wasim Sir Physics" />
+    <meta name="apple-mobile-web-app-title" content="Wasim Sir Physics" />
+
     <!-- OpenGraph Social Cards -->
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="bn_BD" />
@@ -63,42 +67,63 @@
       })();
     </script>
 
-    <!-- Schema.org Structured Data (JSON-LD) -->
+    <!-- Schema.org Structured Data (Google Search Site Name & Educational Org) -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "EducationalOrganization",
-        "name": "Wasim Sir Physics",
-        "url": "https://wasimsirphysics.vercel.app",
-        "alternateName": ["ওয়াসিম স্যার ফিজিক্স", "Sigma Physics by Wasim Sir"],
-        "founder": {
-          "@type": "Person",
-          "name": "Wasim Sharfaraz"
-        },
-        "description": "চট্টগ্রামের পদার্থবিজ্ঞানের বৃহত্তম কম্পিটিটিভ প্ল্যাটফর্ম — HSC '২৮ পদার্থবিজ্ঞান প্রথম পত্রের রেকর্ডেড ক্লাস, হ্যান্ডনোট, মেধাবী শিক্ষার্থী সংবর্ধনা ও ইন্টারেক্টিভ ফিজিক্স সিমুলেশন পোর্টাল।",
-        "telephone": ["+8801883600827", "+8801600653568"],
-        "sameAs": ["https://www.facebook.com/share/151mRVatzWN/"],
-        "address": {
-          "@type": "PostalAddress",
-          "streetAddress": "মতিটাওয়ার ৫ম তলা, চকবাজার",
-          "addressLocality": "চট্টগ্রাম",
-          "addressCountry": "BD"
-        },
-        "hasOfferCatalog": {
-          "@type": "OfferCatalog",
-          "name": "HSC 2028 Physics Programs",
-          "itemListElement": [
-            {
-              "@type": "Course",
-              "name": "HSC 2028 Physics 1st Paper (Inter 1st Year)",
-              "description": "Complete HSC 2028 Physics 1st Paper recorded classes, board notes, and interactive projectile simulation lab.",
-              "provider": {
-                "@type": "EducationalOrganization",
-                "name": "Wasim Sir Physics"
-              }
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://wasimsirphysics.vercel.app/#website",
+            "url": "https://wasimsirphysics.vercel.app/",
+            "name": "Wasim Sir Physics",
+            "alternateName": [
+              "ওয়াসিম স্যার ফিজিক্স",
+              "Sigma Physics by Wasim Sir",
+              "Wasim Sir [Sigma Physics]"
+            ],
+            "description": "চট্টগ্রামের পদার্থবিজ্ঞানের বৃহত্তম কম্পিটিটিভ প্ল্যাটফর্ম Wasim Sir Physics — HSC '২৮ একাডেমিক ও প্রজেক্টাইল ল্যাব পোর্টাল।",
+            "inLanguage": "bn-BD",
+            "publisher": {
+              "@id": "https://wasimsirphysics.vercel.app/#organization"
             }
-          ]
-        }
+          },
+          {
+            "@type": "EducationalOrganization",
+            "@id": "https://wasimsirphysics.vercel.app/#organization",
+            "name": "Wasim Sir Physics",
+            "url": "https://wasimsirphysics.vercel.app/",
+            "alternateName": ["ওয়াসিম স্যার ফিজিক্স", "Sigma Physics by Wasim Sir"],
+            "founder": {
+              "@type": "Person",
+              "name": "Wasim Sharfaraz"
+            },
+            "description": "চট্টগ্রামের পদার্থবিজ্ঞানের বৃহত্তম কম্পিটিটিভ প্ল্যাটফর্ম — HSC '২৮ পদার্থবিজ্ঞান প্রথম পত্রের রেকর্ডেড ক্লাস, হ্যান্ডনোট, মেধাবী শিক্ষার্থী সংবর্ধনা ও ইন্টারেক্টিভ ফিজিক্স সিমুলেশন পোর্টাল।",
+            "telephone": ["+8801883600827", "+8801600653568"],
+            "sameAs": ["https://www.facebook.com/share/151mRVatzWN/"],
+            "address": {
+              "@type": "PostalAddress",
+              "streetAddress": "মতিটাওয়ার ৫ম তলা, চকবাজার",
+              "addressLocality": "চট্টগ্রাম",
+              "addressCountry": "BD"
+            },
+            "hasOfferCatalog": {
+              "@type": "OfferCatalog",
+              "name": "HSC 2028 Physics Programs",
+              "itemListElement": [
+                {
+                  "@type": "Course",
+                  "name": "HSC 2028 Physics 1st Paper (Inter 1st Year)",
+                  "description": "Complete HSC 2028 Physics 1st Paper recorded classes, board notes, and interactive projectile simulation lab.",
+                  "provider": {
+                    "@type": "EducationalOrganization",
+                    "name": "Wasim Sir Physics"
+                  }
+                }
+              ]
+            }
+          }
+        ]
       }
     </script>
 
