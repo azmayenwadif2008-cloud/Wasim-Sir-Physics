@@ -775,6 +775,25 @@ export function StudentPortal({ preselectedClassId }: StudentPortalProps) {
                   </div>
                 </div>
               )}
+
+              <div className="pt-2 flex flex-wrap items-center gap-2.5 text-xs">
+                <a
+                  href="https://wa.me/8801600653568"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 font-medium text-emerald-300 bg-emerald-950/50 hover:bg-emerald-900/60 border border-emerald-800/70 rounded-lg transition-colors"
+                >
+                  <span>WhatsApp: +880 1600-653568</span>
+                </a>
+                <a
+                  href="https://www.facebook.com/share/151mRVatzWN/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 font-medium text-sky-300 bg-sky-950/50 hover:bg-sky-900/60 border border-sky-800/70 rounded-lg transition-colors"
+                >
+                  <span>Facebook Page</span>
+                </a>
+              </div>
             </div>
 
             {/* Batch Verification & Approval Request Form */}

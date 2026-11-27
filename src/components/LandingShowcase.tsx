@@ -4,7 +4,9 @@ import {
   ArrowRight,
   Bell,
   BookOpen,
+  ExternalLink,
   Lock,
+  MessageCircle,
   Play,
 } from 'lucide-react';
 import { HSC28_PHYSICS_CHAPTERS } from '../data/hsc28Curriculum';
@@ -280,14 +282,31 @@ export function LandingShowcase({ onOpenPortal }: LandingShowcaseProps) {
                   ওয়াসিম সারফারাজের এইচএসসি &apos;২৮ ফিজিক্স ব্যাচ
                 </h2>
                 <p className="text-sm sm:text-base text-slate-300 leading-relaxed mb-5 sm:mb-6">
-                  AimX প্ল্যাটফর্মে <span className="text-slate-100 font-medium">Wasim Sir Physics</span> ও <span className="text-slate-100 font-medium">Abdullah Sir Biology</span> এক জায়গায়। বাংলা ভার্সনের শিক্ষার্থীদের জন্য পদার্থবিজ্ঞানের প্রতিটি কঠিন টপিক সহজ বাংলায়, বাস্তব উদাহরণ ও চিত্রসহ ধাপে ধাপে বোঝানো হয়েছে—যাতে একাদশ শ্রেণির শুরু থেকেই বোর্ড ও অ্যাডমিশন প্রস্তুতি শক্তিশালী হয়। যোগাযোগ: ০১৮৮৩-৬০০৮২৭।
+                  AimX প্ল্যাটফর্মে <span className="text-slate-100 font-medium">Wasim Sir Physics</span> ও <span className="text-slate-100 font-medium">Abdullah Sir Biology</span> এক জায়গায়। বাংলা ভার্সনের শিক্ষার্থীদের জন্য পদার্থবিজ্ঞানের প্রতিটি কঠিন টপিক সহজ বাংলায়, বাস্তব উদাহরণ ও চিত্রসহ ধাপে ধাপে বোঝানো হয়েছে—যাতে একাদশ শ্রেণির শুরু থেকেই বোর্ড ও অ্যাডমিশন প্রস্তুতি শক্তিশালী হয়। হেল্পলাইন: ০১৮৮৩-৬০০৮২৭ · WhatsApp: +৮৮০ ১৬০০-৬৫৩৫৬৮।
                 </p>
               </div>
 
-              <div className="pt-5 border-t border-slate-800 flex flex-wrap items-center justify-between gap-4">
-                <p className="text-xs text-slate-400">
-                  ব্যাচের নিবন্ধিত শিক্ষার্থীরা লগইন করে সরাসরি সকল ক্লাসে প্রবেশ করতে পারবে।
-                </p>
+              <div className="pt-5 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3 sm:gap-4">
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <a
+                    href="https://wa.me/8801600653568"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-emerald-300 bg-emerald-950/50 hover:bg-emerald-900/60 border border-emerald-800/80 rounded-lg transition-colors whitespace-nowrap"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5 shrink-0" />
+                    <span>WhatsApp: +880 1600-653568</span>
+                  </a>
+                  <a
+                    href="https://www.facebook.com/share/151mRVatzWN/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-sky-300 bg-sky-950/50 hover:bg-sky-900/60 border border-sky-800/80 rounded-lg transition-colors whitespace-nowrap"
+                  >
+                    <span>Facebook Page</span>
+                    <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+                  </a>
+                </div>
                 <button
                   type="button"
                   onClick={() => onOpenPortal()}

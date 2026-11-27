@@ -49,10 +49,26 @@ function PortalShell() {
               <span>চট্টগ্রামের পদার্থবিজ্ঞানের বৃহত্তম কম্পিটিটিভ প্ল্যাটফর্ম · HSC &apos;২৮</span>
             </div>
             <div className="text-[11px] text-slate-500">
-              মতিটাওয়ার ৫ম তলা, চকবাজার, চট্টগ্রাম · হেল্পলাইন: ০১৮৮৩-৬০০৮২৭ · © ২০২৬ সর্বস্বত্ব সংরক্ষিত
+              মতিটাওয়ার ৫ম তলা, চকবাজার, চট্টগ্রাম · হেল্পলাইন: ০১৮৮৩-৬০০৮২৭ · WhatsApp: +880 1600-653568 · © ২০২৬ সর্বস্বত্ব সংরক্ষিত
             </div>
           </div>
-          <div className="flex items-center gap-6 shrink-0">
+          <div className="flex flex-wrap items-center gap-5 shrink-0">
+            <a
+              href="https://wa.me/8801600653568"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-emerald-400 hover:text-emerald-300 transition-colors whitespace-nowrap"
+            >
+              WhatsApp
+            </a>
+            <a
+              href="https://www.facebook.com/share/151mRVatzWN/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sky-400 hover:text-sky-300 transition-colors whitespace-nowrap"
+            >
+              Facebook Page
+            </a>
             <button
               type="button"
               onClick={() => {
