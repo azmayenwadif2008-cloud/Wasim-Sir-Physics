@@ -1,0 +1,385 @@
+{
+  "entities": {
+    "AdminUser": {
+      "title": "AdminUser",
+      "description": "Instructor or administrator UID granted full platform management privileges.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "maxLength": 128
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["uid", "email", "displayName", "createdAt"]
+    },
+    "Enrollment": {
+      "title": "Enrollment",
+      "description": "Verified paid student allowlist entry keyed by lowercase student email.",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "minLength": 5,
+          "maxLength": 128
+        },
+        "studentName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "batch": {
+          "type": "string",
+          "enum": ["HSC-28"]
+        },
+        "rollNumber": {
+          "type": "string",
+          "maxLength": 32
+        },
+        "college": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "phone": {
+          "type": "string",
+          "maxLength": 24
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "suspended"]
+        },
+        "addedByUid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "email",
+        "studentName",
+        "batch",
+        "status",
+        "addedByUid",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "EnrollmentRequest": {
+      "title": "EnrollmentRequest",
+      "description": "Payment verification request submitted by a signed-in student awaiting Wasim Sir approval.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "minLength": 5,
+          "maxLength": 128
+        },
+        "studentName": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        },
+        "college": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "phone": {
+          "type": "string",
+          "minLength": 11,
+          "maxLength": 24
+        },
+        "paymentMethod": {
+          "type": "string",
+          "enum": ["bKash", "Nagad", "Rocket", "Hand-to-Hand", "Registration"]
+        },
+        "transactionId": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "approved", "rejected"]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "uid",
+        "email",
+        "studentName",
+        "phone",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "RecordedClass": {
+      "title": "RecordedClass",
+      "description": "HSC '28 Physics recorded lecture metadata and chapter indexing.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 140
+        },
+        "chapterNumber": {
+          "type": "integer"
+        },
+        "chapterName": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        },
+        "lectureNumber": {
+          "type": "integer"
+        },
+        "duration": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 24
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 600
+        },
+        "isFreePreview": {
+          "type": "boolean"
+        },
+        "authorUid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "chapterNumber",
+        "chapterName",
+        "lectureNumber",
+        "duration",
+        "isFreePreview",
+        "authorUid",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "ClassStream": {
+      "title": "ClassStream",
+      "description": "Protected video embed URL and handwritten board note PDF link for a recorded lecture.",
+      "type": "object",
+      "properties": {
+        "classId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "videoUrl": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 400
+        },
+        "noteUrl": {
+          "type": "string",
+          "maxLength": 400
+        },
+        "isFreePreview": {
+          "type": "boolean"
+        },
+        "authorUid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "classId",
+        "videoUrl",
+        "isFreePreview",
+        "authorUid",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Notice": {
+      "title": "Notice",
+      "description": "Academic announcement, routine update, or exam alert posted by Wasim Sir.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 140
+        },
+        "body": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 1200
+        },
+        "category": {
+          "type": "string",
+          "enum": ["Routine", "Exam", "Class Update", "General"]
+        },
+        "audience": {
+          "type": "string",
+          "enum": ["public", "paid"]
+        },
+        "pinned": {
+          "type": "boolean"
+        },
+        "authorUid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "body",
+        "category",
+        "audience",
+        "pinned",
+        "authorUid",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "LectureProgress": {
+      "title": "LectureProgress",
+      "description": "Tracks whether an authenticated student has completed a recorded lecture.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "classId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "completed": {
+          "type": "boolean"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["uid", "classId", "completed", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/admins/{uid}": {
+      "schema": { "$ref": "#/entities/AdminUser" },
+      "description": "Admin UIDs allowed to manage classes, notices, and paid student enrollments."
+    },
+    "/enrollments/{emailKey}": {
+      "schema": { "$ref": "#/entities/Enrollment" },
+      "description": "Paid HSC '28 student allowlist keyed by lowercase email."
+    },
+    "/enrollmentRequests/{uid}": {
+      "schema": { "$ref": "#/entities/EnrollmentRequest" },
+      "description": "Pending payment verification requests submitted by signed-in students."
+    },
+    "/classes/{classId}": {
+      "schema": { "$ref": "#/entities/RecordedClass" },
+      "description": "Recorded lecture syllabus index and chapter metadata."
+    },
+    "/classStreams/{classId}": {
+      "schema": { "$ref": "#/entities/ClassStream" },
+      "description": "Protected video embed URLs and board note PDF links accessible only to paid students and admin."
+    },
+    "/notices/{noticeId}": {
+      "schema": { "$ref": "#/entities/Notice" },
+      "description": "Public and paid-batch notices posted by Wasim Sir."
+    },
+    "/studentProgress/{uid}/lectures/{classId}": {
+      "schema": { "$ref": "#/entities/LectureProgress" },
+      "description": "Per-student lecture completion progress."
+    }
+  }
+}

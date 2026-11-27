@@ -1,0 +1,268 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global safety net: default deny everything
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Phase 3: Global Primitives ---
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedEmail() {
+      return isSignedIn()
+        && request.auth.token.email is string
+        && request.auth.token.email_verified == true;
+    }
+
+    function isValidId(id) {
+      return id is string
+        && id.size() >= 1
+        && id.size() <= 128
+        && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidEmailKey(id) {
+      return id is string
+        && id.size() >= 5
+        && id.size() <= 128
+        && id.matches('^[a-z0-9._%+\\-]+@[a-z0-9.\\-]+\\.[a-z]{2,}$');
+    }
+
+    function isAdmin() {
+      return isVerifiedEmail() && (
+        request.auth.token.email.lower() == 'azmayen.wadif2008@gmail.com'
+        || exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isPaidStudent() {
+      return isVerifiedEmail()
+        && exists(/databases/$(database)/documents/enrollments/$(request.auth.token.email.lower()))
+        && get(/databases/$(database)/documents/enrollments/$(request.auth.token.email.lower())).data.status == 'active';
+    }
+
+    // --- Validation Blueprints ---
+    function isValidAdminUser(data) {
+      return data.keys().hasAll(['uid', 'email', 'displayName', 'createdAt'])
+        && data.keys().hasOnly(['uid', 'email', 'displayName', 'createdAt'])
+        && isValidId(data.uid)
+        && data.email is string && data.email.size() >= 5 && data.email.size() <= 128
+        && data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 100
+        && data.createdAt is timestamp;
+    }
+
+    function isValidEnrollment(data, emailKey) {
+      return data.keys().hasAll(['email', 'studentName', 'batch', 'status', 'addedByUid', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['email', 'studentName', 'batch', 'rollNumber', 'college', 'phone', 'status', 'addedByUid', 'createdAt', 'updatedAt'])
+        && data.email is string && data.email.lower() == emailKey && data.email.size() <= 128
+        && data.studentName is string && data.studentName.size() >= 1 && data.studentName.size() <= 100
+        && data.batch == 'HSC-28'
+        && data.status in ['active', 'suspended']
+        && isValidId(data.addedByUid)
+        && (!('rollNumber' in data) || (data.rollNumber is string && data.rollNumber.size() <= 32))
+        && (!('college' in data) || (data.college is string && data.college.size() <= 120))
+        && (!('phone' in data) || (data.phone is string && data.phone.size() <= 24))
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidEnrollmentRequest(data) {
+      return data.keys().hasAll(['uid', 'email', 'studentName', 'college', 'phone', 'paymentMethod', 'transactionId', 'status', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['uid', 'email', 'studentName', 'college', 'phone', 'paymentMethod', 'transactionId', 'status', 'createdAt', 'updatedAt'])
+        && isValidId(data.uid)
+        && data.email is string && data.email.size() >= 5 && data.email.size() <= 128
+        && data.studentName is string && data.studentName.size() >= 2 && data.studentName.size() <= 100
+        && data.college is string && data.college.size() >= 2 && data.college.size() <= 120
+        && data.phone is string && data.phone.size() >= 6 && data.phone.size() <= 24
+        && data.paymentMethod in ['bKash', 'Nagad', 'Rocket', 'Hand-to-Hand']
+        && data.transactionId is string && data.transactionId.size() >= 3 && data.transactionId.size() <= 64
+        && data.status in ['pending', 'approved', 'rejected']
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidRecordedClass(data, classId) {
+      return data.keys().hasAll(['id', 'title', 'chapterNumber', 'chapterName', 'lectureNumber', 'duration', 'isFreePreview', 'authorUid', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['id', 'title', 'chapterNumber', 'chapterName', 'lectureNumber', 'duration', 'description', 'isFreePreview', 'authorUid', 'createdAt', 'updatedAt'])
+        && data.id == classId && isValidId(data.id)
+        && data.title is string && data.title.size() >= 3 && data.title.size() <= 140
+        && data.chapterNumber is int && data.chapterNumber >= 1 && data.chapterNumber <= 20
+        && data.chapterName is string && data.chapterName.size() >= 2 && data.chapterName.size() <= 100
+        && data.lectureNumber is int && data.lectureNumber >= 1 && data.lectureNumber <= 200
+        && data.duration is string && data.duration.size() >= 2 && data.duration.size() <= 24
+        && (!('description' in data) || (data.description is string && data.description.size() <= 600))
+        && data.isFreePreview is bool
+        && isValidId(data.authorUid)
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidClassStream(data, classId) {
+      return data.keys().hasAll(['classId', 'videoUrl', 'isFreePreview', 'authorUid', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['classId', 'videoUrl', 'noteUrl', 'isFreePreview', 'authorUid', 'createdAt', 'updatedAt'])
+        && data.classId == classId && isValidId(data.classId)
+        && data.videoUrl is string && data.videoUrl.size() >= 8 && data.videoUrl.size() <= 400
+        && (!('noteUrl' in data) || (data.noteUrl is string && data.noteUrl.size() <= 400))
+        && data.isFreePreview is bool
+        && isValidId(data.authorUid)
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidNotice(data, noticeId) {
+      return data.keys().hasAll(['id', 'title', 'body', 'category', 'audience', 'pinned', 'authorUid', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['id', 'title', 'body', 'category', 'audience', 'pinned', 'authorUid', 'createdAt', 'updatedAt'])
+        && data.id == noticeId && isValidId(data.id)
+        && data.title is string && data.title.size() >= 3 && data.title.size() <= 140
+        && data.body is string && data.body.size() >= 5 && data.body.size() <= 1200
+        && data.category in ['Routine', 'Exam', 'Class Update', 'General']
+        && data.audience in ['public', 'paid']
+        && data.pinned is bool
+        && isValidId(data.authorUid)
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    // --- Collection Rules ---
+
+    // 1. Admins
+    match /admins/{uid} {
+      allow get: if isSignedIn() && isValidId(uid) && (request.auth.uid == uid || isAdmin());
+      allow list: if isAdmin();
+      allow create: if isAdmin() && isValidId(uid) && isValidAdminUser(incoming())
+        && incoming().uid == uid
+        && incoming().createdAt == request.time;
+      allow update: if isAdmin() && isValidId(uid) && isValidAdminUser(incoming())
+        && incoming().uid == existing().uid
+        && incoming().createdAt == existing().createdAt;
+      allow delete: if isAdmin() && isValidId(uid);
+    }
+
+    // 2. Paid Student Enrollments (PII Isolated)
+    match /enrollments/{emailKey} {
+      allow get: if isValidEmailKey(emailKey) && (
+        isAdmin() || (isVerifiedEmail() && request.auth.token.email.lower() == emailKey)
+      );
+      allow list: if isAdmin();
+      allow create: if isAdmin() && isValidEmailKey(emailKey)
+        && isValidEnrollment(incoming(), emailKey)
+        && incoming().addedByUid == request.auth.uid
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isAdmin() && isValidEmailKey(emailKey)
+        && isValidEnrollment(incoming(), emailKey)
+        && incoming().email == existing().email
+        && incoming().addedByUid == existing().addedByUid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly(['studentName', 'rollNumber', 'college', 'phone', 'status', 'updatedAt']);
+      allow delete: if isAdmin() && isValidEmailKey(emailKey);
+    }
+
+    // 3. Payment Verification Requests
+    match /enrollmentRequests/{uid} {
+      allow get: if isValidId(uid) && (isAdmin() || (isSignedIn() && request.auth.uid == uid));
+      allow list: if isAdmin() || (isSignedIn() && resource.data.uid == request.auth.uid);
+      allow create: if isVerifiedEmail() && isValidId(uid)
+        && request.auth.uid == uid
+        && isValidEnrollmentRequest(incoming())
+        && incoming().uid == request.auth.uid
+        && incoming().email == request.auth.token.email.lower()
+        && incoming().status == 'pending'
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isVerifiedEmail() && isValidId(uid)
+        && isValidEnrollmentRequest(incoming())
+        && incoming().uid == existing().uid
+        && incoming().email == existing().email
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && (
+          (isAdmin() && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt']))
+          || (
+            request.auth.uid == uid
+            && existing().status == 'pending'
+            && incoming().status == 'pending'
+            && incoming().diff(existing()).affectedKeys().hasOnly(['studentName', 'college', 'phone', 'paymentMethod', 'transactionId', 'updatedAt'])
+          )
+        );
+      allow delete: if isAdmin() && isValidId(uid);
+    }
+
+    // 4. Recorded Classes Catalog (Safe Syllabus Metadata)
+    match /classes/{classId} {
+      allow get: if isValidId(classId) && (
+        existing().isFreePreview == true || isPaidStudent() || isAdmin()
+      );
+      allow list: if resource.data.isFreePreview == true || isPaidStudent() || isAdmin();
+      allow create: if isAdmin() && isValidId(classId)
+        && isValidRecordedClass(incoming(), classId)
+        && incoming().authorUid == request.auth.uid
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isAdmin() && isValidId(classId)
+        && isValidRecordedClass(incoming(), classId)
+        && incoming().id == existing().id
+        && incoming().authorUid == existing().authorUid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly(['title', 'chapterNumber', 'chapterName', 'lectureNumber', 'duration', 'description', 'isFreePreview', 'updatedAt']);
+      allow delete: if isAdmin() && isValidId(classId);
+    }
+
+    // 5. Protected Class Streams (Video Embeds & Handwritten Note Links)
+    match /classStreams/{classId} {
+      allow get: if isValidId(classId) && (
+        existing().isFreePreview == true || isPaidStudent() || isAdmin()
+      );
+      allow list: if isAdmin();
+      allow create: if isAdmin() && isValidId(classId)
+        && isValidClassStream(incoming(), classId)
+        && existsAfter(/databases/$(database)/documents/classes/$(classId))
+        && incoming().authorUid == request.auth.uid
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isAdmin() && isValidId(classId)
+        && isValidClassStream(incoming(), classId)
+        && incoming().classId == existing().classId
+        && incoming().authorUid == existing().authorUid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly(['videoUrl', 'noteUrl', 'isFreePreview', 'updatedAt']);
+      allow delete: if isAdmin() && isValidId(classId);
+    }
+
+    // 6. Academic Notices
+    match /notices/{noticeId} {
+      allow get: if isValidId(noticeId) && (
+        existing().audience == 'public' || isPaidStudent() || isAdmin()
+      );
+      allow list: if resource.data.audience == 'public' || isPaidStudent() || isAdmin();
+      allow create: if isAdmin() && isValidId(noticeId)
+        && isValidNotice(incoming(), noticeId)
+        && incoming().authorUid == request.auth.uid
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isAdmin() && isValidId(noticeId)
+        && isValidNotice(incoming(), noticeId)
+        && incoming().id == existing().id
+        && incoming().authorUid == existing().authorUid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly(['title', 'body', 'category', 'audience', 'pinned', 'updatedAt']);
+      allow delete: if isAdmin() && isValidId(noticeId);
+    }
+  }
+}

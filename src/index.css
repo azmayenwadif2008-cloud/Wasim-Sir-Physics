@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Anek Bangla", "Noto Sans Bengali", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Noto Sans Bengali", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", "Noto Sans Bengali", ui-monospace, SFMono-Regular, monospace;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    font-variant-numeric: lining-nums tabular-nums;
+    scroll-behavior: smooth;
+    color-scheme: dark;
+  }
+
+  h1, h2, h3, .font-display {
+    font-family: var(--font-display);
+    letter-spacing: 0.005em;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  section[id] {
+    scroll-margin-top: 6.5rem;
+  }
+
+  @media (min-width: 768px) {
+    section[id] {
+      scroll-margin-top: 4.5rem;
+    }
+  }
+}
+
+.observatory-grid-bg {
+  background-color: #0B1118;
+  background-image:
+    radial-gradient(circle at 75% 15%, rgba(56, 189, 248, 0.08), transparent 45%),
+    radial-gradient(circle at 15% 85%, rgba(245, 158, 11, 0.06), transparent 40%),
+    linear-gradient(to right, rgba(148, 163, 184, 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(148, 163, 184, 0.045) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

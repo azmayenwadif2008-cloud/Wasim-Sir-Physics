@@ -1,0 +1,6 @@
+{
+  "name": "Wasim Sir Physics — HSC '28",
+  "description": "Zero-cost academic portal for HSC 2028 Inter 1st Year Physics recorded classes, handwritten notes, interactive physics simulations, and verified paid student notices.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
