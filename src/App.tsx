@@ -49,10 +49,16 @@ function PortalShell() {
               <span>চট্টগ্রামের পদার্থবিজ্ঞানের বৃহত্তম কম্পিটিটিভ প্ল্যাটফর্ম · HSC &apos;২৮</span>
             </div>
             <div className="text-[11px] text-slate-500">
-              মতিটাওয়ার ৫ম তলা, চকবাজার, চট্টগ্রাম · হেল্পলাইন: ০১৮৮৩-৬০০৮২৭ · WhatsApp: +880 1600-653568 · © ২০২৬ সর্বস্বত্ব সংরক্ষিত
+              মতিটাওয়ার ৫ম তলা, চকবাজার, চট্টগ্রাম · ওয়াসিম স্যার: +880 1883-600827 · WhatsApp: +880 1600-653568 · © ২০২৬ সর্বস্বত্ব সংরক্ষিত
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-5 shrink-0">
+            <a
+              href="tel:+8801883600827"
+              className="text-amber-400 hover:text-amber-300 transition-colors whitespace-nowrap"
+            >
+              ওয়াসিম স্যার (কল)
+            </a>
             <a
               href="https://wa.me/8801600653568"
               target="_blank"

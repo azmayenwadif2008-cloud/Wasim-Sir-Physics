@@ -7,6 +7,7 @@ import {
   ExternalLink,
   Lock,
   MessageCircle,
+  Phone,
   Play,
 } from 'lucide-react';
 import { HSC28_PHYSICS_CHAPTERS } from '../data/hsc28Curriculum';
@@ -282,12 +283,19 @@ export function LandingShowcase({ onOpenPortal }: LandingShowcaseProps) {
                   ওয়াসিম সারফারাজের এইচএসসি &apos;২৮ ফিজিক্স ব্যাচ
                 </h2>
                 <p className="text-sm sm:text-base text-slate-300 leading-relaxed mb-5 sm:mb-6">
-                  AimX প্ল্যাটফর্মে <span className="text-slate-100 font-medium">Wasim Sir Physics</span> ও <span className="text-slate-100 font-medium">Abdullah Sir Biology</span> এক জায়গায়। বাংলা ভার্সনের শিক্ষার্থীদের জন্য পদার্থবিজ্ঞানের প্রতিটি কঠিন টপিক সহজ বাংলায়, বাস্তব উদাহরণ ও চিত্রসহ ধাপে ধাপে বোঝানো হয়েছে—যাতে একাদশ শ্রেণির শুরু থেকেই বোর্ড ও অ্যাডমিশন প্রস্তুতি শক্তিশালী হয়। হেল্পলাইন: ০১৮৮৩-৬০০৮২৭ · WhatsApp: +৮৮০ ১৬০০-৬৫৩৫৬৮।
+                  AimX প্ল্যাটফর্মে <span className="text-slate-100 font-medium">Wasim Sir Physics</span> ও <span className="text-slate-100 font-medium">Abdullah Sir Biology</span> এক জায়গায়। বাংলা ভার্সনের শিক্ষার্থীদের জন্য পদার্থবিজ্ঞানের প্রতিটি কঠিন টপিক সহজ বাংলায়, বাস্তব উদাহরণ ও চিত্রসহ ধাপে ধাপে বোঝানো হয়েছে—যাতে একাদশ শ্রেণির শুরু থেকেই বোর্ড ও অ্যাডমিশন প্রস্তুতি শক্তিশালী হয়। ওয়াসিম স্যার: +880 1883-600827 · WhatsApp হেল্পলাইন: +880 1600-653568।
                 </p>
               </div>
 
               <div className="pt-5 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3 sm:gap-4">
                 <div className="flex flex-wrap items-center gap-2.5">
+                  <a
+                    href="tel:+8801883600827"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-amber-300 bg-amber-950/40 hover:bg-amber-900/50 border border-amber-800/70 rounded-lg transition-colors whitespace-nowrap"
+                  >
+                    <Phone className="w-3.5 h-3.5 shrink-0" />
+                    <span>ওয়াসিম স্যার: +880 1883-600827</span>
+                  </a>
                   <a
                     href="https://wa.me/8801600653568"
                     target="_blank"

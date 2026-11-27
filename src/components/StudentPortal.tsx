@@ -778,6 +778,12 @@ export function StudentPortal({ preselectedClassId }: StudentPortalProps) {
 
               <div className="pt-2 flex flex-wrap items-center gap-2.5 text-xs">
                 <a
+                  href="tel:+8801883600827"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 font-medium text-amber-300 bg-amber-950/40 hover:bg-amber-900/50 border border-amber-800/70 rounded-lg transition-colors"
+                >
+                  <span>ওয়াসিম স্যার: +880 1883-600827</span>
+                </a>
+                <a
                   href="https://wa.me/8801600653568"
                   target="_blank"
                   rel="noopener noreferrer"
