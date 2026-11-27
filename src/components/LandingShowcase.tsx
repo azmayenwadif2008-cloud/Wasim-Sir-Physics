@@ -18,7 +18,7 @@ import { ProjectileLab } from './ProjectileLab';
 import { ResilientImage } from './ResilientImage';
 
 interface LandingShowcaseProps {
-  onOpenPortal: (preselectClassId?: string) => void;
+  onOpenPortal: (preselectClassId?: string, role?: 'student' | 'admin') => void;
 }
 
 const HERO_HIGHLIGHTS = [
@@ -46,7 +46,7 @@ const HERO_HIGHLIGHTS = [
 ];
 
 export function LandingShowcase({ onOpenPortal }: LandingShowcaseProps) {
-  const { user, isAdmin, isPaidStudent, classes, notices } = usePortal();
+  const { isAdmin, isPaidStudent, classes, notices } = usePortal();
   const [chapterFilter, setChapterFilter] = useState<'all' | 'Mechanics' | 'Waves & Matter'>('all');
   const [showAllChapters, setShowAllChapters] = useState(false);
   const [heroCrowdAlt, setHeroCrowdAlt] = useState(false);
@@ -114,17 +114,13 @@ export function LandingShowcase({ onOpenPortal }: LandingShowcaseProps) {
                 <div className="flex flex-wrap items-center gap-4">
                   <button
                     type="button"
-                    onClick={() => onOpenPortal()}
+                    onClick={() => onOpenPortal(undefined, 'student')}
                     className="inline-flex items-center gap-2.5 px-6 py-3.5 text-sm font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] rounded-lg transition-colors cursor-pointer whitespace-nowrap"
                   >
                     <span>
-                      {isAdmin
-                        ? 'অ্যাডমিন প্যানেল'
-                        : isPaidStudent
-                          ? 'ক্লাসরুমে প্রবেশ করো'
-                          : user
-                            ? 'স্টুডেন্ট প্যানেল'
-                            : 'স্টুডেন্ট লগইন'}
+                      {isPaidStudent
+                        ? 'ক্লাসরুমে প্রবেশ করো'
+                        : 'স্টুডেন্ট রেজিস্ট্রেশন / লগইন'}
                     </span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
@@ -351,10 +347,14 @@ export function LandingShowcase({ onOpenPortal }: LandingShowcaseProps) {
                   </a>
                   <button
                     type="button"
-                    onClick={() => onOpenPortal()}
+                    onClick={() => onOpenPortal(undefined, 'student')}
                     className="inline-flex items-center gap-2 px-5 py-2.5 sm:py-3 text-sm font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] rounded-lg transition-colors cursor-pointer whitespace-nowrap"
                   >
-                    <span>স্টুডেন্ট লগইন</span>
+                    <span>
+                      {isPaidStudent
+                        ? 'ক্লাসরুমে প্রবেশ করো'
+                        : 'স্টুডেন্ট রেজিস্ট্রেশন / লগইন'}
+                    </span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>

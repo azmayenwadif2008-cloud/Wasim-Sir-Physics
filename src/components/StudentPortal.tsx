@@ -112,8 +112,12 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
     if (authRoleRequest && authRoleRequest.seq > 0) {
       setAuthRoleTab(authRoleRequest.role);
       clearAuthFeedback();
+      if (isAdmin && !preselectedClassId) {
+        setPortalTab(authRoleRequest.role === 'admin' ? 'studio' : 'classroom');
+        setAdminDefaulted(true);
+      }
     }
-  }, [authRoleRequest?.seq, authRoleRequest?.role, clearAuthFeedback]);
+  }, [authRoleRequest?.seq, authRoleRequest?.role, isAdmin, preselectedClassId, clearAuthFeedback]);
 
   useEffect(() => {
     if (!user) return;
@@ -138,14 +142,14 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
       return;
     }
     if (isAdmin && !adminDefaulted && !preselectedClassId) {
-      setPortalTab('studio');
+      setPortalTab(authRoleRequest?.role === 'student' ? 'classroom' : 'studio');
       setAdminDefaulted(true);
     }
     if (!isAdmin) {
       setAdminDefaulted(false);
       setPortalTab((prev) => (prev === 'studio' ? 'classroom' : prev));
     }
-  }, [user, isAdmin, adminDefaulted, preselectedClassId]);
+  }, [user, isAdmin, adminDefaulted, preselectedClassId, authRoleRequest?.role]);
 
   useEffect(() => {
     if (classes.length === 0) {

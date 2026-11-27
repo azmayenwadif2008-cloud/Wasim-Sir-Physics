@@ -124,10 +124,10 @@ function PortalShell() {
             </button>
             <button
               type="button"
-              onClick={() => handleOpenPortal()}
+              onClick={() => handleOpenPortal(undefined, 'student')}
               className="hover:text-slate-100 transition-colors cursor-pointer"
             >
-              স্টুডেন্ট লগইন
+              স্টুডেন্ট রেজিস্ট্রেশন / লগইন
             </button>
           </div>
         </div>
