@@ -220,6 +220,8 @@ interface PortalContextValue {
   isPaidStudent: boolean;
   needsLegacyGmailLink: boolean;
   legacyMigrationClaimEmail: string | null;
+  legacyVerifiedSuccessEmail: string | null;
+  forcedReauthNotice: boolean;
   needsStudentEmailVerification: boolean;
   myEnrollment: Enrollment | null;
   myRequest: EnrollmentRequest | null;
@@ -328,6 +330,8 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
   const [tokenEmailVerified, setTokenEmailVerified] = useState(false);
   const [studentIsAdminAccount, setStudentIsAdminAccount] = useState(false);
   const [legacyMigrationClaimEmail, setLegacyMigrationClaimEmail] = useState<string | null>(null);
+  const [legacyVerifiedSuccessEmail, setLegacyVerifiedSuccessEmail] = useState<string | null>(null);
+  const [forcedReauthNotice, setForcedReauthNotice] = useState(false);
   const [migratedLegacyPhoneEmail, setMigratedLegacyPhoneEmail] = useState<string | null>(null);
   const [myEnrollment, setMyEnrollment] = useState<Enrollment | null>(null);
   const [myRequest, setMyRequest] = useState<EnrollmentRequest | null>(null);
@@ -423,6 +427,7 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
         clearStudentLoginTimestamp();
         clearPendingStudentProfile();
         setUser(null);
+        setForcedReauthNotice(true);
         setAuthError(
           'গুরুত্বপূর্ণ আপডেট: পাসওয়ার্ড ভুলে গেলে রিসেট সুবিধা চালু করতে সবার স্টুডেন্ট সেশন রিসেট করা হয়েছে। অনুগ্রহ করে আবার লগইন করো এবং পাসওয়ার্ড রিসেটের জন্য আসল Gmail যুক্ত করো।',
         );
@@ -459,11 +464,38 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
     }
 
     const targetEmail = targetUser.email?.trim().toLowerCase() ?? '';
-    if (!targetUser.emailVerified && !isStudentPhoneEmail(targetEmail)) {
+    if (!targetUser.emailVerified || isStudentPhoneEmail(targetEmail)) {
       try {
         await targetUser.reload();
-      } catch {
-        // Ignore transient network errors during reload
+      } catch (err) {
+        const code =
+          typeof err === 'object' && err !== null && 'code' in err
+            ? String((err as { code?: unknown }).code)
+            : '';
+        if (
+          isStudentPhoneEmail(targetEmail) &&
+          (code === 'auth/user-token-expired' || code === 'auth/invalid-user-token')
+        ) {
+          try {
+            const claimSnap = await getDoc(doc(db, 'phoneMigrationClaims', targetUser.uid));
+            if (claimSnap.exists()) {
+              const target = (claimSnap.data() as { targetEmail?: unknown }).targetEmail;
+              if (typeof target === 'string') {
+                setLegacyVerifiedSuccessEmail(target);
+              }
+            }
+          } catch {
+            // Ignore claim fetch errors
+          }
+          clearStudentLoginTimestamp();
+          setUser(null);
+          try {
+            await signOut(auth);
+          } catch {
+            // Ignore signOut error
+          }
+          return false;
+        }
       }
     }
 
@@ -990,6 +1022,8 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
 
   const clearAuthFeedback = () => {
     setAuthError(null);
+    setForcedReauthNotice(false);
+    setLegacyVerifiedSuccessEmail(null);
     setNeedsEmailProviderEnable(false);
   };
 
@@ -1273,11 +1307,35 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
   const refreshStudentVerifiedSession = async (): Promise<boolean> => {
     const current = auth.currentUser;
     if (!current) return false;
+    const pendingClaimTarget = legacyMigrationClaimEmail;
+    const wasPhoneAccount = isStudentPhoneEmail(current.email);
     setAuthReady(false);
     try {
       await current.reload();
       await current.getIdToken(true);
       return await syncStudentSession(auth.currentUser ?? current);
+    } catch (err) {
+      const code =
+        typeof err === 'object' && err !== null && 'code' in err
+          ? String((err as { code?: unknown }).code)
+          : '';
+      if (
+        wasPhoneAccount &&
+        pendingClaimTarget &&
+        (code === 'auth/user-token-expired' ||
+          code === 'auth/invalid-user-token' ||
+          code === 'auth/user-mismatch')
+      ) {
+        setLegacyVerifiedSuccessEmail(pendingClaimTarget);
+        clearStudentLoginTimestamp();
+        try {
+          await signOut(auth);
+        } catch {
+          // Ignore signOut failure
+        }
+        return false;
+      }
+      throw err;
     } finally {
       setAuthReady(true);
     }
@@ -1983,6 +2041,8 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
       isPaidStudent,
       needsLegacyGmailLink,
       legacyMigrationClaimEmail,
+      legacyVerifiedSuccessEmail,
+      forcedReauthNotice,
       needsStudentEmailVerification,
       myEnrollment,
       myRequest,
@@ -2052,6 +2112,8 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
       isPaidStudent,
       needsLegacyGmailLink,
       legacyMigrationClaimEmail,
+      legacyVerifiedSuccessEmail,
+      forcedReauthNotice,
       needsStudentEmailVerification,
       myEnrollment,
       myRequest,
