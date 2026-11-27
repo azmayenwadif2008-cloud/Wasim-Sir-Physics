@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ArrowLeft,
   Award,
@@ -126,6 +126,16 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
   const [chapterFilter, setChapterFilter] = useState<number | 'all'>('all');
   const [lectureSearch, setLectureSearch] = useState('');
   const [emptyLabChapter, setEmptyLabChapter] = useState<number>(3);
+
+  const videoPlayerRef = useRef<HTMLDivElement>(null);
+
+  const handleSelectClass = (lec: RecordedClass) => {
+    setSelectedClass(lec);
+    setPortalTab('classroom');
+    setTimeout(() => {
+      videoPlayerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 120);
+  };
 
   // Verification & Approval Request Form for pending / Google students
   const [reqName, setReqName] = useState('');
@@ -1666,7 +1676,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                     <button
                       key={lec.id}
                       type="button"
-                      onClick={() => setSelectedClass(lec)}
+                      onClick={() => handleSelectClass(lec)}
                       className={`w-full text-left p-3 rounded-lg border transition-colors cursor-pointer ${
                         selectedClass?.id === lec.id
                           ? 'border-[#F59E0B] bg-[#0E1621]'
@@ -1744,46 +1754,6 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                   />
                 </div>
               </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 border-t border-slate-800/80">
-              <div className="px-4 py-3 rounded-lg bg-[#0B1118] flex items-center justify-between gap-3">
-                <div>
-                  <div className="text-xs text-slate-400">রেকর্ডেড ক্লাস</div>
-                  <div className="text-lg font-display font-bold tabular-nums text-slate-100 mt-0.5">
-                    {classes.length}টি লেকচার
-                  </div>
-                </div>
-                <BookOpen className="w-5 h-5 text-[#FBBF24] shrink-0" />
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setPortalTab('profile')}
-                className="px-4 py-3 rounded-lg bg-[#0B1118] hover:bg-slate-900/90 border border-transparent hover:border-slate-700 flex items-center justify-between gap-3 text-left transition-colors cursor-pointer"
-              >
-                <div>
-                  <div className="text-xs text-slate-400">ব্যক্তিগত পরীক্ষার রেজাল্ট</div>
-                  <div className="text-lg font-display font-bold tabular-nums text-emerald-300 mt-0.5">
-                    {myResults.length > 0 ? `${myResults.length}টি রেজাল্ট দেখো` : 'প্রোফাইল দেখো'}
-                  </div>
-                </div>
-                <Award className="w-5 h-5 text-emerald-400 shrink-0" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setPortalTab('notices')}
-                className="px-4 py-3 rounded-lg bg-[#0B1118] hover:bg-slate-900/90 border border-transparent hover:border-slate-700 flex items-center justify-between gap-3 text-left transition-colors cursor-pointer"
-              >
-                <div>
-                  <div className="text-xs text-slate-400">ব্যাচ নোটিশ বোর্ড</div>
-                  <div className="text-lg font-display font-bold tabular-nums text-sky-300 mt-0.5">
-                    {notices.length}টি নোটিশ দেখো
-                  </div>
-                </div>
-                <Bell className="w-5 h-5 text-sky-400 shrink-0" />
-              </button>
             </div>
           </div>
 
@@ -1865,7 +1835,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              <div ref={videoPlayerRef} className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                 <div className="lg:col-span-8 space-y-5">
                   <div className="bg-[#131C28] border border-slate-800 rounded-xl overflow-hidden">
                     <div className="aspect-video bg-black relative">
@@ -2017,7 +1987,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                           <button
                             key={lec.id}
                             type="button"
-                            onClick={() => setSelectedClass(lec)}
+                            onClick={() => handleSelectClass(lec)}
                             className={`w-full text-left p-4 flex items-start gap-3 transition-colors cursor-pointer ${
                               isActive ? 'bg-[#172333]' : 'hover:bg-[#172231]'
                             }`}
