@@ -1,9 +1,8 @@
-import { ArrowLeft, ArrowRight } from 'lucide-react';
-import { usePortal } from '../context/PortalContext';
+import { ArrowLeft, ShieldCheck, UserCheck } from 'lucide-react';
 
 interface NavbarProps {
   activeView: 'landing' | 'portal';
-  onNavigateView: (view: 'landing' | 'portal') => void;
+  onNavigateView: (view: 'landing' | 'portal', role?: 'student' | 'admin') => void;
   onScrollToSection: (sectionId: string) => void;
 }
 
@@ -12,8 +11,6 @@ export function Navbar({
   onNavigateView,
   onScrollToSection,
 }: NavbarProps) {
-  const { user, isAdmin } = usePortal();
-
   const handleSectionLink = (id: string) => {
     if (activeView !== 'landing') {
       onNavigateView('landing');
@@ -25,7 +22,7 @@ export function Navbar({
 
   return (
     <header className="sticky top-0 z-40 bg-[#0B1118]/90 backdrop-blur-md border-b border-slate-800/80">
-      <div className="max-w-[1200px] mx-auto px-6 h-16 flex items-center justify-between gap-8">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3 sm:gap-8">
         {/* Zone 1: Single text element wordmark */}
         <button
           type="button"
@@ -33,7 +30,7 @@ export function Navbar({
             onNavigateView('landing');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
-          className="font-display text-lg font-bold tracking-tight text-slate-50 whitespace-nowrap shrink-0 cursor-pointer hover:text-[#FBBF24] transition-colors"
+          className="font-display text-base sm:text-lg font-bold tracking-tight text-slate-50 whitespace-nowrap shrink-0 cursor-pointer hover:text-[#FBBF24] transition-colors"
         >
           ওয়াসিম স্যার ফিজিক্স
         </button>
@@ -75,39 +72,38 @@ export function Navbar({
           >
             ফিজিক্স ল্যাব
           </button>
-          <button
-            type="button"
-            onClick={() => onNavigateView('portal')}
-            className={`hover:text-white hover:underline underline-offset-4 transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-              activeView === 'portal' ? 'text-[#FBBF24] font-semibold' : ''
-            }`}
-          >
-            {isAdmin ? 'অ্যাডমিন প্যানেল' : 'স্টুডেন্ট প্যানেল'}
-          </button>
         </nav>
 
-        {/* Zone 3: 1 primary action */}
-        <div className="shrink-0">
+        {/* Zone 3: Separate Student Panel & Admin Panel corner buttons */}
+        <div className="flex items-center gap-2 shrink-0">
           {activeView === 'portal' ? (
             <button
               type="button"
               onClick={() => onNavigateView('landing')}
-              className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-slate-100 bg-[#131C28] border border-slate-700 rounded-lg hover:bg-slate-800 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-100 bg-[#131C28] border border-slate-700 rounded-lg hover:bg-slate-800 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>হোমপেজ</span>
             </button>
           ) : (
-            <button
-              type="button"
-              onClick={() => onNavigateView('portal')}
-              className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-slate-950 bg-[#F59E0B] rounded-lg hover:bg-[#FBBF24] transition-colors whitespace-nowrap shrink-0 cursor-pointer"
-            >
-              <span>
-                {isAdmin ? 'অ্যাডমিন প্যানেল' : user ? 'স্টুডেন্ট প্যানেল' : 'স্টুডেন্ট লগইন'}
-              </span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={() => onNavigateView('portal', 'student')}
+                className="inline-flex items-center gap-1.5 px-2.5 sm:px-3.5 py-2 text-[11px] sm:text-xs font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+              >
+                <UserCheck className="w-3.5 h-3.5 shrink-0" />
+                <span>স্টুডেন্ট প্যানেল</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onNavigateView('portal', 'admin')}
+                className="inline-flex items-center gap-1.5 px-2.5 sm:px-3.5 py-2 text-[11px] sm:text-xs font-semibold text-slate-950 bg-[#38BDF8] hover:bg-sky-300 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
+                <span>অ্যাডমিন প্যানেল</span>
+              </button>
+            </>
           )}
         </div>
       </div>

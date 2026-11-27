@@ -111,6 +111,7 @@ interface PortalContextValue {
   allRequests: EnrollmentRequest[];
   allResults: StudentResult[];
   loadingData: boolean;
+  enrollmentChecked: boolean;
   authError: string | null;
   needsEmailProviderEnable: boolean;
   clearAuthFeedback: () => void;
@@ -364,11 +365,7 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
     const hasFullAccess = isAdmin || isPaidStudent;
 
     const classesQuery = hasFullAccess
-      ? query(
-          collection(db, 'classes'),
-          orderBy('chapterNumber', 'asc'),
-          orderBy('lectureNumber', 'asc'),
-        )
+      ? query(collection(db, 'classes'))
       : query(collection(db, 'classes'), where('isFreePreview', '==', true));
 
     const noticesQuery = hasFullAccess
@@ -567,7 +564,7 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
   const registerAdminWithEmailPassword = async (email: string, password: string) => {
     clearAuthFeedback();
     if (email.trim().toLowerCase() !== ADMIN_BOOTSTRAP_EMAIL) {
-      setAuthError(`কেবল নির্ধারিত Admin Gmail (${ADMIN_BOOTSTRAP_EMAIL}) দিয়ে সেটআপ করা যাবে।`);
+      setAuthError('কেবল অনুমোদিত Admin Gmail দিয়ে সেটআপ করা যাবে।');
       throw new Error('Invalid admin email');
     }
     try {
@@ -1189,6 +1186,7 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
       allRequests,
       allResults,
       loadingData,
+      enrollmentChecked,
       authError,
       needsEmailProviderEnable,
       clearAuthFeedback,
@@ -1237,6 +1235,7 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
       allRequests,
       allResults,
       loadingData,
+      enrollmentChecked,
       authError,
       needsEmailProviderEnable,
     ],

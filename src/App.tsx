@@ -8,9 +8,14 @@ import { PortalProvider } from './context/PortalContext';
 function PortalShell() {
   const [activeView, setActiveView] = useState<'landing' | 'portal'>('landing');
   const [preselectedClassId, setPreselectedClassId] = useState<string | null>(null);
+  const [authRoleRequest, setAuthRoleRequest] = useState<{
+    role: 'student' | 'admin';
+    seq: number;
+  }>({ role: 'student', seq: 0 });
 
-  const handleOpenPortal = (classId?: string) => {
+  const handleOpenPortal = (classId?: string, role: 'student' | 'admin' = 'student') => {
     setPreselectedClassId(classId ?? null);
+    setAuthRoleRequest((prev) => ({ role, seq: prev.seq + 1 }));
     setActiveView('portal');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -26,7 +31,14 @@ function PortalShell() {
     <div className="min-h-screen flex flex-col bg-[#0B1118] text-[#F1F5F9]">
       <Navbar
         activeView={activeView}
-        onNavigateView={(view) => setActiveView(view)}
+        onNavigateView={(view, role) => {
+          if (view === 'portal' && role) {
+            setPreselectedClassId(null);
+            setAuthRoleRequest((prev) => ({ role, seq: prev.seq + 1 }));
+          }
+          setActiveView(view);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
         onScrollToSection={handleScrollToSection}
       />
 
@@ -34,7 +46,10 @@ function PortalShell() {
         {activeView === 'landing' ? (
           <LandingShowcase onOpenPortal={handleOpenPortal} />
         ) : (
-          <StudentPortal preselectedClassId={preselectedClassId} />
+          <StudentPortal
+            preselectedClassId={preselectedClassId}
+            authRoleRequest={authRoleRequest}
+          />
         )}
       </div>
 
@@ -49,24 +64,46 @@ function PortalShell() {
               <span>চট্টগ্রামের পদার্থবিজ্ঞানের বৃহত্তম কম্পিটিটিভ প্ল্যাটফর্ম · HSC &apos;২৮</span>
             </div>
             <div className="text-[11px] text-slate-500">
-              মতিটাওয়ার ৫ম তলা, চকবাজার, চট্টগ্রাম · ওয়াসিম স্যার: +880 1883-600827 · WhatsApp: +880 1600-653568 · © ২০২৬ সর্বস্বত্ব সংরক্ষিত
+              মতিটাওয়ার ৫ম তলা, চকবাজার, চট্টগ্রাম · ওয়াসিম স্যার: +880 1883-600827 · হেল্পলাইন: +880 1600-653568 (কল ও WhatsApp) · © ২০২৬ সর্বস্বত্ব সংরক্ষিত
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-5 shrink-0">
-            <a
-              href="tel:+8801883600827"
-              className="text-amber-400 hover:text-amber-300 transition-colors whitespace-nowrap"
-            >
-              ওয়াসিম স্যার (কল)
-            </a>
-            <a
-              href="https://wa.me/8801600653568"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-emerald-400 hover:text-emerald-300 transition-colors whitespace-nowrap"
-            >
-              WhatsApp
-            </a>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 shrink-0">
+            <span className="inline-flex items-center gap-2 whitespace-nowrap">
+              <span className="text-slate-400">০১৮৮৩-৬০০৮২৭:</span>
+              <a
+                href="tel:+8801883600827"
+                className="text-amber-400 hover:text-amber-300 transition-colors"
+              >
+                কল
+              </a>
+              <span className="text-slate-600">/</span>
+              <a
+                href="https://wa.me/8801883600827"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-emerald-400 hover:text-emerald-300 transition-colors"
+              >
+                WhatsApp
+              </a>
+            </span>
+            <span className="inline-flex items-center gap-2 whitespace-nowrap">
+              <span className="text-slate-400">০১৬০০-৬৫৩৫৬৮:</span>
+              <a
+                href="tel:+8801600653568"
+                className="text-amber-400 hover:text-amber-300 transition-colors"
+              >
+                কল
+              </a>
+              <span className="text-slate-600">/</span>
+              <a
+                href="https://wa.me/8801600653568"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-emerald-400 hover:text-emerald-300 transition-colors"
+              >
+                WhatsApp
+              </a>
+            </span>
             <a
               href="https://www.facebook.com/share/151mRVatzWN/"
               target="_blank"

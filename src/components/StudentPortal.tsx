@@ -1,13 +1,18 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
+  Award,
   Bell,
+  BookOpen,
   CheckCircle2,
   Clock,
   ExternalLink,
+  Eye,
+  EyeOff,
   FileText,
   KeyRound,
   Lock,
   LogOut,
+  MessageCircle,
   Phone,
   Play,
   Search,
@@ -17,7 +22,7 @@ import {
   Video,
   XCircle,
 } from 'lucide-react';
-import { ADMIN_BOOTSTRAP_EMAIL, HSC28_PHYSICS_CHAPTERS } from '../data/hsc28Curriculum';
+import { HSC28_PHYSICS_CHAPTERS } from '../data/hsc28Curriculum';
 import { usePortal } from '../context/PortalContext';
 import { extractPhoneFromAuthEmail, isStudentPhoneEmail } from '../lib/phoneAuth';
 import { parseVideoUrl } from '../lib/videoUtils';
@@ -29,9 +34,10 @@ import { StudentProfileResults } from './StudentProfileResults';
 
 interface StudentPortalProps {
   preselectedClassId?: string | null;
+  authRoleRequest?: { role: 'student' | 'admin'; seq: number } | null;
 }
 
-export function StudentPortal({ preselectedClassId }: StudentPortalProps) {
+export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPortalProps) {
   const {
     user,
     authReady,
@@ -45,6 +51,7 @@ export function StudentPortal({ preselectedClassId }: StudentPortalProps) {
     notices,
     completedClassIds,
     loadingData,
+    enrollmentChecked,
     authError,
     needsEmailProviderEnable,
     clearAuthFeedback,
@@ -62,15 +69,19 @@ export function StudentPortal({ preselectedClassId }: StudentPortalProps) {
   } = usePortal();
 
   // Auth screen state
-  const [authRoleTab, setAuthRoleTab] = useState<'student' | 'admin'>('student');
+  const [authRoleTab, setAuthRoleTab] = useState<'student' | 'admin'>(
+    authRoleRequest?.role ?? 'student',
+  );
   const [studentAuthMode, setStudentAuthMode] = useState<'login' | 'register'>('login');
   const [adminAuthMode, setAdminAuthMode] = useState<'login' | 'setup'>('login');
 
   const [studentPhone, setStudentPhone] = useState('');
   const [studentPass, setStudentPass] = useState('');
+  const [showStudentPass, setShowStudentPass] = useState(false);
   const [studentRegName, setStudentRegName] = useState('');
-  const [adminEmailInput, setAdminEmailInput] = useState(ADMIN_BOOTSTRAP_EMAIL);
+  const [adminEmailInput, setAdminEmailInput] = useState('');
   const [adminPassInput, setAdminPassInput] = useState('');
+  const [showAdminPass, setShowAdminPass] = useState(false);
   const [authBusy, setAuthBusy] = useState(false);
 
   // Portal workspace state
@@ -81,6 +92,7 @@ export function StudentPortal({ preselectedClassId }: StudentPortalProps) {
   const [loadingStream, setLoadingStream] = useState(false);
   const [chapterFilter, setChapterFilter] = useState<number | 'all'>('all');
   const [lectureSearch, setLectureSearch] = useState('');
+  const [emptyLabChapter, setEmptyLabChapter] = useState<number>(3);
 
   // Verification & Approval Request Form for pending / Google students
   const [reqName, setReqName] = useState('');
@@ -95,6 +107,13 @@ export function StudentPortal({ preselectedClassId }: StudentPortalProps) {
   const [verificationCheckNote, setVerificationCheckNote] = useState<string | null>(null);
 
   const hasVaultAccess = isAdmin || isPaidStudent;
+
+  useEffect(() => {
+    if (authRoleRequest && authRoleRequest.seq > 0) {
+      setAuthRoleTab(authRoleRequest.role);
+      clearAuthFeedback();
+    }
+  }, [authRoleRequest?.seq, authRoleRequest?.role, clearAuthFeedback]);
 
   useEffect(() => {
     if (!user) return;
@@ -113,14 +132,20 @@ export function StudentPortal({ preselectedClassId }: StudentPortalProps) {
   }, [user, myRequest]);
 
   useEffect(() => {
+    if (!user) {
+      setPortalTab('classroom');
+      setAdminDefaulted(false);
+      return;
+    }
     if (isAdmin && !adminDefaulted && !preselectedClassId) {
       setPortalTab('studio');
       setAdminDefaulted(true);
     }
     if (!isAdmin) {
       setAdminDefaulted(false);
+      setPortalTab((prev) => (prev === 'studio' ? 'classroom' : prev));
     }
-  }, [isAdmin, adminDefaulted, preselectedClassId]);
+  }, [user, isAdmin, adminDefaulted, preselectedClassId]);
 
   useEffect(() => {
     if (classes.length === 0) {
@@ -413,14 +438,26 @@ export function StudentPortal({ preselectedClassId }: StudentPortalProps) {
                       <div className="relative">
                         <KeyRound className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
                         <input
-                          type="password"
+                          type={showStudentPass ? 'text' : 'password'}
                           required
                           minLength={6}
                           placeholder="••••••••"
                           value={studentPass}
                           onChange={(e) => setStudentPass(e.target.value)}
-                          className="w-full pl-10 pr-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                          className="w-full pl-10 pr-10 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
                         />
+                        <button
+                          type="button"
+                          onClick={() => setShowStudentPass((prev) => !prev)}
+                          aria-label={showStudentPass ? 'পাসওয়ার্ড লুকাও' : 'পাসওয়ার্ড দেখো'}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-100 transition-colors cursor-pointer"
+                        >
+                          {showStudentPass ? (
+                            <EyeOff className="w-4 h-4" />
+                          ) : (
+                            <Eye className="w-4 h-4" />
+                          )}
+                        </button>
                       </div>
                     </div>
 
@@ -466,7 +503,7 @@ export function StudentPortal({ preselectedClassId }: StudentPortalProps) {
                       {adminAuthMode === 'login' ? 'Wasim Sir Admin Login' : 'Create Admin Password'}
                     </h1>
                     <p className="text-xs text-slate-300 leading-relaxed">
-                      আপনার নির্ধারিত Admin Gmail ({ADMIN_BOOTSTRAP_EMAIL}) এবং পাসওয়ার্ড দিয়ে Admin Panel-এ প্রবেশ করুন।
+                      আপনার নির্ধারিত Admin Gmail এবং পাসওয়ার্ড দিয়ে Admin Panel-এ প্রবেশ করুন।
                     </p>
                   </div>
 
@@ -509,9 +546,10 @@ export function StudentPortal({ preselectedClassId }: StudentPortalProps) {
                       <input
                         type="email"
                         required
+                        placeholder="আপনার Admin Gmail লিখুন"
                         value={adminEmailInput}
                         onChange={(e) => setAdminEmailInput(e.target.value)}
-                        className="w-full px-3.5 py-2.5 text-sm font-mono text-slate-100 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#38BDF8]"
+                        className="w-full px-3.5 py-2.5 text-sm font-mono text-slate-100 placeholder:text-slate-500 placeholder:font-sans bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#38BDF8]"
                       />
                     </div>
 
@@ -519,15 +557,29 @@ export function StudentPortal({ preselectedClassId }: StudentPortalProps) {
                       <label className="block text-xs font-medium text-slate-300 mb-1.5">
                         Admin Password
                       </label>
-                      <input
-                        type="password"
-                        required
-                        minLength={6}
-                        placeholder="••••••••"
-                        value={adminPassInput}
-                        onChange={(e) => setAdminPassInput(e.target.value)}
-                        className="w-full px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#38BDF8]"
-                      />
+                      <div className="relative">
+                        <input
+                          type={showAdminPass ? 'text' : 'password'}
+                          required
+                          minLength={6}
+                          placeholder="••••••••"
+                          value={adminPassInput}
+                          onChange={(e) => setAdminPassInput(e.target.value)}
+                          className="w-full pl-3.5 pr-10 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#38BDF8]"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowAdminPass((prev) => !prev)}
+                          aria-label={showAdminPass ? 'Hide password' : 'Show password'}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-100 transition-colors cursor-pointer"
+                        >
+                          {showAdminPass ? (
+                            <EyeOff className="w-4 h-4" />
+                          ) : (
+                            <Eye className="w-4 h-4" />
+                          )}
+                        </button>
+                      </div>
                     </div>
 
                     <button
@@ -557,7 +609,7 @@ export function StudentPortal({ preselectedClassId }: StudentPortalProps) {
                     onClick={() => void signInWithGoogle()}
                     className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-semibold text-slate-200 bg-[#0B1118] border border-slate-700 hover:border-slate-500 rounded-lg transition-colors cursor-pointer"
                   >
-                    <span>Continue with Google ({ADMIN_BOOTSTRAP_EMAIL})</span>
+                    <span>Continue with Google</span>
                   </button>
                 </div>
               )}
@@ -635,112 +687,132 @@ export function StudentPortal({ preselectedClassId }: StudentPortalProps) {
     );
   }
 
+  if (!enrollmentChecked) {
+    return (
+      <div className="max-w-[1200px] mx-auto px-6 py-24 text-center text-sm text-slate-300">
+        ক্লাসরুম প্রস্তুত করা হচ্ছে...
+      </div>
+    );
+  }
+
+  const activeTab = !isAdmin && portalTab === 'studio' ? 'classroom' : portalTab;
   const displayAccountHandle = extractPhoneFromAuthEmail(user.email);
   const isCurrentCompleted = selectedClass ? completedClassIds.has(selectedClass.id) : false;
+  const studentDisplayName =
+    myEnrollment?.studentName || myRequest?.studentName || user.displayName || 'প্রিয় শিক্ষার্থী';
 
   return (
-    <section className="max-w-[1200px] mx-auto px-6 py-10">
+    <section className="max-w-[1200px] mx-auto px-6 py-8 sm:py-10">
       {/* Portal Top Workspace Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800 mb-8">
-        <div>
-          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400 mb-1">
-            <span className="font-mono text-slate-200">{displayAccountHandle}</span>
-            <span aria-hidden="true">·</span>
-            {isAdmin ? (
-              <span className="inline-flex items-center gap-1 font-semibold text-sky-300">
-                <ShieldCheck className="w-3.5 h-3.5" />
-                <span>Wasim Sir · Admin Access</span>
-              </span>
-            ) : isPaidStudent ? (
-              <span className="inline-flex items-center gap-1 font-semibold text-emerald-400">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>
-                  অনুমোদিত ব্যাচ শিক্ষার্থী
-                  {myEnrollment?.rollNumber ? ` (${myEnrollment.rollNumber})` : ''}
+      <div className="pb-6 border-b border-slate-800 mb-8 space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1.5">
+            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
+              <span className="font-mono text-slate-200">{displayAccountHandle}</span>
+              <span aria-hidden="true">·</span>
+              {isAdmin ? (
+                <span className="inline-flex items-center gap-1 font-semibold text-sky-300">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>Wasim Sir · Admin Access</span>
                 </span>
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-1 font-semibold text-[#FBBF24]">
-                <Lock className="w-3.5 h-3.5" />
-                <span>অনুমোদনের অপেক্ষায়</span>
-              </span>
-            )}
-          </div>
-          <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-slate-50">
-            {portalTab === 'studio' && isAdmin
-              ? 'Admin Panel — Manage Students, Results & Classes'
-              : portalTab === 'profile' && hasVaultAccess
-                ? 'আমার প্রোফাইল ও ব্যক্তিগত রেজাল্ট'
-                : hasVaultAccess
-                  ? 'স্টুডেন্ট প্যানেল · এইচএসসি ২০২৮ পদার্থবিজ্ঞান'
-                  : 'ওয়াসিম স্যারের অনুমোদনের অপেক্ষায়'}
-          </h1>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3">
-          {hasVaultAccess && (
-            <div className="inline-flex items-center gap-1 p-1 bg-[#131C28] border border-slate-800 rounded-lg overflow-x-auto max-w-full">
-              {isAdmin && (
-                <button
-                  type="button"
-                  onClick={() => setPortalTab('studio')}
-                  className={`px-3.5 py-1.5 text-xs font-semibold rounded-md transition-colors cursor-pointer whitespace-nowrap ${
-                    portalTab === 'studio'
-                      ? 'bg-[#38BDF8] text-slate-950'
-                      : 'text-sky-300 hover:bg-slate-800'
-                  }`}
-                >
-                  Admin Panel
-                </button>
+              ) : isPaidStudent ? (
+                <span className="inline-flex items-center gap-1 font-semibold text-emerald-400">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>
+                    অনুমোদিত ব্যাচ শিক্ষার্থী
+                    {myEnrollment?.rollNumber ? ` · রোল ${myEnrollment.rollNumber}` : ''}
+                  </span>
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 font-semibold text-[#FBBF24]">
+                  <Lock className="w-3.5 h-3.5" />
+                  <span>অনুমোদনের অপেক্ষায়</span>
+                </span>
               )}
-              <button
-                type="button"
-                onClick={() => setPortalTab('classroom')}
-                className={`px-3.5 py-1.5 text-xs font-semibold rounded-md transition-colors cursor-pointer whitespace-nowrap ${
-                  portalTab === 'classroom'
-                    ? 'bg-[#F59E0B] text-slate-950'
-                    : 'text-slate-300 hover:text-white'
-                }`}
-              >
-                {isAdmin ? 'Student Panel Preview' : 'ক্লাসরুম'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setPortalTab('profile')}
-                className={`px-3.5 py-1.5 text-xs font-semibold rounded-md transition-colors cursor-pointer whitespace-nowrap inline-flex items-center gap-1.5 ${
-                  portalTab === 'profile'
-                    ? 'bg-[#F59E0B] text-slate-950'
-                    : 'text-slate-300 hover:text-white'
-                }`}
-              >
-                <UserCheck className="w-3.5 h-3.5" />
-                <span>
-                  প্রোফাইল ও রেজাল্ট{myResults.length > 0 ? ` (${myResults.length})` : ''}
-                </span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setPortalTab('notices')}
-                className={`px-3.5 py-1.5 text-xs font-semibold rounded-md transition-colors cursor-pointer whitespace-nowrap ${
-                  portalTab === 'notices'
-                    ? 'bg-[#F59E0B] text-slate-950'
-                    : 'text-slate-300 hover:text-white'
-                }`}
-              >
-                ব্যাচ নোটিশ ({notices.length})
-              </button>
             </div>
-          )}
+            <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-slate-50 text-balance">
+              {activeTab === 'studio' && isAdmin
+                ? 'Admin Panel — Manage Students, Results & Classes'
+                : activeTab === 'profile' && hasVaultAccess
+                  ? 'আমার প্রোফাইল ও ব্যক্তিগত রেজাল্ট'
+                  : activeTab === 'notices' && hasVaultAccess
+                    ? 'ব্যাচ নোটিশ ও পরীক্ষার আপডেট'
+                    : hasVaultAccess
+                      ? `স্বাগতম, ${studentDisplayName}`
+                      : 'ওয়াসিম স্যারের অনুমোদনের অপেক্ষায়'}
+            </h1>
+          </div>
 
           <button
             type="button"
             onClick={() => void logout()}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-slate-200 bg-[#131C28] border border-slate-700 rounded-lg hover:border-slate-500 transition-colors cursor-pointer whitespace-nowrap"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-200 bg-[#131C28] border border-slate-700 rounded-xl hover:border-slate-500 transition-colors cursor-pointer whitespace-nowrap self-start sm:self-auto shrink-0"
           >
-            <LogOut className="w-3.5 h-3.5" />
+            <LogOut className="w-4 h-4" />
             <span>লগআউট</span>
           </button>
         </div>
+
+        {hasVaultAccess && (
+          <nav
+            aria-label="স্টুডেন্ট পোর্টাল নেভিগেশন"
+            className="grid grid-cols-1 sm:grid-cols-3 lg:flex lg:flex-wrap items-stretch gap-2.5 p-1.5 bg-[#131C28] border border-slate-800 rounded-2xl"
+          >
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={() => setPortalTab('studio')}
+                className={`inline-flex items-center justify-center gap-2.5 px-5 py-3 text-sm sm:text-[15px] font-semibold rounded-xl transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
+                  activeTab === 'studio'
+                    ? 'bg-[#38BDF8] text-slate-950'
+                    : 'text-sky-300 hover:bg-slate-800/80'
+                }`}
+              >
+                <ShieldCheck className="w-4 h-4 shrink-0" />
+                <span>Admin Panel</span>
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => setPortalTab('classroom')}
+              className={`inline-flex items-center justify-center gap-2.5 px-5 py-3 text-sm sm:text-[15px] font-semibold rounded-xl transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
+                activeTab === 'classroom'
+                  ? 'bg-[#F59E0B] text-slate-950'
+                  : 'text-slate-200 hover:bg-slate-800/80 hover:text-white'
+              }`}
+            >
+              <Video className="w-4 h-4 shrink-0" />
+              <span>{isAdmin ? 'Student Classroom Preview' : 'আমার ক্লাসরুম'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setPortalTab('profile')}
+              className={`inline-flex items-center justify-center gap-2.5 px-5 py-3 text-sm sm:text-[15px] font-semibold rounded-xl transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
+                activeTab === 'profile'
+                  ? 'bg-[#F59E0B] text-slate-950'
+                  : 'text-slate-200 hover:bg-slate-800/80 hover:text-white'
+              }`}
+            >
+              <UserCheck className="w-4 h-4 shrink-0" />
+              <span>
+                প্রোফাইল ও রেজাল্ট
+                {myResults.length > 0 ? ` (${myResults.length})` : ''}
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setPortalTab('notices')}
+              className={`inline-flex items-center justify-center gap-2.5 px-5 py-3 text-sm sm:text-[15px] font-semibold rounded-xl transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
+                activeTab === 'notices'
+                  ? 'bg-[#F59E0B] text-slate-950'
+                  : 'text-slate-200 hover:bg-slate-800/80 hover:text-white'
+              }`}
+            >
+              <Bell className="w-4 h-4 shrink-0" />
+              <span>ব্যাচ নোটিশ ({notices.length})</span>
+            </button>
+          </nav>
+        )}
       </div>
 
       {/* State B: Signed in Student, NOT Yet Approved */}
@@ -796,29 +868,64 @@ export function StudentPortal({ preselectedClassId }: StudentPortalProps) {
                 </div>
               )}
 
-              <div className="pt-2 flex flex-wrap items-center gap-2.5 text-xs">
-                <a
-                  href="tel:+8801883600827"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 font-medium text-amber-300 bg-amber-950/40 hover:bg-amber-900/50 border border-amber-800/70 rounded-lg transition-colors"
-                >
-                  <span>ওয়াসিম স্যার: +880 1883-600827</span>
-                </a>
-                <a
-                  href="https://wa.me/8801600653568"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 font-medium text-emerald-300 bg-emerald-950/50 hover:bg-emerald-900/60 border border-emerald-800/70 rounded-lg transition-colors"
-                >
-                  <span>WhatsApp: +880 1600-653568</span>
-                </a>
-                <a
-                  href="https://www.facebook.com/share/151mRVatzWN/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 font-medium text-sky-300 bg-sky-950/50 hover:bg-sky-900/60 border border-sky-800/70 rounded-lg transition-colors"
-                >
-                  <span>Facebook Page</span>
-                </a>
+              <div className="pt-2 space-y-2.5 text-xs">
+                <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 rounded-lg bg-[#0B1118] border border-slate-800">
+                  <span className="font-medium text-slate-200">
+                    ওয়াসিম স্যার: <span className="font-mono text-slate-100">+880 1883-600827</span>
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <a
+                      href="tel:+8801883600827"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 font-medium text-amber-300 bg-amber-950/40 hover:bg-amber-900/50 border border-amber-800/70 rounded-md transition-colors"
+                    >
+                      <Phone className="w-3 h-3" />
+                      <span>কল</span>
+                    </a>
+                    <a
+                      href="https://wa.me/8801883600827"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 font-medium text-emerald-300 bg-emerald-950/50 hover:bg-emerald-900/60 border border-emerald-800/70 rounded-md transition-colors"
+                    >
+                      <MessageCircle className="w-3 h-3" />
+                      <span>WhatsApp</span>
+                    </a>
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 rounded-lg bg-[#0B1118] border border-slate-800">
+                  <span className="font-medium text-slate-200">
+                    হেল্পলাইন: <span className="font-mono text-slate-100">+880 1600-653568</span>
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <a
+                      href="tel:+8801600653568"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 font-medium text-amber-300 bg-amber-950/40 hover:bg-amber-900/50 border border-amber-800/70 rounded-md transition-colors"
+                    >
+                      <Phone className="w-3 h-3" />
+                      <span>কল</span>
+                    </a>
+                    <a
+                      href="https://wa.me/8801600653568"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 font-medium text-emerald-300 bg-emerald-950/50 hover:bg-emerald-900/60 border border-emerald-800/70 rounded-md transition-colors"
+                    >
+                      <MessageCircle className="w-3 h-3" />
+                      <span>WhatsApp</span>
+                    </a>
+                  </div>
+                </div>
+                <div>
+                  <a
+                    href="https://www.facebook.com/share/151mRVatzWN/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 font-medium text-sky-300 bg-sky-950/50 hover:bg-sky-900/60 border border-sky-800/70 rounded-lg transition-colors"
+                  >
+                    <span>Facebook Page</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
               </div>
             </div>
 
@@ -1011,254 +1118,385 @@ export function StudentPortal({ preselectedClassId }: StudentPortalProps) {
       )}
 
       {/* Admin Panel */}
-      {hasVaultAccess && portalTab === 'studio' && isAdmin && <AdminStudio />}
+      {hasVaultAccess && activeTab === 'studio' && isAdmin && <AdminStudio />}
 
       {/* Student Panel Classroom */}
-      {hasVaultAccess && portalTab === 'classroom' && (
-        <div className="space-y-6">
-          <div className="bg-[#131C28] border border-slate-800 rounded-xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="space-y-1">
-              <div className="text-xs font-mono text-slate-400">
-                {myEnrollment
-                  ? `${myEnrollment.studentName} · ${myEnrollment.college || 'HSC 2028 Batch'}`
-                  : 'Instructor Classroom View · HSC 2028 Batch'}
+      {hasVaultAccess && activeTab === 'classroom' && (
+        <div className="space-y-8">
+          {/* Student Welcome & Quick Overview Hub */}
+          <div className="bg-[#131C28] border border-slate-800 rounded-xl p-6 sm:p-7 space-y-5">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              <div className="space-y-1.5">
+                <div className="text-xs font-medium text-[#FBBF24]">
+                  ওয়াসিম স্যার ফিজিক্স · এইচএসসি ২০২৮ ব্যাচ ক্লাসরুম
+                </div>
+                <h2 className="font-display text-xl sm:text-2xl font-bold text-slate-50 text-balance">
+                  স্বাগতম, {studentDisplayName} — আজকের পদার্থবিজ্ঞান প্রস্তুতি শুরু করো
+                </h2>
+                <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-slate-400">
+                  <span>{myEnrollment?.college || 'HSC 2028 Science'}</span>
+                  {myEnrollment?.batch && (
+                    <>
+                      <span aria-hidden="true">·</span>
+                      <span>ব্যাচ: {myEnrollment.batch}</span>
+                    </>
+                  )}
+                  {myEnrollment?.sectionTime && (
+                    <>
+                      <span aria-hidden="true">·</span>
+                      <span>সময়: {myEnrollment.sectionTime}</span>
+                    </>
+                  )}
+                  {myEnrollment?.rollNumber && (
+                    <>
+                      <span aria-hidden="true">·</span>
+                      <span className="font-mono tabular-nums text-slate-300">
+                        রোল: {myEnrollment.rollNumber}
+                      </span>
+                    </>
+                  )}
+                </div>
               </div>
-              <div className="text-sm font-semibold text-slate-100">
-                ক্লাস অগ্রগতি:{' '}
-                <span className="font-sans tabular-nums text-[#FBBF24]">
-                  {completedCount} / {classes.length} লেকচার ({progressPercent}%)
-                </span>
-              </div>
-            </div>
 
-            <div className="w-full sm:w-64 h-2.5 bg-[#0B1118] rounded-full overflow-hidden border border-slate-800">
-              <div
-                className="h-full bg-[#F59E0B] transition-all"
-                style={{ width: `${progressPercent}%` }}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            <div className="lg:col-span-8 space-y-5">
-              {loadingData ? (
-                <div className="aspect-video bg-[#131C28] border border-slate-800 rounded-xl flex items-center justify-center text-sm text-slate-400">
-                  রেকর্ডেড ক্লাস লোড হচ্ছে...
-                </div>
-              ) : !selectedClass ? (
-                <div className="bg-[#131C28] border border-slate-800 rounded-xl p-12 text-center">
-                  <Video className="w-8 h-8 text-slate-500 mx-auto mb-3" />
-                  <h2 className="font-display text-xl font-bold text-slate-100 mb-2">
-                    এখনো কোনো রেকর্ডেড ক্লাস আপলোড হয়নি
-                  </h2>
-                  <p className="text-sm text-slate-400 max-w-md mx-auto">
-                    {isAdmin
-                      ? 'উপরে Admin Panel ট্যাব থেকে প্রথম HSC 2028 ক্লাস আপলোড করুন অথবা Demo Content লোড করুন।'
-                      : 'ওয়াসিম স্যার শীঘ্রই অধ্যায়ভিত্তিক লেকচার এখানে প্রকাশ করবেন।'}
-                  </p>
-                </div>
-              ) : (
-                <div className="bg-[#131C28] border border-slate-800 rounded-xl overflow-hidden">
-                  <div className="aspect-video bg-black relative">
-                    {loadingStream ? (
-                      <div className="w-full h-full flex items-center justify-center text-xs font-mono text-slate-300">
-                        লেকচার স্ট্রিম লোড হচ্ছে...
-                      </div>
-                    ) : parsedEmbed ? (
-                      parsedEmbed.kind === 'video' ? (
-                        <video src={parsedEmbed.src} controls className="w-full h-full" />
-                      ) : parsedEmbed.kind === 'iframe' ? (
-                        <iframe
-                          src={parsedEmbed.src}
-                          title={selectedClass.title}
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                          className="w-full h-full border-0"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center text-white">
-                          <p className="text-sm mb-3">এক্সটার্নাল লিংকে লেকচারটি দেখুন</p>
-                          <a
-                            href={parsedEmbed.src}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-slate-950 bg-[#F59E0B] rounded-lg"
-                          >
-                            <span>ক্লাস ওপেন করো</span>
-                            <ExternalLink className="w-3.5 h-3.5" />
-                          </a>
-                        </div>
-                      )
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-xs text-slate-400">
-                        ভিডিও লিংক পাওয়া যায়নি।
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="p-6 sm:p-7 space-y-4">
-                    <div className="flex flex-wrap items-start justify-between gap-4">
-                      <div>
-                        <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400 mb-1.5">
-                          <span className="font-sans font-semibold text-sky-300 tabular-nums">
-                            অধ্যায় {selectedClass.chapterNumber} · লেকচার{' '}
-                            {String(selectedClass.lectureNumber).padStart(2, '0')}
-                          </span>
-                          <span aria-hidden="true">·</span>
-                          <span className="font-mono tabular-nums">{selectedClass.duration}</span>
-                          {parsedEmbed && (
-                            <>
-                              <span aria-hidden="true">·</span>
-                              <span>{parsedEmbed.providerLabel}</span>
-                            </>
-                          )}
-                        </div>
-                        <h2 className="font-display text-2xl font-bold text-slate-50">
-                          {selectedClass.title}
-                        </h2>
-                      </div>
-
-                      <div className="flex flex-wrap items-center gap-2 shrink-0">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            void toggleLectureCompleted(selectedClass.id, !isCurrentCompleted)
-                          }
-                          className={`inline-flex items-center gap-1.5 px-3.5 py-2.5 text-xs font-semibold rounded-lg border transition-colors cursor-pointer whitespace-nowrap ${
-                            isCurrentCompleted
-                              ? 'bg-emerald-950/60 border-emerald-700 text-emerald-300 hover:bg-emerald-900/60'
-                              : 'bg-[#0B1118] border-slate-700 text-slate-200 hover:border-slate-500'
-                          }`}
-                        >
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          <span>{isCurrentCompleted ? 'সম্পন্ন হয়েছে' : 'সম্পন্ন চিহ্নিত করো'}</span>
-                        </button>
-
-                        {activeStream?.noteUrl && (
-                          <a
-                            href={activeStream.noteUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] rounded-lg transition-colors whitespace-nowrap"
-                          >
-                            <FileText className="w-3.5 h-3.5" />
-                            <span>বোর্ড নোট PDF</span>
-                          </a>
-                        )}
-                      </div>
-                    </div>
-
-                    {selectedClass.description && (
-                      <p className="text-sm text-slate-300 leading-relaxed pt-3 border-t border-slate-800">
-                        {selectedClass.description}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <aside className="lg:col-span-4 bg-[#131C28] border border-slate-800 rounded-xl overflow-hidden">
-              <div className="p-4 border-b border-slate-800 space-y-3">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-display text-base font-bold text-slate-100">
-                    লেকচার তালিকা
-                  </h3>
-                  <span className="text-xs font-mono text-slate-400 tabular-nums">
-                    {filteredClasses.length}টি ক্লাস
+              <div className="w-full lg:w-72 space-y-2 shrink-0">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-slate-300 font-medium">লেকচার অগ্রগতি</span>
+                  <span className="font-mono tabular-nums font-semibold text-[#FBBF24]">
+                    {completedCount} / {classes.length} ({progressPercent}%)
                   </span>
                 </div>
-
-                <div className="relative">
-                  <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    placeholder="ক্লাস বা টপিক খুঁজুন..."
-                    value={lectureSearch}
-                    onChange={(e) => setLectureSearch(e.target.value)}
-                    className="w-full pl-8 pr-3 py-1.5 text-xs text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                <div className="w-full h-2.5 bg-[#0B1118] rounded-full overflow-hidden border border-slate-800">
+                  <div
+                    className="h-full bg-[#F59E0B] transition-all"
+                    style={{ width: `${progressPercent}%` }}
                   />
                 </div>
-
-                <select
-                  value={chapterFilter}
-                  onChange={(e) =>
-                    setChapterFilter(e.target.value === 'all' ? 'all' : Number(e.target.value))
-                  }
-                  className="w-full px-3 py-1.5 text-xs text-slate-100 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
-                >
-                  <option value="all">প্রথম পত্রের সকল অধ্যায়</option>
-                  {HSC28_PHYSICS_CHAPTERS.map((ch) => (
-                    <option key={ch.number} value={ch.number}>
-                      অধ্যায় {ch.number}: {ch.titleBn}
-                    </option>
-                  ))}
-                </select>
               </div>
+            </div>
 
-              <div className="divide-y divide-slate-800 max-h-[540px] overflow-y-auto">
-                {filteredClasses.length === 0 ? (
-                  <div className="p-8 text-center text-xs text-slate-400">
-                    এই অধ্যায়ে কোনো ক্লাস পাওয়া যায়নি।
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 border-t border-slate-800/80">
+              <div className="px-4 py-3 rounded-lg bg-[#0B1118] flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-xs text-slate-400">রেকর্ডেড ক্লাস</div>
+                  <div className="text-lg font-display font-bold tabular-nums text-slate-100 mt-0.5">
+                    {classes.length}টি লেকচার
                   </div>
-                ) : (
-                  filteredClasses.map((lec) => {
-                    const isActive = selectedClass?.id === lec.id;
-                    const isDone = completedClassIds.has(lec.id);
-                    return (
-                      <button
-                        key={lec.id}
-                        type="button"
-                        onClick={() => setSelectedClass(lec)}
-                        className={`w-full text-left p-4 flex items-start gap-3 transition-colors cursor-pointer ${
-                          isActive ? 'bg-[#172333]' : 'hover:bg-[#172231]'
-                        }`}
-                      >
-                        <div
-                          className={`mt-0.5 w-7 h-7 rounded-md flex items-center justify-center shrink-0 ${
-                            isActive
-                              ? 'bg-[#F59E0B] text-slate-950'
-                              : isDone
-                                ? 'bg-emerald-950/70 text-emerald-400 border border-emerald-800'
-                                : 'bg-[#0B1118] text-slate-400 border border-slate-800'
-                          }`}
-                        >
-                          {isDone ? (
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                          ) : (
-                            <Play className="w-3.5 h-3.5" />
-                          )}
-                        </div>
-                        <div className="min-w-0">
-                          <div className="text-[11px] font-mono text-slate-400 mb-0.5">
-                            অধ্যায় {lec.chapterNumber} · লেকচার {String(lec.lectureNumber).padStart(2, '0')} ·{' '}
-                            {lec.duration}
-                          </div>
-                          <div
-                            className={`text-sm font-medium leading-snug ${
-                              isActive ? 'text-[#FBBF24] font-semibold' : 'text-slate-100'
-                            }`}
-                          >
-                            {lec.title}
-                          </div>
-                        </div>
-                      </button>
-                    );
-                  })
-                )}
+                </div>
+                <BookOpen className="w-5 h-5 text-[#FBBF24] shrink-0" />
               </div>
-            </aside>
+
+              <button
+                type="button"
+                onClick={() => setPortalTab('profile')}
+                className="px-4 py-3 rounded-lg bg-[#0B1118] hover:bg-slate-900/90 border border-transparent hover:border-slate-700 flex items-center justify-between gap-3 text-left transition-colors cursor-pointer"
+              >
+                <div>
+                  <div className="text-xs text-slate-400">ব্যক্তিগত পরীক্ষার রেজাল্ট</div>
+                  <div className="text-lg font-display font-bold tabular-nums text-emerald-300 mt-0.5">
+                    {myResults.length > 0 ? `${myResults.length}টি রেজাল্ট দেখো` : 'প্রোফাইল দেখো'}
+                  </div>
+                </div>
+                <Award className="w-5 h-5 text-emerald-400 shrink-0" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPortalTab('notices')}
+                className="px-4 py-3 rounded-lg bg-[#0B1118] hover:bg-slate-900/90 border border-transparent hover:border-slate-700 flex items-center justify-between gap-3 text-left transition-colors cursor-pointer"
+              >
+                <div>
+                  <div className="text-xs text-slate-400">ব্যাচ নোটিশ বোর্ড</div>
+                  <div className="text-lg font-display font-bold tabular-nums text-sky-300 mt-0.5">
+                    {notices.length}টি নোটিশ দেখো
+                  </div>
+                </div>
+                <Bell className="w-5 h-5 text-sky-400 shrink-0" />
+              </button>
+            </div>
           </div>
 
-          {selectedClass && (
-            <ChapterEmbeddedLab chapterNumber={selectedClass.chapterNumber} />
+          {loadingData ? (
+            <div className="aspect-video bg-[#131C28] border border-slate-800 rounded-xl flex items-center justify-center text-sm text-slate-400">
+              রেকর্ডেড ক্লাস লোড হচ্ছে...
+            </div>
+          ) : !selectedClass ? (
+            <div className="space-y-8">
+              <div className="bg-[#131C28] border border-slate-800 rounded-xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                <div className="space-y-2 max-w-2xl">
+                  <h3 className="font-display text-xl font-bold text-slate-50">
+                    রেকর্ডেড ক্লাস তালিকা ও অধ্যায়ভিত্তিক প্রস্তুতি
+                  </h3>
+                  <p className="text-sm text-slate-300 leading-relaxed">
+                    {isAdmin
+                      ? 'উপরে Admin Panel ট্যাব থেকে প্রথম HSC 2028 ক্লাস আপলোড করুন অথবা Demo Content লোড করুন।'
+                      : 'ওয়াসিম স্যারের নতুন রেকর্ডেড ক্লাস ও বোর্ড নোট PDF প্রকাশ হওয়ার সাথে সাথেই এখানে দেখা যাবে। ততক্ষণ নিচের ১০টি অধ্যায়ের যেকোনো ইন্টারঅ্যাক্টিভ ফিজিক্স ল্যাব অনুশীলন করো।'}
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setPortalTab('profile')}
+                    className="px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] rounded-lg transition-colors cursor-pointer whitespace-nowrap"
+                  >
+                    আমার প্রোফাইল ও রেজাল্ট
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPortalTab('notices')}
+                    className="px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-100 bg-[#0B1118] border border-slate-700 hover:border-slate-500 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
+                  >
+                    নোটিশ বোর্ড দেখো
+                  </button>
+                </div>
+              </div>
+
+              {/* Chapter Picker + Always-Ready Interactive Physics Lab */}
+              <div className="space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h3 className="font-display text-lg sm:text-xl font-bold text-slate-100">
+                      অধ্যায়ভিত্তিক ইন্টারঅ্যাক্টিভ ফিজিক্স ল্যাব (১ম পত্র)
+                    </h3>
+                    <p className="text-xs text-slate-400">
+                      যেকোনো অধ্যায় বেছে নিয়ে লাইভ গ্রাফ ও সিমুলেশনের মাধ্যমে কনসেপ্ট ঝালাই করো
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                  {HSC28_PHYSICS_CHAPTERS.map((ch) => {
+                    const isSelected = emptyLabChapter === ch.number;
+                    return (
+                      <button
+                        key={ch.number}
+                        type="button"
+                        onClick={() => setEmptyLabChapter(ch.number)}
+                        className={`px-3 py-2.5 text-left text-xs rounded-lg border transition-colors cursor-pointer ${
+                          isSelected
+                            ? 'bg-[#F59E0B] border-[#F59E0B] text-slate-950 font-semibold'
+                            : 'bg-[#131C28] border-slate-800 text-slate-200 hover:border-slate-600'
+                        }`}
+                      >
+                        <span
+                          className={`font-mono tabular-nums mr-1.5 ${
+                            isSelected ? 'text-slate-950 font-bold' : 'text-[#FBBF24]'
+                          }`}
+                        >
+                          {String(ch.number).padStart(2, '0')}
+                        </span>
+                        <span className="truncate">{ch.titleBn}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <ChapterEmbeddedLab chapterNumber={emptyLabChapter} />
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                <div className="lg:col-span-8 space-y-5">
+                  <div className="bg-[#131C28] border border-slate-800 rounded-xl overflow-hidden">
+                    <div className="aspect-video bg-black relative">
+                      {loadingStream ? (
+                        <div className="w-full h-full flex items-center justify-center text-xs font-mono text-slate-300">
+                          লেকচার স্ট্রিম লোড হচ্ছে...
+                        </div>
+                      ) : parsedEmbed ? (
+                        parsedEmbed.kind === 'video' ? (
+                          <video src={parsedEmbed.src} controls className="w-full h-full" />
+                        ) : parsedEmbed.kind === 'iframe' ? (
+                          <iframe
+                            src={parsedEmbed.src}
+                            title={selectedClass.title}
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                            className="w-full h-full border-0"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center text-white">
+                            <p className="text-sm mb-3">এক্সটার্নাল লিংকে লেকচারটি দেখুন</p>
+                            <a
+                              href={parsedEmbed.src}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-slate-950 bg-[#F59E0B] rounded-lg"
+                            >
+                              <span>ক্লাস ওপেন করো</span>
+                              <ExternalLink className="w-3.5 h-3.5" />
+                            </a>
+                          </div>
+                        )
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-xs text-slate-400">
+                          ভিডিও লিংক পাওয়া যায়নি।
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="p-6 sm:p-7 space-y-4">
+                      <div className="flex flex-wrap items-start justify-between gap-4">
+                        <div>
+                          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400 mb-1.5">
+                            <span className="font-sans font-semibold text-sky-300 tabular-nums">
+                              অধ্যায় {selectedClass.chapterNumber} · লেকচার{' '}
+                              {String(selectedClass.lectureNumber).padStart(2, '0')}
+                            </span>
+                            <span aria-hidden="true">·</span>
+                            <span className="font-mono tabular-nums">{selectedClass.duration}</span>
+                            {parsedEmbed && (
+                              <>
+                                <span aria-hidden="true">·</span>
+                                <span>{parsedEmbed.providerLabel}</span>
+                              </>
+                            )}
+                          </div>
+                          <h2 className="font-display text-2xl font-bold text-slate-50">
+                            {selectedClass.title}
+                          </h2>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-2 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              void toggleLectureCompleted(selectedClass.id, !isCurrentCompleted)
+                            }
+                            className={`inline-flex items-center gap-1.5 px-3.5 py-2.5 text-xs font-semibold rounded-lg border transition-colors cursor-pointer whitespace-nowrap ${
+                              isCurrentCompleted
+                                ? 'bg-emerald-950/60 border-emerald-700 text-emerald-300 hover:bg-emerald-900/60'
+                                : 'bg-[#0B1118] border-slate-700 text-slate-200 hover:border-slate-500'
+                            }`}
+                          >
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            <span>{isCurrentCompleted ? 'সম্পন্ন হয়েছে' : 'সম্পন্ন চিহ্নিত করো'}</span>
+                          </button>
+
+                          {activeStream?.noteUrl && (
+                            <a
+                              href={activeStream.noteUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] rounded-lg transition-colors whitespace-nowrap"
+                            >
+                              <FileText className="w-3.5 h-3.5" />
+                              <span>বোর্ড নোট PDF</span>
+                            </a>
+                          )}
+                        </div>
+                      </div>
+
+                      {selectedClass.description && (
+                        <p className="text-sm text-slate-300 leading-relaxed pt-3 border-t border-slate-800">
+                          {selectedClass.description}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <aside className="lg:col-span-4 bg-[#131C28] border border-slate-800 rounded-xl overflow-hidden">
+                  <div className="p-4 border-b border-slate-800 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-display text-base font-bold text-slate-100">
+                        লেকচার তালিকা
+                      </h3>
+                      <span className="text-xs font-mono text-slate-400 tabular-nums">
+                        {filteredClasses.length}টি ক্লাস
+                      </span>
+                    </div>
+
+                    <div className="relative">
+                      <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        placeholder="ক্লাস বা টপিক খুঁজুন..."
+                        value={lectureSearch}
+                        onChange={(e) => setLectureSearch(e.target.value)}
+                        className="w-full pl-8 pr-3 py-1.5 text-xs text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                      />
+                    </div>
+
+                    <select
+                      value={chapterFilter}
+                      onChange={(e) =>
+                        setChapterFilter(e.target.value === 'all' ? 'all' : Number(e.target.value))
+                      }
+                      className="w-full px-3 py-1.5 text-xs text-slate-100 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                    >
+                      <option value="all">প্রথম পত্রের সকল অধ্যায়</option>
+                      {HSC28_PHYSICS_CHAPTERS.map((ch) => (
+                        <option key={ch.number} value={ch.number}>
+                          অধ্যায় {ch.number}: {ch.titleBn}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="divide-y divide-slate-800 max-h-[540px] overflow-y-auto">
+                    {filteredClasses.length === 0 ? (
+                      <div className="p-8 text-center text-xs text-slate-400">
+                        এই অধ্যায়ে কোনো ক্লাস পাওয়া যায়নি।
+                      </div>
+                    ) : (
+                      filteredClasses.map((lec) => {
+                        const isActive = selectedClass?.id === lec.id;
+                        const isDone = completedClassIds.has(lec.id);
+                        return (
+                          <button
+                            key={lec.id}
+                            type="button"
+                            onClick={() => setSelectedClass(lec)}
+                            className={`w-full text-left p-4 flex items-start gap-3 transition-colors cursor-pointer ${
+                              isActive ? 'bg-[#172333]' : 'hover:bg-[#172231]'
+                            }`}
+                          >
+                            <div
+                              className={`mt-0.5 w-7 h-7 rounded-md flex items-center justify-center shrink-0 ${
+                                isActive
+                                  ? 'bg-[#F59E0B] text-slate-950'
+                                  : isDone
+                                    ? 'bg-emerald-950/70 text-emerald-400 border border-emerald-800'
+                                    : 'bg-[#0B1118] text-slate-400 border border-slate-800'
+                              }`}
+                            >
+                              {isDone ? (
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                              ) : (
+                                <Play className="w-3.5 h-3.5" />
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <div className="text-[11px] font-mono text-slate-400 mb-0.5">
+                                অধ্যায় {lec.chapterNumber} · লেকচার {String(lec.lectureNumber).padStart(2, '0')} ·{' '}
+                                {lec.duration}
+                              </div>
+                              <div
+                                className={`text-sm font-medium leading-snug ${
+                                  isActive ? 'text-[#FBBF24] font-semibold' : 'text-slate-100'
+                                }`}
+                              >
+                                {lec.title}
+                              </div>
+                            </div>
+                          </button>
+                        );
+                      })
+                    )}
+                  </div>
+                </aside>
+              </div>
+
+              <ChapterEmbeddedLab chapterNumber={selectedClass.chapterNumber} />
+            </>
           )}
         </div>
       )}
 
-      {hasVaultAccess && portalTab === 'profile' && <StudentProfileResults />}
+      {hasVaultAccess && activeTab === 'profile' && <StudentProfileResults />}
 
-      {hasVaultAccess && portalTab === 'notices' && (
+      {hasVaultAccess && activeTab === 'notices' && (
         <div className="bg-[#131C28] border border-slate-800 rounded-xl divide-y divide-slate-800">
           {notices.length === 0 ? (
             <div className="p-12 text-center">

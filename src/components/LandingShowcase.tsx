@@ -284,28 +284,62 @@ export function LandingShowcase({ onOpenPortal }: LandingShowcaseProps) {
                   ওয়াসিম সারফারাজের এইচএসসি &apos;২৮ ফিজিক্স ব্যাচ
                 </h2>
                 <p className="text-sm sm:text-base text-slate-300 leading-relaxed mb-5 sm:mb-6">
-                  AimX প্ল্যাটফর্মে <span className="text-slate-100 font-medium">Wasim Sir Physics</span> ও <span className="text-slate-100 font-medium">Abdullah Sir Biology</span> এক জায়গায়। বাংলা ভার্সনের শিক্ষার্থীদের জন্য পদার্থবিজ্ঞানের প্রতিটি কঠিন টপিক সহজ বাংলায়, বাস্তব উদাহরণ ও চিত্রসহ ধাপে ধাপে বোঝানো হয়েছে—যাতে একাদশ শ্রেণির শুরু থেকেই বোর্ড ও অ্যাডমিশন প্রস্তুতি শক্তিশালী হয়। ওয়াসিম স্যার: +880 1883-600827 · WhatsApp হেল্পলাইন: +880 1600-653568।
+                  AimX প্ল্যাটফর্মে <span className="text-slate-100 font-medium">Wasim Sir Physics</span> ও <span className="text-slate-100 font-medium">Abdullah Sir Biology</span> এক জায়গায়। বাংলা ভার্সনের শিক্ষার্থীদের জন্য পদার্থবিজ্ঞানের প্রতিটি কঠিন টপিক সহজ বাংলায়, বাস্তব উদাহরণ ও চিত্রসহ ধাপে ধাপে বোঝানো হয়েছে—যাতে একাদশ শ্রেণির শুরু থেকেই বোর্ড ও অ্যাডমিশন প্রস্তুতি শক্তিশালী হয়। ওয়াসিম স্যার: +880 1883-600827 · হেল্পলাইন: +880 1600-653568 (দুটি নাম্বারেই কল ও WhatsApp)।
                 </p>
               </div>
 
-              <div className="pt-5 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3 sm:gap-4">
-                <div className="flex flex-wrap items-center gap-2.5">
-                  <a
-                    href="tel:+8801883600827"
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-amber-300 bg-amber-950/40 hover:bg-amber-900/50 border border-amber-800/70 rounded-lg transition-colors whitespace-nowrap"
-                  >
-                    <Phone className="w-3.5 h-3.5 shrink-0" />
-                    <span>ওয়াসিম স্যার: +880 1883-600827</span>
-                  </a>
-                  <a
-                    href="https://wa.me/8801600653568"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-emerald-300 bg-emerald-950/50 hover:bg-emerald-900/60 border border-emerald-800/80 rounded-lg transition-colors whitespace-nowrap"
-                  >
-                    <MessageCircle className="w-3.5 h-3.5 shrink-0" />
-                    <span>WhatsApp: +880 1600-653568</span>
-                  </a>
+              <div className="pt-5 border-t border-slate-800 space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 rounded-lg bg-[#0B1118] border border-slate-800">
+                    <span className="text-xs font-medium text-slate-200 whitespace-nowrap">
+                      ওয়াসিম স্যার · <span className="font-mono text-slate-100">01883-600827</span>
+                    </span>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <a
+                        href="tel:+8801883600827"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-amber-300 bg-amber-950/50 hover:bg-amber-900/60 border border-amber-800/70 rounded-md transition-colors whitespace-nowrap"
+                      >
+                        <Phone className="w-3 h-3 shrink-0" />
+                        <span>কল</span>
+                      </a>
+                      <a
+                        href="https://wa.me/8801883600827"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-emerald-300 bg-emerald-950/50 hover:bg-emerald-900/60 border border-emerald-800/80 rounded-md transition-colors whitespace-nowrap"
+                      >
+                        <MessageCircle className="w-3 h-3 shrink-0" />
+                        <span>WhatsApp</span>
+                      </a>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 rounded-lg bg-[#0B1118] border border-slate-800">
+                    <span className="text-xs font-medium text-slate-200 whitespace-nowrap">
+                      হেল্পলাইন · <span className="font-mono text-slate-100">01600-653568</span>
+                    </span>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <a
+                        href="tel:+8801600653568"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-amber-300 bg-amber-950/50 hover:bg-amber-900/60 border border-amber-800/70 rounded-md transition-colors whitespace-nowrap"
+                      >
+                        <Phone className="w-3 h-3 shrink-0" />
+                        <span>কল</span>
+                      </a>
+                      <a
+                        href="https://wa.me/8801600653568"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-emerald-300 bg-emerald-950/50 hover:bg-emerald-900/60 border border-emerald-800/80 rounded-md transition-colors whitespace-nowrap"
+                      >
+                        <MessageCircle className="w-3 h-3 shrink-0" />
+                        <span>WhatsApp</span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-3">
                   <a
                     href="https://www.facebook.com/share/151mRVatzWN/"
                     target="_blank"
@@ -315,15 +349,15 @@ export function LandingShowcase({ onOpenPortal }: LandingShowcaseProps) {
                     <span>Facebook Page</span>
                     <ExternalLink className="w-3.5 h-3.5 shrink-0" />
                   </a>
+                  <button
+                    type="button"
+                    onClick={() => onOpenPortal()}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 sm:py-3 text-sm font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] rounded-lg transition-colors cursor-pointer whitespace-nowrap"
+                  >
+                    <span>স্টুডেন্ট লগইন</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => onOpenPortal()}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 sm:py-3 text-sm font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] rounded-lg transition-colors cursor-pointer whitespace-nowrap"
-                >
-                  <span>স্টুডেন্ট লগইন</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
               </div>
             </div>
           </div>

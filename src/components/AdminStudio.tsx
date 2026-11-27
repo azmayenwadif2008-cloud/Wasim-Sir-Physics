@@ -3,6 +3,8 @@ import {
   Award,
   CheckCircle2,
   Database,
+  Eye,
+  EyeOff,
   ImagePlus,
   KeyRound,
   Pencil,
@@ -129,6 +131,7 @@ export function AdminStudio() {
 
   // Link Admin Password state
   const [newAdminPassword, setNewAdminPassword] = useState('');
+  const [showNewAdminPassword, setShowNewAdminPassword] = useState(false);
   const [showPasswordCard, setShowPasswordCard] = useState(false);
 
   const showToast = (msg: string) => {
@@ -676,15 +679,29 @@ export function AdminStudio() {
             <p className="text-xs text-slate-400 mb-2">
               Link a password to your verified Admin Gmail so you can sign in using Gmail + Password next time.
             </p>
-            <input
-              type="password"
-              required
-              minLength={6}
-              placeholder="Choose a strong password (min 6 chars)"
-              value={newAdminPassword}
-              onChange={(e) => setNewAdminPassword(e.target.value)}
-              className="w-full max-w-sm px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#38BDF8]"
-            />
+            <div className="relative max-w-sm">
+              <input
+                type={showNewAdminPassword ? 'text' : 'password'}
+                required
+                minLength={6}
+                placeholder="Choose a strong password (min 6 chars)"
+                value={newAdminPassword}
+                onChange={(e) => setNewAdminPassword(e.target.value)}
+                className="w-full pl-3 pr-10 py-2 text-sm text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#38BDF8]"
+              />
+              <button
+                type="button"
+                onClick={() => setShowNewAdminPassword((prev) => !prev)}
+                aria-label={showNewAdminPassword ? 'Hide password' : 'Show password'}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-100 transition-colors cursor-pointer"
+              >
+                {showNewAdminPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
+              </button>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <button
