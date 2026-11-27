@@ -63,6 +63,8 @@ export interface Notice {
   category: NoticeCategory;
   audience: NoticeAudience;
   pinned: boolean;
+  imageUrl?: string;
+  videoUrl?: string;
   authorUid: string;
   createdAt: Timestamp;
   updatedAt: Timestamp;

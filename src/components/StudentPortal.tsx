@@ -22,6 +22,7 @@ import { extractPhoneFromAuthEmail, isStudentPhoneEmail } from '../lib/phoneAuth
 import { parseVideoUrl } from '../lib/videoUtils';
 import type { ClassStream, PaymentMethod, RecordedClass } from '../types/portal';
 import { AdminStudio } from './AdminStudio';
+import { NoticeMediaViewer } from './NoticeMediaViewer';
 import { ChapterEmbeddedLab } from './ProjectileLab';
 
 interface StudentPortalProps {
@@ -1260,7 +1261,14 @@ export function StudentPortal({ preselectedClassId }: StudentPortalProps) {
                 <h2 className="font-display text-lg font-bold text-slate-100 mb-1.5">
                   {n.title}
                 </h2>
-                <p className="text-sm text-slate-300 leading-relaxed max-w-3xl">{n.body}</p>
+                {n.body && (
+                  <p className="text-sm text-slate-300 leading-relaxed max-w-3xl">{n.body}</p>
+                )}
+                <NoticeMediaViewer
+                  title={n.title}
+                  imageUrl={n.imageUrl}
+                  videoUrl={n.videoUrl}
+                />
               </article>
             ))
           )}

@@ -13,6 +13,7 @@ import {
 import { HSC28_PHYSICS_CHAPTERS } from '../data/hsc28Curriculum';
 import { usePortal } from '../context/PortalContext';
 import { CampusGallery } from './CampusGallery';
+import { NoticeMediaViewer } from './NoticeMediaViewer';
 import { ProjectileLab } from './ProjectileLab';
 import { ResilientImage } from './ResilientImage';
 
@@ -382,9 +383,16 @@ export function LandingShowcase({ onOpenPortal }: LandingShowcaseProps) {
                   <h3 className="font-display text-lg font-semibold text-slate-100 mb-1.5">
                     {notice.title}
                   </h3>
-                  <p className="text-sm text-slate-300 leading-relaxed max-w-3xl">
-                    {notice.body}
-                  </p>
+                  {notice.body && (
+                    <p className="text-sm text-slate-300 leading-relaxed max-w-3xl">
+                      {notice.body}
+                    </p>
+                  )}
+                  <NoticeMediaViewer
+                    title={notice.title}
+                    imageUrl={notice.imageUrl}
+                    videoUrl={notice.videoUrl}
+                  />
                 </article>
               ))
             )}

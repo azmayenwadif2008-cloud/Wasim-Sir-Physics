@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import {
   CheckCircle2,
   Database,
+  ImagePlus,
   KeyRound,
   Pencil,
   Plus,
@@ -18,8 +19,14 @@ import {
 import { HSC28_PHYSICS_CHAPTERS } from '../data/hsc28Curriculum';
 import { usePortal } from '../context/PortalContext';
 import { extractPhoneFromAuthEmail, formatAuthError } from '../lib/phoneAuth';
-import { parseVideoUrl } from '../lib/videoUtils';
+import {
+  compressNoticeImage,
+  parseVideoUrl,
+  sanitizeNoticeImageUrl,
+  sanitizeNoticeVideoUrl,
+} from '../lib/videoUtils';
 import type { Notice, NoticeAudience, NoticeCategory, RecordedClass } from '../types/portal';
+import { NoticeMediaViewer } from './NoticeMediaViewer';
 
 export function AdminStudio() {
   const {
@@ -66,6 +73,9 @@ export function AdminStudio() {
   const [noticeAudience, setNoticeAudience] = useState<NoticeAudience>('paid');
   const [noticePinned, setNoticePinned] = useState(false);
   const [noticeBody, setNoticeBody] = useState('');
+  const [noticeImageUrl, setNoticeImageUrl] = useState('');
+  const [noticeVideoUrl, setNoticeVideoUrl] = useState('');
+  const [uploadingNoticeImage, setUploadingNoticeImage] = useState(false);
 
   // Student form state
   const [studentAddMode, setStudentAddMode] = useState<'single' | 'bulk'>('single');
@@ -99,6 +109,8 @@ export function AdminStudio() {
     setEditingNoticeId(null);
     setNoticeTitle('');
     setNoticeBody('');
+    setNoticeImageUrl('');
+    setNoticeVideoUrl('');
     setNoticePinned(false);
     setNoticeCategory('Routine');
     setNoticeAudience('paid');
@@ -177,14 +189,48 @@ export function AdminStudio() {
     setNoticeAudience(n.audience);
     setNoticePinned(n.pinned);
     setNoticeBody(n.body);
+    setNoticeImageUrl(n.imageUrl ?? '');
+    setNoticeVideoUrl(n.videoUrl ?? '');
     setTab('notices');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleNoticePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setUploadingNoticeImage(true);
+    setErrorMsg(null);
+    try {
+      const compressed = await compressNoticeImage(file);
+      setNoticeImageUrl(compressed);
+      showToast('ছবি প্রস্তুত হয়েছে — এবার Publish Notice দিন।');
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : 'ছবি আপলোড করা যায়নি।');
+    } finally {
+      setUploadingNoticeImage(false);
+    }
+  };
+
   const handleSaveNotice = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!noticeTitle.trim() || !noticeBody.trim()) {
-      setErrorMsg('Notice title and message body are required.');
+    const hasMedia = Boolean(
+      sanitizeNoticeImageUrl(noticeImageUrl) || sanitizeNoticeVideoUrl(noticeVideoUrl),
+    );
+    if (!noticeTitle.trim()) {
+      setErrorMsg('Notice title is required.');
+      return;
+    }
+    if (!noticeBody.trim() && !hasMedia) {
+      setErrorMsg('নোটিশের বিবরণ লিখুন অথবা একটি ছবি/ভিডিও যুক্ত করুন।');
+      return;
+    }
+    if (noticeImageUrl.trim() && !sanitizeNoticeImageUrl(noticeImageUrl)) {
+      setErrorMsg('ছবির লিংকটি অবশ্যই https:// দিয়ে শুরু হতে হবে অথবা গ্যালারি থেকে আপলোড করুন।');
+      return;
+    }
+    if (noticeVideoUrl.trim() && !sanitizeNoticeVideoUrl(noticeVideoUrl)) {
+      setErrorMsg('ভিডিওর লিংকটি অবশ্যই https:// দিয়ে শুরু হতে হবে (YouTube, Shorts বা Google Drive)।');
       return;
     }
     setBusy(true);
@@ -195,6 +241,8 @@ export function AdminStudio() {
         category: noticeCategory,
         audience: noticeAudience,
         pinned: noticePinned,
+        imageUrl: noticeImageUrl,
+        videoUrl: noticeVideoUrl,
       };
       if (editingNoticeId) {
         await updateNotice(editingNoticeId, payload);
@@ -765,11 +813,10 @@ export function AdminStudio() {
 
             <div>
               <label className="block text-xs font-medium text-slate-300 mb-1">
-                Notice Details
+                Notice Details (ঐচ্ছিক যদি ছবি/ভিডিও দেন)
               </label>
               <textarea
-                required
-                rows={4}
+                rows={3}
                 maxLength={1200}
                 placeholder="Write clear instructions, exam time, or classroom notes..."
                 value={noticeBody}
@@ -778,9 +825,94 @@ export function AdminStudio() {
               />
             </div>
 
+            {/* Photo Attachment (Gallery Upload or URL) */}
+            <div className="p-3.5 rounded-lg border border-slate-800 bg-[#0B1118] space-y-2.5">
+              <div className="flex items-center justify-between gap-2">
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-200">
+                  <ImagePlus className="w-3.5 h-3.5 text-[#FBBF24]" />
+                  <span>নোটিশের ছবি (Photo)</span>
+                </span>
+                {noticeImageUrl && (
+                  <button
+                    type="button"
+                    onClick={() => setNoticeImageUrl('')}
+                    className="text-[11px] text-red-400 hover:text-red-300 cursor-pointer"
+                  >
+                    ছবি সরাও
+                  </button>
+                )}
+              </div>
+              <label className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-amber-200 bg-amber-950/40 hover:bg-amber-900/50 border border-amber-700/70 rounded-lg cursor-pointer transition-colors">
+                <ImagePlus className="w-3.5 h-3.5" />
+                <span>
+                  {uploadingNoticeImage
+                    ? 'ছবি প্রস্তুত হচ্ছে...'
+                    : 'ফোন / গ্যালারি থেকে ছবি আপলোড করো'}
+                </span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  disabled={uploadingNoticeImage || busy}
+                  onChange={handleNoticePhotoUpload}
+                  className="hidden"
+                />
+              </label>
+              <input
+                type="url"
+                placeholder="অথবা ছবির https:// লিংক দিন (Google Drive / Direct)"
+                value={noticeImageUrl.startsWith('data:image/') ? '' : noticeImageUrl}
+                onChange={(e) => setNoticeImageUrl(e.target.value)}
+                className={inputClass}
+              />
+            </div>
+
+            {/* Video Attachment (YouTube / Shorts / Google Drive / MP4 / Facebook) */}
+            <div className="p-3.5 rounded-lg border border-slate-800 bg-[#0B1118] space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-200">
+                  <Video className="w-3.5 h-3.5 text-sky-400" />
+                  <span>নোটিশের ভিডিও (Video Link)</span>
+                </span>
+                {noticeVideoUrl && (
+                  <button
+                    type="button"
+                    onClick={() => setNoticeVideoUrl('')}
+                    className="text-[11px] text-red-400 hover:text-red-300 cursor-pointer"
+                  >
+                    ভিডিও সরাও
+                  </button>
+                )}
+              </div>
+              <input
+                type="url"
+                maxLength={500}
+                placeholder="https://youtube.com/... বা Shorts / Drive / Facebook ভিডিও লিংক"
+                value={noticeVideoUrl}
+                onChange={(e) => setNoticeVideoUrl(e.target.value)}
+                className={inputClass}
+              />
+              <p className="text-[11px] text-slate-400">
+                YouTube, Shorts, Google Drive বা MP4 লিংক দিলে নোটিশের ভেতরেই ভিডিও চলবে।
+              </p>
+            </div>
+
+            {(sanitizeNoticeImageUrl(noticeImageUrl) || sanitizeNoticeVideoUrl(noticeVideoUrl)) && (
+              <div className="p-3 rounded-lg border border-slate-800 bg-[#080D14]">
+                <div className="text-[11px] font-mono text-slate-400 mb-1">
+                  মিডিয়া প্রিভিউ
+                </div>
+                <NoticeMediaViewer
+                  title={noticeTitle || 'Notice Preview'}
+                  imageUrl={noticeImageUrl}
+                  videoUrl={noticeVideoUrl}
+                  compact
+                />
+              </div>
+            )}
+
             <button
               type="submit"
-              disabled={busy}
+              disabled={busy || uploadingNoticeImage}
               className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] disabled:opacity-50 rounded-lg transition-colors cursor-pointer"
             >
               <Plus className="w-4 h-4" />
@@ -804,7 +936,7 @@ export function AdminStudio() {
             ) : (
               notices.map((n) => (
                 <div key={n.id} className="p-5 flex items-start justify-between gap-4">
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400 mb-1">
                       <span className="font-semibold text-sky-300">{n.category}</span>
                       <span aria-hidden="true">·</span>
@@ -815,9 +947,27 @@ export function AdminStudio() {
                           <span className="text-[#FBBF24] font-medium">Pinned</span>
                         </>
                       )}
+                      {n.imageUrl && (
+                        <>
+                          <span aria-hidden="true">·</span>
+                          <span className="text-amber-300 font-medium">Photo</span>
+                        </>
+                      )}
+                      {n.videoUrl && (
+                        <>
+                          <span aria-hidden="true">·</span>
+                          <span className="text-sky-300 font-medium">Video</span>
+                        </>
+                      )}
                     </div>
                     <div className="font-semibold text-sm text-slate-100">{n.title}</div>
-                    <p className="text-xs text-slate-400 mt-1">{n.body}</p>
+                    {n.body && <p className="text-xs text-slate-400 mt-1">{n.body}</p>}
+                    <NoticeMediaViewer
+                      title={n.title}
+                      imageUrl={n.imageUrl}
+                      videoUrl={n.videoUrl}
+                      compact
+                    />
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
                     <button

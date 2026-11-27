@@ -38,7 +38,11 @@ import {
   normalizeBdPhone,
   phoneToAuthEmail,
 } from '../lib/phoneAuth';
-import { slugifyId } from '../lib/videoUtils';
+import {
+  sanitizeNoticeImageUrl,
+  sanitizeNoticeVideoUrl,
+  slugifyId,
+} from '../lib/videoUtils';
 import type {
   ClassStream,
   Enrollment,
@@ -69,6 +73,8 @@ export interface NoticeInput {
   category: NoticeCategory;
   audience: NoticeAudience;
   pinned: boolean;
+  imageUrl?: string;
+  videoUrl?: string;
 }
 
 interface PortalContextValue {
@@ -708,6 +714,8 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
   const publishNotice = async (input: NoticeInput) => {
     if (!user || !isAdmin) throw new Error('Admin access required.');
     const noticeId = `${slugifyId(input.title).slice(0, 50)}-${Date.now().toString(36)}`;
+    const safeImageUrl = sanitizeNoticeImageUrl(input.imageUrl ?? '');
+    const safeVideoUrl = sanitizeNoticeVideoUrl(input.videoUrl ?? '');
     try {
       await setDoc(doc(db, 'notices', noticeId), {
         id: noticeId,
@@ -716,6 +724,8 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
         category: input.category,
         audience: input.audience,
         pinned: input.pinned,
+        imageUrl: safeImageUrl,
+        videoUrl: safeVideoUrl,
         authorUid: user.uid,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
@@ -727,6 +737,8 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
 
   const updateNotice = async (noticeId: string, input: NoticeInput) => {
     if (!user || !isAdmin) throw new Error('Admin access required.');
+    const safeImageUrl = sanitizeNoticeImageUrl(input.imageUrl ?? '');
+    const safeVideoUrl = sanitizeNoticeVideoUrl(input.videoUrl ?? '');
     try {
       await updateDoc(doc(db, 'notices', noticeId), {
         title: input.title.trim().slice(0, 140),
@@ -734,6 +746,8 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
         category: input.category,
         audience: input.audience,
         pinned: input.pinned,
+        imageUrl: safeImageUrl,
+        videoUrl: safeVideoUrl,
         updatedAt: serverTimestamp(),
       });
     } catch (error) {

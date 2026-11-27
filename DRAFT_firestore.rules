@@ -123,13 +123,15 @@ service cloud.firestore {
 
     function isValidNotice(data, noticeId) {
       return data.keys().hasAll(['id', 'title', 'body', 'category', 'audience', 'pinned', 'authorUid', 'createdAt', 'updatedAt'])
-        && data.keys().hasOnly(['id', 'title', 'body', 'category', 'audience', 'pinned', 'authorUid', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['id', 'title', 'body', 'category', 'audience', 'pinned', 'imageUrl', 'videoUrl', 'authorUid', 'createdAt', 'updatedAt'])
         && data.id == noticeId && isValidId(data.id)
         && data.title is string && data.title.size() >= 3 && data.title.size() <= 140
-        && data.body is string && data.body.size() >= 5 && data.body.size() <= 1200
+        && data.body is string && data.body.size() <= 1200
         && data.category in ['Routine', 'Exam', 'Class Update', 'General']
         && data.audience in ['public', 'paid']
         && data.pinned is bool
+        && (!('imageUrl' in data) || (data.imageUrl is string && data.imageUrl.size() <= 500000 && (data.imageUrl == '' || data.imageUrl.matches('^https://.*') || data.imageUrl.matches('^data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$'))))
+        && (!('videoUrl' in data) || (data.videoUrl is string && data.videoUrl.size() <= 500 && (data.videoUrl == '' || data.videoUrl.matches('^https://.*'))))
         && isValidId(data.authorUid)
         && data.createdAt is timestamp
         && data.updatedAt is timestamp;
@@ -261,7 +263,7 @@ service cloud.firestore {
         && incoming().authorUid == existing().authorUid
         && incoming().createdAt == existing().createdAt
         && incoming().updatedAt == request.time
-        && incoming().diff(existing()).affectedKeys().hasOnly(['title', 'body', 'category', 'audience', 'pinned', 'updatedAt']);
+        && incoming().diff(existing()).affectedKeys().hasOnly(['title', 'body', 'category', 'audience', 'pinned', 'imageUrl', 'videoUrl', 'updatedAt']);
       allow delete: if isAdmin() && isValidId(noticeId);
     }
   }

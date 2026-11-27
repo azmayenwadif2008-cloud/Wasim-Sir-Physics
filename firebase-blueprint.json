@@ -283,7 +283,7 @@
         },
         "body": {
           "type": "string",
-          "minLength": 5,
+          "minLength": 0,
           "maxLength": 1200
         },
         "category": {
@@ -296,6 +296,14 @@
         },
         "pinned": {
           "type": "boolean"
+        },
+        "imageUrl": {
+          "type": "string",
+          "maxLength": 500000
+        },
+        "videoUrl": {
+          "type": "string",
+          "maxLength": 500
         },
         "authorUid": {
           "type": "string",
