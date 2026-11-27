@@ -40,13 +40,13 @@ import { NoticeMediaViewer } from './NoticeMediaViewer';
 
 export function AdminStudio() {
   const {
-    user,
-    classes,
-    notices,
+    adminUser: user,
+    adminClasses: classes,
+    adminNotices: notices,
     allEnrollments,
     allRequests,
     allResults,
-    fetchClassStream,
+    fetchAdminClassStream: fetchClassStream,
     publishRecordedClass,
     updateRecordedClass,
     removeRecordedClass,

@@ -29,10 +29,13 @@ function getBanglaGrade(percent: number): { label: string; colorClass: string } 
   return { label: 'অকৃতকার্য', colorClass: 'text-red-300 bg-red-950/60 border-red-800/70' };
 }
 
-export function StudentProfileResults() {
+interface StudentProfileResultsProps {
+  isAdminPreview?: boolean;
+}
+
+export function StudentProfileResults({ isAdminPreview = false }: StudentProfileResultsProps) {
   const {
     user,
-    isAdmin,
     myEnrollment,
     myResults,
     classes,
@@ -139,7 +142,7 @@ export function StudentProfileResults() {
 
   return (
     <div className="space-y-8">
-      {isAdmin && !myEnrollment && (
+      {isAdminPreview && !myEnrollment && (
         <div className="p-4 rounded-xl border border-sky-800/70 bg-sky-950/40 text-xs text-sky-200 flex items-center gap-2.5">
           <ShieldCheck className="w-4 h-4 text-sky-300 shrink-0" />
           <span>

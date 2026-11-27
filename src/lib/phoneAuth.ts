@@ -52,10 +52,16 @@ export function formatAuthError(error: unknown): {
       needsProviderEnable: true,
     };
   }
+  if (code === 'auth/invalid-email') {
+    return {
+      message: 'সঠিক Gmail অথবা ইমেইল ঠিকানা লিখুন।',
+      needsProviderEnable: false,
+    };
+  }
   if (code === 'auth/email-already-in-use') {
     return {
       message:
-        'এই মোবাইল নাম্বার বা ইমেইল দিয়ে আগেই একাউন্ট তৈরি আছে। Login ট্যাবে গিয়ে নাম্বার ও পাসওয়ার্ড দিয়ে লগইন করুন।',
+        'এই Gmail বা মোবাইল নাম্বার দিয়ে আগেই একাউন্ট তৈরি আছে। লগইন ট্যাবে গিয়ে লগইন করুন অথবা পাসওয়ার্ড রিসেট করুন।',
       needsProviderEnable: false,
     };
   }
@@ -65,7 +71,7 @@ export function formatAuthError(error: unknown): {
     code === 'auth/user-not-found'
   ) {
     return {
-      message: 'মোবাইল নাম্বার/ইমেইল অথবা পাসওয়ার্ড সঠিক নয়।',
+      message: 'মোবাইল নাম্বার/Gmail অথবা পাসওয়ার্ড সঠিক নয়।',
       needsProviderEnable: false,
     };
   }
@@ -75,9 +81,16 @@ export function formatAuthError(error: unknown): {
       needsProviderEnable: false,
     };
   }
+  if (code === 'auth/requires-recent-login') {
+    return {
+      message:
+        'নিরাপত্তার জন্য আবার লগইন করে তারপর চেষ্টা করুন।',
+      needsProviderEnable: false,
+    };
+  }
   if (code === 'auth/too-many-requests') {
     return {
-      message: 'অনেকবার ভুল চেষ্টা করা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।',
+      message: 'অনেকবার চেষ্টা করা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।',
       needsProviderEnable: false,
     };
   }

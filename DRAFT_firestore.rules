@@ -7,7 +7,7 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
-    // --- Phase 3: Global Primitives ---
+    // --- Global Primitives ---
     function incoming() {
       return request.resource.data;
     }
@@ -24,6 +24,16 @@ service cloud.firestore {
       return isSignedIn()
         && request.auth.token.email is string
         && request.auth.token.email_verified == true;
+    }
+
+    function isStudentPhoneEmail() {
+      return isSignedIn()
+        && request.auth.token.email is string
+        && request.auth.token.email.lower().matches('^01[0-9]{9}@student\\.wasimsirphysics\\.app$');
+    }
+
+    function isVerifiedAccount() {
+      return isVerifiedEmail() || isStudentPhoneEmail();
     }
 
     function isValidId(id) {
@@ -48,7 +58,7 @@ service cloud.firestore {
     }
 
     function isPaidStudent() {
-      return isVerifiedEmail()
+      return isVerifiedAccount()
         && exists(/databases/$(database)/documents/enrollments/$(request.auth.token.email.lower()))
         && get(/databases/$(database)/documents/enrollments/$(request.auth.token.email.lower())).data.status == 'active';
     }
@@ -65,7 +75,7 @@ service cloud.firestore {
 
     function isValidEnrollment(data, emailKey) {
       return data.keys().hasAll(['email', 'studentName', 'batch', 'status', 'addedByUid', 'createdAt', 'updatedAt'])
-        && data.keys().hasOnly(['email', 'studentName', 'batch', 'rollNumber', 'college', 'phone', 'status', 'addedByUid', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['email', 'studentName', 'batch', 'rollNumber', 'college', 'phone', 'guardianPhone', 'sectionTime', 'sscGpa', 'address', 'photoUrl', 'status', 'addedByUid', 'createdAt', 'updatedAt'])
         && data.email is string && data.email.lower() == emailKey && data.email.size() <= 128
         && data.studentName is string && data.studentName.size() >= 1 && data.studentName.size() <= 100
         && data.batch == 'HSC-28'
@@ -74,20 +84,25 @@ service cloud.firestore {
         && (!('rollNumber' in data) || (data.rollNumber is string && data.rollNumber.size() <= 32))
         && (!('college' in data) || (data.college is string && data.college.size() <= 120))
         && (!('phone' in data) || (data.phone is string && data.phone.size() <= 24))
+        && (!('guardianPhone' in data) || (data.guardianPhone is string && data.guardianPhone.size() <= 24))
+        && (!('sectionTime' in data) || (data.sectionTime is string && data.sectionTime.size() <= 80))
+        && (!('sscGpa' in data) || (data.sscGpa is string && data.sscGpa.size() <= 40))
+        && (!('address' in data) || (data.address is string && data.address.size() <= 200))
+        && (!('photoUrl' in data) || (data.photoUrl is string && data.photoUrl.size() <= 300000 && (data.photoUrl == '' || data.photoUrl.matches('^https://.*') || data.photoUrl.matches('^data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$'))))
         && data.createdAt is timestamp
         && data.updatedAt is timestamp;
     }
 
     function isValidEnrollmentRequest(data) {
-      return data.keys().hasAll(['uid', 'email', 'studentName', 'college', 'phone', 'paymentMethod', 'transactionId', 'status', 'createdAt', 'updatedAt'])
+      return data.keys().hasAll(['uid', 'email', 'studentName', 'phone', 'status', 'createdAt', 'updatedAt'])
         && data.keys().hasOnly(['uid', 'email', 'studentName', 'college', 'phone', 'paymentMethod', 'transactionId', 'status', 'createdAt', 'updatedAt'])
         && isValidId(data.uid)
         && data.email is string && data.email.size() >= 5 && data.email.size() <= 128
         && data.studentName is string && data.studentName.size() >= 2 && data.studentName.size() <= 100
-        && data.college is string && data.college.size() >= 2 && data.college.size() <= 120
         && data.phone is string && data.phone.size() >= 6 && data.phone.size() <= 24
-        && data.paymentMethod in ['bKash', 'Nagad', 'Rocket', 'Hand-to-Hand']
-        && data.transactionId is string && data.transactionId.size() >= 3 && data.transactionId.size() <= 64
+        && (!('college' in data) || (data.college is string && data.college.size() <= 120))
+        && (!('paymentMethod' in data) || data.paymentMethod in ['bKash', 'Nagad', 'Rocket', 'Hand-to-Hand', 'Registration'])
+        && (!('transactionId' in data) || (data.transactionId is string && data.transactionId.size() <= 64))
         && data.status in ['pending', 'approved', 'rejected']
         && data.createdAt is timestamp
         && data.updatedAt is timestamp;
@@ -132,14 +147,83 @@ service cloud.firestore {
         && data.pinned is bool
         && (!('imageUrl' in data) || (data.imageUrl is string && data.imageUrl.size() <= 500000 && (data.imageUrl == '' || data.imageUrl.matches('^https://.*') || data.imageUrl.matches('^data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$'))))
         && (!('videoUrl' in data) || (data.videoUrl is string && data.videoUrl.size() <= 500 && (data.videoUrl == '' || data.videoUrl.matches('^https://.*'))))
+        && data.authorUid is string && isValidId(data.authorUid)
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidLectureProgress(data, uid, classId) {
+      return data.keys().hasAll(['uid', 'classId', 'completed', 'updatedAt'])
+        && data.keys().hasOnly(['uid', 'classId', 'completed', 'updatedAt'])
+        && data.uid == uid && isValidId(data.uid)
+        && data.classId == classId && isValidId(data.classId)
+        && data.completed is bool
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidStudentResult(data, resultId) {
+      return data.keys().hasAll(['id', 'studentEmail', 'studentName', 'examTitle', 'examDate', 'obtainedMarks', 'totalMarks', 'authorUid', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['id', 'studentEmail', 'studentName', 'rollNumber', 'examTitle', 'chapterNumber', 'examDate', 'cqMarks', 'mcqMarks', 'obtainedMarks', 'totalMarks', 'highestMarks', 'meritRank', 'remarks', 'authorUid', 'createdAt', 'updatedAt'])
+        && data.id == resultId && isValidId(data.id)
+        && isValidEmailKey(data.studentEmail)
+        && data.studentName is string && data.studentName.size() >= 1 && data.studentName.size() <= 100
+        && (!('rollNumber' in data) || (data.rollNumber is string && data.rollNumber.size() <= 32))
+        && data.examTitle is string && data.examTitle.size() >= 2 && data.examTitle.size() <= 140
+        && (!('chapterNumber' in data) || (data.chapterNumber is int && data.chapterNumber >= 0 && data.chapterNumber <= 20))
+        && data.examDate is string && data.examDate.size() >= 4 && data.examDate.size() <= 32
+        && (!('cqMarks' in data) || (data.cqMarks is number && data.cqMarks >= 0 && data.cqMarks <= 500))
+        && (!('mcqMarks' in data) || (data.mcqMarks is number && data.mcqMarks >= 0 && data.mcqMarks <= 500))
+        && data.obtainedMarks is number && data.obtainedMarks >= 0 && data.obtainedMarks <= 500
+        && data.totalMarks is number && data.totalMarks >= 1 && data.totalMarks <= 500
+        && data.obtainedMarks <= data.totalMarks
+        && (!('highestMarks' in data) || (data.highestMarks is number && data.highestMarks >= 0 && data.highestMarks <= 500))
+        && (!('meritRank' in data) || (data.meritRank is string && data.meritRank.size() <= 40))
+        && (!('remarks' in data) || (data.remarks is string && data.remarks.size() <= 500))
         && isValidId(data.authorUid)
         && data.createdAt is timestamp
         && data.updatedAt is timestamp;
     }
 
+    function isValidPhoneLoginAlias(data) {
+      return data.keys().hasAll(['uid', 'ciphertext', 'iv', 'updatedAt'])
+        && data.keys().hasOnly(['uid', 'ciphertext', 'iv', 'updatedAt'])
+        && isValidId(data.uid)
+        && data.ciphertext is string && data.ciphertext.size() >= 16 && data.ciphertext.size() <= 512
+        && data.iv is string && data.iv.size() >= 12 && data.iv.size() <= 64
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidPhoneMigrationClaim(data, uid) {
+      return data.keys().hasAll(['uid', 'phoneEmail', 'targetEmail', 'createdAt'])
+        && data.keys().hasOnly(['uid', 'phoneEmail', 'targetEmail', 'createdAt'])
+        && data.uid == uid && isValidId(data.uid)
+        && data.phoneEmail is string && data.phoneEmail.matches('^01[0-9]{9}@student\\.wasimsirphysics\\.app$')
+        && isValidEmailKey(data.targetEmail)
+        && !data.targetEmail.matches('^01[0-9]{9}@student\\.wasimsirphysics\\.app$')
+        && data.createdAt is timestamp;
+    }
+
+    function canMigrateActiveEnrollment(emailKey, data) {
+      return isVerifiedEmail()
+        && request.auth.token.email.lower() == emailKey
+        && exists(/databases/$(database)/documents/phoneMigrationClaims/$(request.auth.uid))
+        && get(/databases/$(database)/documents/phoneMigrationClaims/$(request.auth.uid)).data.targetEmail == emailKey
+        && exists(/databases/$(database)/documents/enrollments/$(get(/databases/$(database)/documents/phoneMigrationClaims/$(request.auth.uid)).data.phoneEmail))
+        && get(/databases/$(database)/documents/enrollments/$(get(/databases/$(database)/documents/phoneMigrationClaims/$(request.auth.uid)).data.phoneEmail)).data.status == 'active'
+        && data.status == 'active'
+        && data.addedByUid == get(/databases/$(database)/documents/enrollments/$(get(/databases/$(database)/documents/phoneMigrationClaims/$(request.auth.uid)).data.phoneEmail)).data.addedByUid
+        && (
+          (!('rollNumber' in get(/databases/$(database)/documents/enrollments/$(get(/databases/$(database)/documents/phoneMigrationClaims/$(request.auth.uid)).data.phoneEmail)).data) && !('rollNumber' in data))
+          || (
+            'rollNumber' in get(/databases/$(database)/documents/enrollments/$(get(/databases/$(database)/documents/phoneMigrationClaims/$(request.auth.uid)).data.phoneEmail)).data
+            && 'rollNumber' in data
+            && data.rollNumber == get(/databases/$(database)/documents/enrollments/$(get(/databases/$(database)/documents/phoneMigrationClaims/$(request.auth.uid)).data.phoneEmail)).data.rollNumber
+          )
+        );
+    }
+
     // --- Collection Rules ---
 
-    // 1. Admins
     match /admins/{uid} {
       allow get: if isSignedIn() && isValidId(uid) && (request.auth.uid == uid || isAdmin());
       allow list: if isAdmin();
@@ -152,32 +236,49 @@ service cloud.firestore {
       allow delete: if isAdmin() && isValidId(uid);
     }
 
-    // 2. Paid Student Enrollments (PII Isolated)
     match /enrollments/{emailKey} {
       allow get: if isValidEmailKey(emailKey) && (
-        isAdmin() || (isVerifiedEmail() && request.auth.token.email.lower() == emailKey)
+        isAdmin()
+        || (isVerifiedAccount() && request.auth.token.email.lower() == emailKey)
+        || (
+          isVerifiedEmail()
+          && exists(/databases/$(database)/documents/phoneMigrationClaims/$(request.auth.uid))
+          && get(/databases/$(database)/documents/phoneMigrationClaims/$(request.auth.uid)).data.phoneEmail == emailKey
+        )
       );
       allow list: if isAdmin();
-      allow create: if isAdmin() && isValidEmailKey(emailKey)
+      allow create: if isValidEmailKey(emailKey)
         && isValidEnrollment(incoming(), emailKey)
-        && incoming().addedByUid == request.auth.uid
         && incoming().createdAt == request.time
-        && incoming().updatedAt == request.time;
-      allow update: if isAdmin() && isValidEmailKey(emailKey)
+        && incoming().updatedAt == request.time
+        && (
+          (isAdmin() && incoming().addedByUid == request.auth.uid)
+          || canMigrateActiveEnrollment(emailKey, incoming())
+        );
+      allow update: if isValidEmailKey(emailKey)
         && isValidEnrollment(incoming(), emailKey)
         && incoming().email == existing().email
+        && incoming().batch == existing().batch
         && incoming().addedByUid == existing().addedByUid
         && incoming().createdAt == existing().createdAt
         && incoming().updatedAt == request.time
-        && incoming().diff(existing()).affectedKeys().hasOnly(['studentName', 'rollNumber', 'college', 'phone', 'status', 'updatedAt']);
+        && (
+          (isAdmin() && incoming().diff(existing()).affectedKeys().hasOnly(['studentName', 'rollNumber', 'college', 'phone', 'guardianPhone', 'sectionTime', 'sscGpa', 'address', 'photoUrl', 'status', 'updatedAt']))
+          || (
+            isVerifiedAccount()
+            && request.auth.token.email.lower() == emailKey
+            && existing().status == 'active'
+            && incoming().status == existing().status
+            && incoming().diff(existing()).affectedKeys().hasOnly(['studentName', 'college', 'phone', 'guardianPhone', 'sscGpa', 'address', 'photoUrl', 'updatedAt'])
+          )
+        );
       allow delete: if isAdmin() && isValidEmailKey(emailKey);
     }
 
-    // 3. Payment Verification Requests
     match /enrollmentRequests/{uid} {
       allow get: if isValidId(uid) && (isAdmin() || (isSignedIn() && request.auth.uid == uid));
       allow list: if isAdmin() || (isSignedIn() && resource.data.uid == request.auth.uid);
-      allow create: if isVerifiedEmail() && isValidId(uid)
+      allow create: if isVerifiedAccount() && isValidId(uid)
         && request.auth.uid == uid
         && isValidEnrollmentRequest(incoming())
         && incoming().uid == request.auth.uid
@@ -185,30 +286,76 @@ service cloud.firestore {
         && incoming().status == 'pending'
         && incoming().createdAt == request.time
         && incoming().updatedAt == request.time;
-      allow update: if isVerifiedEmail() && isValidId(uid)
+      allow update: if isVerifiedAccount() && isValidId(uid)
         && isValidEnrollmentRequest(incoming())
         && incoming().uid == existing().uid
-        && incoming().email == existing().email
         && incoming().createdAt == existing().createdAt
         && incoming().updatedAt == request.time
         && (
-          (isAdmin() && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt']))
+          (
+            isAdmin()
+            && incoming().email == existing().email
+            && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt'])
+          )
           || (
             request.auth.uid == uid
+            && incoming().email == existing().email
             && existing().status == 'pending'
             && incoming().status == 'pending'
             && incoming().diff(existing()).affectedKeys().hasOnly(['studentName', 'college', 'phone', 'paymentMethod', 'transactionId', 'updatedAt'])
+          )
+          || (
+            isVerifiedEmail()
+            && request.auth.uid == uid
+            && incoming().email == request.auth.token.email.lower()
+            && incoming().status == existing().status
+            && exists(/databases/$(database)/documents/phoneMigrationClaims/$(request.auth.uid))
+            && get(/databases/$(database)/documents/phoneMigrationClaims/$(request.auth.uid)).data.phoneEmail == existing().email
+            && incoming().diff(existing()).affectedKeys().hasOnly(['email', 'updatedAt'])
           )
         );
       allow delete: if isAdmin() && isValidId(uid);
     }
 
-    // 4. Recorded Classes Catalog (Safe Syllabus Metadata)
+    match /phoneLoginAliases/{aliasId} {
+      allow get: if isValidId(aliasId) && aliasId.matches('^[a-f0-9]{64}$');
+      allow list: if false;
+      allow create: if isSignedIn() && isValidId(aliasId)
+        && aliasId.matches('^[a-f0-9]{64}$')
+        && isValidPhoneLoginAlias(incoming())
+        && incoming().uid == request.auth.uid
+        && incoming().updatedAt == request.time;
+      allow update: if isSignedIn() && isValidId(aliasId)
+        && aliasId.matches('^[a-f0-9]{64}$')
+        && isValidPhoneLoginAlias(incoming())
+        && incoming().uid == existing().uid
+        && incoming().uid == request.auth.uid
+        && incoming().updatedAt == request.time;
+      allow delete: if isAdmin() || (isSignedIn() && isValidId(aliasId) && existing().uid == request.auth.uid);
+    }
+
+    match /phoneMigrationClaims/{uid} {
+      allow get: if isValidId(uid) && (isAdmin() || (isSignedIn() && request.auth.uid == uid));
+      allow list: if isAdmin();
+      allow create: if isStudentPhoneEmail() && isValidId(uid)
+        && request.auth.uid == uid
+        && isValidPhoneMigrationClaim(incoming(), uid)
+        && incoming().phoneEmail == request.auth.token.email.lower()
+        && incoming().createdAt == request.time;
+      allow update: if isStudentPhoneEmail() && isValidId(uid)
+        && request.auth.uid == uid
+        && isValidPhoneMigrationClaim(incoming(), uid)
+        && incoming().uid == existing().uid
+        && incoming().phoneEmail == existing().phoneEmail
+        && incoming().createdAt == existing().createdAt;
+      allow delete: if isAdmin() || (isSignedIn() && isValidId(uid) && request.auth.uid == uid);
+    }
+
     match /classes/{classId} {
       allow get: if isValidId(classId) && (
-        existing().isFreePreview == true || isPaidStudent() || isAdmin()
+        isAdmin() || existing().isFreePreview == true || isPaidStudent()
       );
-      allow list: if resource.data.isFreePreview == true || isPaidStudent() || isAdmin();
+      allow list: if isAdmin() || resource.data.isFreePreview == true || isPaidStudent();
       allow create: if isAdmin() && isValidId(classId)
         && isValidRecordedClass(incoming(), classId)
         && incoming().authorUid == request.auth.uid
@@ -224,10 +371,9 @@ service cloud.firestore {
       allow delete: if isAdmin() && isValidId(classId);
     }
 
-    // 5. Protected Class Streams (Video Embeds & Handwritten Note Links)
     match /classStreams/{classId} {
       allow get: if isValidId(classId) && (
-        existing().isFreePreview == true || isPaidStudent() || isAdmin()
+        isAdmin() || existing().isFreePreview == true || isPaidStudent()
       );
       allow list: if isAdmin();
       allow create: if isAdmin() && isValidId(classId)
@@ -246,12 +392,11 @@ service cloud.firestore {
       allow delete: if isAdmin() && isValidId(classId);
     }
 
-    // 6. Academic Notices
     match /notices/{noticeId} {
       allow get: if isValidId(noticeId) && (
-        existing().audience == 'public' || isPaidStudent() || isAdmin()
+        isAdmin() || existing().audience == 'public' || isPaidStudent()
       );
-      allow list: if resource.data.audience == 'public' || isPaidStudent() || isAdmin();
+      allow list: if isAdmin() || resource.data.audience == 'public' || isPaidStudent();
       allow create: if isAdmin() && isValidId(noticeId)
         && isValidNotice(incoming(), noticeId)
         && incoming().authorUid == request.auth.uid
@@ -265,6 +410,62 @@ service cloud.firestore {
         && incoming().updatedAt == request.time
         && incoming().diff(existing()).affectedKeys().hasOnly(['title', 'body', 'category', 'audience', 'pinned', 'imageUrl', 'videoUrl', 'updatedAt']);
       allow delete: if isAdmin() && isValidId(noticeId);
+    }
+
+    match /studentProgress/{uid}/lectures/{classId} {
+      allow get: if isVerifiedAccount() && isValidId(uid) && isValidId(classId) && request.auth.uid == uid;
+      allow list: if isVerifiedAccount() && isValidId(uid) && request.auth.uid == uid;
+      allow create: if isVerifiedAccount() && isValidId(uid) && isValidId(classId)
+        && request.auth.uid == uid
+        && isValidLectureProgress(incoming(), uid, classId)
+        && exists(/databases/$(database)/documents/classes/$(classId))
+        && incoming().updatedAt == request.time;
+      allow update: if isVerifiedAccount() && isValidId(uid) && isValidId(classId)
+        && request.auth.uid == uid
+        && isValidLectureProgress(incoming(), uid, classId)
+        && incoming().uid == existing().uid
+        && incoming().classId == existing().classId
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly(['completed', 'updatedAt']);
+      allow delete: if isVerifiedAccount() && isValidId(uid) && isValidId(classId) && request.auth.uid == uid;
+    }
+
+    match /studentResults/{resultId} {
+      allow get: if isValidId(resultId) && (
+        isAdmin() || (
+          isVerifiedAccount() && (
+            existing().studentEmail == request.auth.token.email.lower()
+            || (
+              exists(/databases/$(database)/documents/phoneMigrationClaims/$(request.auth.uid))
+              && existing().studentEmail == get(/databases/$(database)/documents/phoneMigrationClaims/$(request.auth.uid)).data.phoneEmail
+            )
+          )
+        )
+      );
+      allow list: if isAdmin() || (
+        isVerifiedAccount() && (
+          resource.data.studentEmail == request.auth.token.email.lower()
+          || (
+            exists(/databases/$(database)/documents/phoneMigrationClaims/$(request.auth.uid))
+            && resource.data.studentEmail == get(/databases/$(database)/documents/phoneMigrationClaims/$(request.auth.uid)).data.phoneEmail
+          )
+        )
+      );
+      allow create: if isAdmin() && isValidId(resultId)
+        && isValidStudentResult(incoming(), resultId)
+        && exists(/databases/$(database)/documents/enrollments/$(incoming().studentEmail))
+        && incoming().authorUid == request.auth.uid
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isAdmin() && isValidId(resultId)
+        && isValidStudentResult(incoming(), resultId)
+        && incoming().id == existing().id
+        && incoming().studentEmail == existing().studentEmail
+        && incoming().authorUid == existing().authorUid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly(['studentName', 'rollNumber', 'examTitle', 'chapterNumber', 'examDate', 'cqMarks', 'mcqMarks', 'obtainedMarks', 'totalMarks', 'highestMarks', 'meritRank', 'remarks', 'updatedAt']);
+      allow delete: if isAdmin() && isValidId(resultId);
     }
   }
 }

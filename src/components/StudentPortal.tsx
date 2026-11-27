@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
+  ArrowLeft,
   Award,
   Bell,
   BookOpen,
@@ -12,6 +13,7 @@ import {
   KeyRound,
   Lock,
   LogOut,
+  Mail,
   MessageCircle,
   Phone,
   Play,
@@ -39,11 +41,13 @@ interface StudentPortalProps {
 
 export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPortalProps) {
   const {
+    // Student & public track
     user,
     authReady,
-    isAdmin,
     isPaidStudent,
-    needsAdminEmailVerification,
+    needsLegacyGmailLink,
+    legacyMigrationClaimEmail,
+    needsStudentEmailVerification,
     myEnrollment,
     myRequest,
     myResults,
@@ -56,37 +60,66 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
     needsEmailProviderEnable,
     clearAuthFeedback,
     signInWithGoogle,
-    registerStudentWithPhone,
-    loginStudentWithPhone,
-    loginAdminWithEmailPassword,
-    registerAdminWithEmailPassword,
-    resendAdminVerification,
-    refreshVerifiedSession,
+    registerStudentAccount,
+    loginStudentWithIdentifier,
+    linkLegacyStudentGmail,
+    sendStudentPasswordReset,
+    verifyStudentPasswordResetCode,
+    confirmStudentPasswordReset,
+    resendStudentVerification,
+    refreshStudentVerifiedSession,
     logout,
     fetchClassStream,
     toggleLectureCompleted,
     submitEnrollmentRequest,
+    // Admin isolated track
+    adminUser,
+    adminAuthReady,
+    isAdmin,
+    needsAdminEmailVerification,
+    adminAuthError,
+    adminNeedsEmailProviderEnable,
+    clearAdminAuthFeedback,
+    signInAdminWithGoogle,
+    loginAdminWithEmailPassword,
+    registerAdminWithEmailPassword,
+    resendAdminVerification,
+    refreshVerifiedSession,
+    logoutAdmin,
   } = usePortal();
 
-  // Auth screen state
-  const [authRoleTab, setAuthRoleTab] = useState<'student' | 'admin'>(
+  // Panel switcher state: independent sessions for Student Panel vs Admin Panel
+  const [panelMode, setPanelMode] = useState<'student' | 'admin'>(
     authRoleRequest?.role ?? 'student',
   );
-  const [studentAuthMode, setStudentAuthMode] = useState<'login' | 'register'>('login');
+  const [studentAuthMode, setStudentAuthMode] = useState<'login' | 'register' | 'forgot'>('login');
   const [adminAuthMode, setAdminAuthMode] = useState<'login' | 'setup'>('login');
 
+  const [studentIdentifier, setStudentIdentifier] = useState('');
   const [studentPhone, setStudentPhone] = useState('');
+  const [studentEmail, setStudentEmail] = useState('');
   const [studentPass, setStudentPass] = useState('');
   const [showStudentPass, setShowStudentPass] = useState(false);
   const [studentRegName, setStudentRegName] = useState('');
+  const [resetEmailInput, setResetEmailInput] = useState('');
+  const [resetSentEmail, setResetSentEmail] = useState<string | null>(null);
+  const [studentVerifSent, setStudentVerifSent] = useState(false);
+  const [studentVerifCheckNote, setStudentVerifCheckNote] = useState<string | null>(null);
+  const [urlResetCode, setUrlResetCode] = useState<string | null>(null);
+  const [urlResetEmail, setUrlResetEmail] = useState<string | null>(null);
+  const [urlResetNewPass, setUrlResetNewPass] = useState('');
+  const [urlResetDone, setUrlResetDone] = useState(false);
+  const [legacyGmailInput, setLegacyGmailInput] = useState('');
+  const [legacyCurrentPass, setLegacyCurrentPass] = useState('');
+  const [showLegacyPass, setShowLegacyPass] = useState(false);
+  const [legacyLinkMessage, setLegacyLinkMessage] = useState<string | null>(null);
   const [adminEmailInput, setAdminEmailInput] = useState('');
   const [adminPassInput, setAdminPassInput] = useState('');
   const [showAdminPass, setShowAdminPass] = useState(false);
   const [authBusy, setAuthBusy] = useState(false);
 
-  // Portal workspace state
-  const [portalTab, setPortalTab] = useState<'classroom' | 'notices' | 'profile' | 'studio'>('classroom');
-  const [adminDefaulted, setAdminDefaulted] = useState(false);
+  // Student workspace state
+  const [portalTab, setPortalTab] = useState<'classroom' | 'notices' | 'profile'>('classroom');
   const [selectedClass, setSelectedClass] = useState<RecordedClass | null>(null);
   const [activeStream, setActiveStream] = useState<ClassStream | null>(null);
   const [loadingStream, setLoadingStream] = useState(false);
@@ -106,18 +139,24 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
   const [verificationSentNote, setVerificationSentNote] = useState(false);
   const [verificationCheckNote, setVerificationCheckNote] = useState<string | null>(null);
 
-  const hasVaultAccess = isAdmin || isPaidStudent;
+  const hasVaultAccess = isPaidStudent;
 
   useEffect(() => {
     if (authRoleRequest && authRoleRequest.seq > 0) {
-      setAuthRoleTab(authRoleRequest.role);
+      setPanelMode(authRoleRequest.role);
       clearAuthFeedback();
-      if (isAdmin && !preselectedClassId) {
-        setPortalTab(authRoleRequest.role === 'admin' ? 'studio' : 'classroom');
-        setAdminDefaulted(true);
+      clearAdminAuthFeedback();
+      if (preselectedClassId && authRoleRequest.role === 'student') {
+        setPortalTab('classroom');
       }
     }
-  }, [authRoleRequest?.seq, authRoleRequest?.role, isAdmin, preselectedClassId, clearAuthFeedback]);
+  }, [
+    authRoleRequest?.seq,
+    authRoleRequest?.role,
+    preselectedClassId,
+    clearAuthFeedback,
+    clearAdminAuthFeedback,
+  ]);
 
   useEffect(() => {
     if (!user) return;
@@ -138,18 +177,23 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
   useEffect(() => {
     if (!user) {
       setPortalTab('classroom');
-      setAdminDefaulted(false);
-      return;
     }
-    if (isAdmin && !adminDefaulted && !preselectedClassId) {
-      setPortalTab(authRoleRequest?.role === 'student' ? 'classroom' : 'studio');
-      setAdminDefaulted(true);
+  }, [user]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const mode = params.get('mode');
+    const oobCode = params.get('oobCode');
+    if (mode === 'resetPassword' && oobCode) {
+      setUrlResetCode(oobCode);
+      void verifyStudentPasswordResetCode(oobCode)
+        .then((email) => setUrlResetEmail(email))
+        .catch(() => {
+          setUrlResetCode(null);
+        });
     }
-    if (!isAdmin) {
-      setAdminDefaulted(false);
-      setPortalTab((prev) => (prev === 'studio' ? 'classroom' : prev));
-    }
-  }, [user, isAdmin, adminDefaulted, preselectedClassId, authRoleRequest?.role]);
+  }, [verifyStudentPasswordResetCode]);
 
   useEffect(() => {
     if (classes.length === 0) {
@@ -219,16 +263,60 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
   const handleStudentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthBusy(true);
+    setResetSentEmail(null);
     try {
       if (studentAuthMode === 'register') {
-        await registerStudentWithPhone({
+        await registerStudentAccount({
           studentName: studentRegName,
           phone: studentPhone,
+          email: studentEmail,
           password: studentPass,
         });
+      } else if (studentAuthMode === 'forgot') {
+        await sendStudentPasswordReset(resetEmailInput);
+        setResetSentEmail(resetEmailInput.trim().toLowerCase());
       } else {
-        await loginStudentWithPhone(studentPhone, studentPass);
+        await loginStudentWithIdentifier(studentIdentifier, studentPass);
       }
+    } catch {
+      // Error surfaced via authError
+    } finally {
+      setAuthBusy(false);
+    }
+  };
+
+  const handleConfirmUrlPasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!urlResetCode) return;
+    setAuthBusy(true);
+    try {
+      await confirmStudentPasswordReset(urlResetCode, urlResetNewPass);
+      setUrlResetDone(true);
+      setUrlResetCode(null);
+      setStudentAuthMode('login');
+      if (urlResetEmail) {
+        setStudentIdentifier(urlResetEmail);
+      }
+      if (typeof window !== 'undefined') {
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    } catch {
+      // Error surfaced via authError
+    } finally {
+      setAuthBusy(false);
+    }
+  };
+
+  const handleLegacyGmailLinkSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthBusy(true);
+    setLegacyLinkMessage(null);
+    try {
+      await linkLegacyStudentGmail(legacyGmailInput, legacyCurrentPass);
+      setLegacyLinkMessage(
+        `${legacyGmailInput.trim().toLowerCase()} ঠিকানায় ভেরিফিকেশন লিংক পাঠানো হয়েছে। ইনবক্সে (না পেলে Spam ফোল্ডারে) গিয়ে লিংকে ক্লিক করে ভেরিফাই করো।`,
+      );
+      setLegacyCurrentPass('');
     } catch {
       // Error surfaced via authError
     } finally {
@@ -277,16 +365,11 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
     }
   };
 
-  if (!authReady) {
-    return (
-      <div className="max-w-[1200px] mx-auto px-6 py-24 text-center text-sm text-slate-400">
-        পোর্টাল যাচাই করা হচ্ছে...
-      </div>
-    );
-  }
+  const renderDualLoginCard = (activeRole: 'student' | 'admin') => {
+    const activeError = activeRole === 'admin' ? adminAuthError : authError;
+    const activeNeedsEnable =
+      activeRole === 'admin' ? adminNeedsEmailProviderEnable : needsEmailProviderEnable;
 
-  // State A: Not signed in -> Dual Role Login / 1st Time Student Registration
-  if (!user) {
     return (
       <section className="observatory-grid-bg min-h-[calc(100vh-140px)] flex items-center">
         <div className="max-w-[1200px] w-full mx-auto px-6 py-12 lg:py-16">
@@ -296,11 +379,12 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
               <button
                 type="button"
                 onClick={() => {
-                  setAuthRoleTab('student');
+                  setPanelMode('student');
                   clearAuthFeedback();
+                  clearAdminAuthFeedback();
                 }}
                 className={`py-4 text-xs font-semibold transition-colors cursor-pointer ${
-                  authRoleTab === 'student'
+                  activeRole === 'student'
                     ? 'bg-[#131C28] text-[#FBBF24] border-b-2 border-[#F59E0B]'
                     : 'text-slate-400 hover:text-slate-100'
                 }`}
@@ -310,11 +394,12 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
               <button
                 type="button"
                 onClick={() => {
-                  setAuthRoleTab('admin');
+                  setPanelMode('admin');
                   clearAuthFeedback();
+                  clearAdminAuthFeedback();
                 }}
                 className={`py-4 text-xs font-semibold transition-colors cursor-pointer ${
-                  authRoleTab === 'admin'
+                  activeRole === 'admin'
                     ? 'bg-[#131C28] text-[#38BDF8] border-b-2 border-[#38BDF8]'
                     : 'text-slate-400 hover:text-slate-100'
                 }`}
@@ -324,10 +409,10 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
             </div>
 
             <div className="p-7 sm:p-9">
-              {authError && (
+              {activeError && (
                 <div className="mb-5 p-3.5 rounded-lg bg-red-950/60 border border-red-800/80 text-xs text-red-200 space-y-2.5">
-                  <div className="font-medium">{authError}</div>
-                  {needsEmailProviderEnable && (
+                  <div className="font-medium">{activeError}</div>
+                  {activeNeedsEnable && (
                     <div className="pt-2.5 border-t border-red-800/60 text-[11px] text-red-200/90 space-y-2">
                       <div className="font-semibold text-amber-300">
                         কোনো অ্যাপ ডাউনলোড করতে হবে না — ব্রাউজারে ১৫ সেকেন্ডে চালু করুন:
@@ -351,138 +436,331 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                 </div>
               )}
 
-              {authRoleTab === 'student' ? (
+              {activeRole === 'student' ? (
+                urlResetCode ? (
+                  <div className="space-y-5">
+                    <div>
+                      <h1 className="font-display text-2xl font-bold text-slate-50 mb-1.5">
+                        নতুন পাসওয়ার্ড সেট করো
+                      </h1>
+                      <p className="text-xs text-slate-300 leading-relaxed">
+                        {urlResetEmail ? (
+                          <>
+                            <span className="font-mono text-sky-300">{urlResetEmail}</span> একাউন্টের জন্য নতুন পাসওয়ার্ড লিখো।
+                          </>
+                        ) : (
+                          'তোমার একাউন্টের জন্য কমপক্ষে ৬ অক্ষরের নতুন পাসওয়ার্ড লিখো।'
+                        )}
+                      </p>
+                    </div>
+                    <form onSubmit={handleConfirmUrlPasswordReset} className="space-y-4">
+                      <div>
+                        <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                          নতুন পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর)
+                        </label>
+                        <div className="relative">
+                          <KeyRound className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                          <input
+                            type={showStudentPass ? 'text' : 'password'}
+                            required
+                            minLength={6}
+                            placeholder="••••••••"
+                            value={urlResetNewPass}
+                            onChange={(e) => setUrlResetNewPass(e.target.value)}
+                            className="w-full pl-10 pr-10 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowStudentPass((prev) => !prev)}
+                            aria-label={showStudentPass ? 'পাসওয়ার্ড লুকাও' : 'পাসওয়ার্ড দেখো'}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-100 transition-colors cursor-pointer"
+                          >
+                            {showStudentPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        </div>
+                      </div>
+                      <button
+                        type="submit"
+                        disabled={authBusy}
+                        className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] disabled:opacity-50 rounded-lg transition-colors cursor-pointer"
+                      >
+                        <span>{authBusy ? 'সেভ হচ্ছে...' : 'নতুন পাসওয়ার্ড সেভ করো'}</span>
+                      </button>
+                    </form>
+                  </div>
+                ) : (
                 <div className="space-y-6">
+                  {urlResetDone && (
+                    <div className="p-3.5 rounded-lg bg-emerald-950/60 border border-emerald-800 text-xs text-emerald-200">
+                      নতুন পাসওয়ার্ড সেভ হয়েছে। এখন তোমার Gmail ও নতুন পাসওয়ার্ড দিয়ে লগইন করো।
+                    </div>
+                  )}
+
                   <div>
                     <p className="text-[11px] font-medium text-sky-300 mb-1.5">
                       চট্টগ্রামের পদার্থবিজ্ঞানের বৃহত্তম কম্পিটিটিভ প্ল্যাটফর্ম · HSC &apos;28
                     </p>
                     <h1 className="font-display text-2xl font-bold text-slate-50 mb-1.5">
-                      {studentAuthMode === 'login' ? 'স্টুডেন্ট লগইন' : 'প্রথমবার রেজিস্ট্রেশন'}
+                      {studentAuthMode === 'login'
+                        ? 'স্টুডেন্ট লগইন'
+                        : studentAuthMode === 'register'
+                          ? 'প্রথমবার রেজিস্ট্রেশন'
+                          : 'পাসওয়ার্ড রিসেট (Gmail)'}
                     </h1>
                     <p className="text-xs text-slate-300 leading-relaxed">
                       {studentAuthMode === 'login'
-                        ? 'অনুমোদনের পর তোমার মোবাইল নাম্বার ও পাসওয়ার্ড দিয়ে সরাসরি ক্লাসরুমে প্রবেশ করো।'
-                        : 'প্রথমবার তোমার নাম, মোবাইল নাম্বার ও একটি পাসওয়ার্ড দিয়ে রেজিস্ট্রেশন করো। স্যার অ্যাপ্রুভ করলে পরের বার থেকে শুধু নাম্বার ও পাসওয়ার্ড দিয়ে ঢুকতে পারবে।'}
+                        ? 'অফিসে ভর্তির মোবাইল নাম্বার অথবা তোমার রেজিস্টার করা Gmail — যেকোনো একটি এবং পাসওয়ার্ড দিয়ে প্রবেশ করো।'
+                        : studentAuthMode === 'register'
+                          ? 'প্রথমবার রেজিস্ট্রেশনে অফিসে ভর্তির সময় ব্যবহৃত মোবাইল নাম্বার এবং তোমার আসল Gmail দুটিই লাগবে। পাসওয়ার্ড ভুলে গেলে রিসেট করার জন্য আসল Gmail প্রয়োজন।'
+                          : 'তোমার রেজিস্টার করা আসল Gmail দাও। Gmail ইনবক্সে নিরাপদ ওয়ান-টাইম পাসওয়ার্ড রিসেট লিংক পাঠানো হবে।'}
                     </p>
                   </div>
 
-                  {/* Login vs 1st Time Registration Switch */}
-                  <div className="grid grid-cols-2 gap-1 p-1 bg-[#0B1118] border border-slate-800 rounded-lg">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setStudentAuthMode('login');
-                        clearAuthFeedback();
-                      }}
-                      className={`py-2 text-xs font-semibold rounded-md transition-colors cursor-pointer ${
-                        studentAuthMode === 'login'
-                          ? 'bg-[#F59E0B] text-slate-950'
-                          : 'text-slate-400 hover:text-slate-100'
-                      }`}
-                    >
-                      স্টুডেন্ট লগইন
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setStudentAuthMode('register');
-                        clearAuthFeedback();
-                      }}
-                      className={`py-2 text-xs font-semibold rounded-md transition-colors cursor-pointer ${
-                        studentAuthMode === 'register'
-                          ? 'bg-[#F59E0B] text-slate-950'
-                          : 'text-slate-400 hover:text-slate-100'
-                      }`}
-                    >
-                      নতুন রেজিস্ট্রেশন
-                    </button>
-                  </div>
+                  {studentAuthMode === 'login' && !activeError && (
+                    <div className="p-3.5 rounded-lg bg-sky-950/40 border border-sky-800/70 text-[11px] text-sky-200 leading-relaxed">
+                      পাসওয়ার্ড ভুলে গেলে রিসেট করার সুবিধার জন্য সবার একাউন্টে আসল <strong className="text-white">Gmail</strong> থাকা জরুরি। আগে শুধু মোবাইল নাম্বার দিয়ে খোলা থাকলে এখন লগইন করেই তোমার Gmail যুক্ত করে নাও।
+                    </div>
+                  )}
 
-                  <form onSubmit={handleStudentSubmit} className="space-y-4">
-                    {studentAuthMode === 'register' && (
+                  {/* Login vs 1st Time Registration Switch */}
+                  {studentAuthMode !== 'forgot' && (
+                    <div className="grid grid-cols-2 gap-1 p-1 bg-[#0B1118] border border-slate-800 rounded-lg">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setStudentAuthMode('login');
+                          setResetSentEmail(null);
+                          clearAuthFeedback();
+                        }}
+                        className={`py-2 text-xs font-semibold rounded-md transition-colors cursor-pointer ${
+                          studentAuthMode === 'login'
+                            ? 'bg-[#F59E0B] text-slate-950'
+                            : 'text-slate-400 hover:text-slate-100'
+                        }`}
+                      >
+                        স্টুডেন্ট লগইন
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setStudentAuthMode('register');
+                          setResetSentEmail(null);
+                          clearAuthFeedback();
+                        }}
+                        className={`py-2 text-xs font-semibold rounded-md transition-colors cursor-pointer ${
+                          studentAuthMode === 'register'
+                            ? 'bg-[#F59E0B] text-slate-950'
+                            : 'text-slate-400 hover:text-slate-100'
+                        }`}
+                      >
+                        নতুন রেজিস্ট্রেশন
+                      </button>
+                    </div>
+                  )}
+
+                  {studentAuthMode === 'forgot' ? (
+                    <form onSubmit={handleStudentSubmit} className="space-y-4">
+                      {resetSentEmail && (
+                        <div className="p-4 rounded-lg bg-emerald-950/60 border border-emerald-800 text-xs text-emerald-200 space-y-1.5 leading-relaxed">
+                          <div className="font-semibold text-emerald-300">
+                            রিসেট লিংক পাঠানো হয়েছে!
+                          </div>
+                          <p>
+                            তোমার <span className="font-mono text-white">{resetSentEmail}</span> ইনবক্সে (না পেলে Spam ফোল্ডারে) পাসওয়ার্ড রিসেট লিংক পাঠানো হয়েছে। লিংকে ক্লিক করে নতুন পাসওয়ার্ড সেট করে এখানে এসে লগইন করো।
+                          </p>
+                        </div>
+                      )}
+
                       <div>
                         <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                          তোমার পুরো নাম
+                          তোমার রেজিস্টার করা Gmail
                         </label>
-                        <input
-                          type="text"
-                          required
-                          minLength={2}
-                          maxLength={100}
-                          placeholder="যেমন: নাফিস রহমান"
-                          value={studentRegName}
-                          onChange={(e) => setStudentRegName(e.target.value)}
-                          className="w-full px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
-                        />
+                        <div className="relative">
+                          <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                          <input
+                            type="email"
+                            required
+                            placeholder="yourname@gmail.com"
+                            value={resetEmailInput}
+                            onChange={(e) => setResetEmailInput(e.target.value)}
+                            className="w-full pl-10 pr-3.5 py-2.5 text-sm font-mono text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                          />
+                        </div>
                       </div>
-                    )}
 
-                    <div>
-                      <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                        মোবাইল নাম্বার
-                      </label>
-                      <div className="relative">
-                        <Phone className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                        <input
-                          type="tel"
-                          required
-                          placeholder="01XXXXXXXXX"
-                          value={studentPhone}
-                          onChange={(e) => setStudentPhone(e.target.value)}
-                          className="w-full pl-10 pr-3.5 py-2.5 text-sm font-mono text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
-                        />
-                      </div>
-                    </div>
+                      <button
+                        type="submit"
+                        disabled={authBusy}
+                        className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] disabled:opacity-50 rounded-lg transition-colors cursor-pointer"
+                      >
+                        <Mail className="w-4 h-4" />
+                        <span>{authBusy ? 'পাঠানো হচ্ছে...' : 'Gmail-এ রিসেট লিংক পাঠাও'}</span>
+                      </button>
 
-                    <div>
-                      <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                        পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর)
-                      </label>
-                      <div className="relative">
-                        <KeyRound className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                        <input
-                          type={showStudentPass ? 'text' : 'password'}
-                          required
-                          minLength={6}
-                          placeholder="••••••••"
-                          value={studentPass}
-                          onChange={(e) => setStudentPass(e.target.value)}
-                          className="w-full pl-10 pr-10 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowStudentPass((prev) => !prev)}
-                          aria-label={showStudentPass ? 'পাসওয়ার্ড লুকাও' : 'পাসওয়ার্ড দেখো'}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-100 transition-colors cursor-pointer"
-                        >
-                          {showStudentPass ? (
-                            <EyeOff className="w-4 h-4" />
-                          ) : (
-                            <Eye className="w-4 h-4" />
-                          )}
-                        </button>
-                      </div>
-                    </div>
+                      <p className="text-[11px] text-slate-400 leading-relaxed">
+                        দ্রষ্টব্য: আগে শুধু মোবাইল নাম্বার দিয়ে (Gmail ছাড়া) অ্যাকাউন্ট খোলা থাকলে লগইন করে প্রথমে আসল Gmail যুক্ত করে নাও, অথবা স্যারের হেল্পলাইনে (+880 1600-653568) যোগাযোগ করো।
+                      </p>
 
-                    <button
-                      type="submit"
-                      disabled={authBusy}
-                      className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] disabled:opacity-50 rounded-lg transition-colors cursor-pointer"
-                    >
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setStudentAuthMode('login');
+                          setResetSentEmail(null);
+                          clearAuthFeedback();
+                        }}
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-sky-300 hover:text-sky-200 transition-colors cursor-pointer"
+                      >
+                        <ArrowLeft className="w-3.5 h-3.5" />
+                        <span>লগইনে ফিরে যাও</span>
+                      </button>
+                    </form>
+                  ) : (
+                    <form onSubmit={handleStudentSubmit} className="space-y-4">
                       {studentAuthMode === 'register' ? (
                         <>
-                          <UserPlus className="w-4 h-4" />
-                          <span>{authBusy ? 'রেজিস্ট্রেশন হচ্ছে...' : 'রেজিস্ট্রেশন সম্পন্ন করো'}</span>
+                          <div>
+                            <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                              তোমার পুরো নাম
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              minLength={2}
+                              maxLength={100}
+                              placeholder="যেমন: নাফিস রহমান"
+                              value={studentRegName}
+                              onChange={(e) => setStudentRegName(e.target.value)}
+                              className="w-full px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                              মোবাইল নাম্বার (অফিস অ্যাডমিশনে ব্যবহৃত নাম্বার)
+                            </label>
+                            <div className="relative">
+                              <Phone className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                              <input
+                                type="tel"
+                                required
+                                placeholder="01XXXXXXXXX"
+                                value={studentPhone}
+                                onChange={(e) => setStudentPhone(e.target.value)}
+                                className="w-full pl-10 pr-3.5 py-2.5 text-sm font-mono text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                              />
+                            </div>
+                            <p className="text-[11px] text-amber-300/90 mt-1">
+                              অফিসে ভর্তির সময় যে মোবাইল নাম্বার দিয়েছো ঠিক সেটিই দাও।
+                            </p>
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                              তোমার আসল Gmail (পাসওয়ার্ড রিসেটের জন্য লাগবে)
+                            </label>
+                            <div className="relative">
+                              <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                              <input
+                                type="email"
+                                required
+                                placeholder="yourname@gmail.com"
+                                value={studentEmail}
+                                onChange={(e) => setStudentEmail(e.target.value)}
+                                className="w-full pl-10 pr-3.5 py-2.5 text-sm font-mono text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                              />
+                            </div>
+                            <p className="text-[11px] text-slate-400 mt-1">
+                              পাসওয়ার্ড ভুলে গেলে রিসেট করার জন্য এবং ভেরিফিকেশনের জন্য সচল Gmail দাও।
+                            </p>
+                          </div>
                         </>
                       ) : (
-                        <>
-                          <ShieldCheck className="w-4 h-4" />
-                          <span>{authBusy ? 'লগইন হচ্ছে...' : 'স্টুডেন্ট প্যানেলে প্রবেশ করো'}</span>
-                        </>
+                        <div>
+                          <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                            মোবাইল নাম্বার অথবা Gmail (যেকোনো একটি দিলেই হবে)
+                          </label>
+                          <div className="relative">
+                            <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                            <input
+                              type="text"
+                              required
+                              autoComplete="username"
+                              placeholder="01XXXXXXXXX অথবা yourname@gmail.com"
+                              value={studentIdentifier}
+                              onChange={(e) => setStudentIdentifier(e.target.value)}
+                              className="w-full pl-10 pr-3.5 py-2.5 text-sm font-mono text-slate-100 placeholder:text-slate-500 placeholder:font-sans bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                            />
+                          </div>
+                        </div>
                       )}
-                    </button>
-                  </form>
+
+                      <div>
+                        <div className="flex items-center justify-between gap-2 mb-1.5">
+                          <label className="block text-xs font-medium text-slate-300">
+                            পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর)
+                          </label>
+                          {studentAuthMode === 'login' && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setStudentAuthMode('forgot');
+                                if (studentIdentifier.includes('@')) {
+                                  setResetEmailInput(studentIdentifier.trim());
+                                }
+                                setResetSentEmail(null);
+                                clearAuthFeedback();
+                              }}
+                              className="text-[11px] font-semibold text-[#FBBF24] hover:text-amber-300 transition-colors cursor-pointer"
+                            >
+                              পাসওয়ার্ড ভুলে গেছো? Gmail রিসেট
+                            </button>
+                          )}
+                        </div>
+                        <div className="relative">
+                          <KeyRound className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                          <input
+                            type={showStudentPass ? 'text' : 'password'}
+                            required
+                            minLength={6}
+                            placeholder="••••••••"
+                            value={studentPass}
+                            onChange={(e) => setStudentPass(e.target.value)}
+                            className="w-full pl-10 pr-10 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowStudentPass((prev) => !prev)}
+                            aria-label={showStudentPass ? 'পাসওয়ার্ড লুকাও' : 'পাসওয়ার্ড দেখো'}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-100 transition-colors cursor-pointer"
+                          >
+                            {showStudentPass ? (
+                              <EyeOff className="w-4 h-4" />
+                            ) : (
+                              <Eye className="w-4 h-4" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={authBusy}
+                        className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] disabled:opacity-50 rounded-lg transition-colors cursor-pointer"
+                      >
+                        {studentAuthMode === 'register' ? (
+                          <>
+                            <UserPlus className="w-4 h-4" />
+                            <span>{authBusy ? 'রেজিস্ট্রেশন হচ্ছে...' : 'রেজিস্ট্রেশন সম্পন্ন করো'}</span>
+                          </>
+                        ) : (
+                          <>
+                            <ShieldCheck className="w-4 h-4" />
+                            <span>{authBusy ? 'লগইন হচ্ছে...' : 'স্টুডেন্ট প্যানেলে প্রবেশ করো'}</span>
+                          </>
+                        )}
+                      </button>
+                    </form>
+                  )}
 
                   <div className="relative flex py-1 items-center">
                     <div className="flex-grow border-t border-slate-800" />
@@ -500,6 +778,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                     <span>Google দিয়ে স্টুডেন্ট লগইন / রেজিস্ট্রেশন</span>
                   </button>
                 </div>
+                )
               ) : (
                 <div className="space-y-6">
                   <div>
@@ -516,7 +795,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                       type="button"
                       onClick={() => {
                         setAdminAuthMode('login');
-                        clearAuthFeedback();
+                        clearAdminAuthFeedback();
                       }}
                       className={`py-2 text-xs font-semibold rounded-md transition-colors cursor-pointer ${
                         adminAuthMode === 'login'
@@ -530,7 +809,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                       type="button"
                       onClick={() => {
                         setAdminAuthMode('setup');
-                        clearAuthFeedback();
+                        clearAdminAuthFeedback();
                       }}
                       className={`py-2 text-xs font-semibold rounded-md transition-colors cursor-pointer ${
                         adminAuthMode === 'setup'
@@ -610,7 +889,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
 
                   <button
                     type="button"
-                    onClick={() => void signInWithGoogle()}
+                    onClick={() => void signInAdminWithGoogle()}
                     className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-semibold text-slate-200 bg-[#0B1118] border border-slate-700 hover:border-slate-500 rounded-lg transition-colors cursor-pointer"
                   >
                     <span>Continue with Google</span>
@@ -622,68 +901,381 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
         </div>
       </section>
     );
+  };
+
+  // ======================== ADMIN PANEL TRACK (ISOLATED SESSION) ========================
+  if (panelMode === 'admin') {
+    if (!adminAuthReady) {
+      return (
+        <div className="max-w-[1200px] mx-auto px-6 py-24 text-center text-sm text-slate-400">
+          অ্যাডমিন প্যানেল যাচাই করা হচ্ছে...
+        </div>
+      );
+    }
+
+    if (!adminUser) {
+      return renderDualLoginCard('admin');
+    }
+
+    if (needsAdminEmailVerification) {
+      return (
+        <section className="max-w-[1200px] mx-auto px-6 py-16">
+          <div className="max-w-lg mx-auto bg-[#131C28] border border-slate-800 rounded-xl p-8 space-y-5">
+            <h1 className="font-display text-2xl font-bold text-slate-50">
+              Verify Admin Gmail Once
+            </h1>
+            <p className="text-sm text-slate-300 leading-relaxed">
+              আপনার <span className="font-mono text-sky-300">{adminUser.email}</span> ইনবক্সে একটি ভেরিফিকেশন লিংক পাঠানো হয়েছে। লিংকে ক্লিক করে পেজটি রিলোড দিন অথবা নিচে <strong>Continue with Google</strong> চাপুন।
+            </p>
+            {verificationSentNote && (
+              <div className="p-3 rounded-lg bg-emerald-950/60 border border-emerald-800 text-xs text-emerald-200">
+                Verification email sent again to {adminUser.email}.
+              </div>
+            )}
+            {verificationCheckNote && (
+              <div className="p-3 rounded-lg bg-amber-950/60 border border-amber-800 text-xs text-amber-200">
+                {verificationCheckNote}
+              </div>
+            )}
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={async () => {
+                  setVerificationCheckNote(null);
+                  const verified = await refreshVerifiedSession();
+                  if (!verified) {
+                    setVerificationCheckNote(
+                      'এখনো ভেরিফিকেশন সম্পন্ন হয়নি। ইনবক্সের লিংকে ক্লিক করে আবার চেষ্টা করুন অথবা Google দিয়ে লগইন করুন।',
+                    );
+                  }
+                }}
+                className="px-4 py-2.5 text-xs font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] rounded-lg cursor-pointer"
+              >
+                I Verified My Email (Reload)
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  await resendAdminVerification();
+                  setVerificationSentNote(true);
+                }}
+                className="px-4 py-2.5 text-xs font-semibold text-slate-200 bg-[#0B1118] border border-slate-700 hover:border-slate-500 rounded-lg cursor-pointer"
+              >
+                Resend Verification
+              </button>
+              <button
+                type="button"
+                onClick={() => void signInAdminWithGoogle()}
+                className="px-4 py-2.5 text-xs font-semibold text-sky-300 bg-sky-950/50 border border-sky-800 hover:bg-sky-900/50 rounded-lg cursor-pointer"
+              >
+                Sign in with Google Instead
+              </button>
+              <button
+                type="button"
+                onClick={() => void logoutAdmin()}
+                className="px-3 py-2.5 text-xs text-slate-400 hover:text-slate-100 cursor-pointer"
+              >
+                Sign Out
+              </button>
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    if (!isAdmin) {
+      return (
+        <section className="max-w-[1200px] mx-auto px-6 py-16">
+          <div className="max-w-lg mx-auto bg-[#131C28] border border-slate-800 rounded-xl p-8 space-y-5">
+            <div className="inline-flex items-center gap-2 text-xs font-semibold text-red-300">
+              <XCircle className="w-4 h-4 shrink-0" />
+              <span>অ্যাডমিন অ্যাক্সেস নেই</span>
+            </div>
+            <h1 className="font-display text-2xl font-bold text-slate-50">
+              এই একাউন্টে অ্যাডমিন অ্যাক্সেস অনুমোদিত নয়
+            </h1>
+            <p className="text-sm text-slate-300 leading-relaxed">
+              বর্তমানে অ্যাডমিন সেশনে <span className="font-mono text-sky-300">{adminUser.email || 'অজানা একাউন্ট'}</span> দিয়ে সাইন-ইন করা আছে। অনুমোদিত Admin Gmail দিয়ে প্রবেশ করতে লগআউট করুন অথবা স্টুডেন্ট প্যানেলে যান।
+            </p>
+            <div className="flex flex-wrap items-center gap-3 pt-1">
+              <button
+                type="button"
+                onClick={() => void logoutAdmin()}
+                className="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-semibold text-slate-950 bg-[#38BDF8] hover:bg-sky-300 rounded-lg cursor-pointer"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>অ্যাডমিন সেশন লগআউট</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPanelMode('student')}
+                className="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] rounded-lg cursor-pointer"
+              >
+                <UserCheck className="w-3.5 h-3.5" />
+                <span>স্টুডেন্ট প্যানেলে যান</span>
+              </button>
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    return (
+      <section className="max-w-[1200px] mx-auto px-6 py-8 sm:py-10">
+        <div className="pb-6 border-b border-slate-800 mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1.5">
+              <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
+                <span className="font-mono text-slate-200">{adminUser.email}</span>
+                <span aria-hidden="true">·</span>
+                <span className="inline-flex items-center gap-1 font-semibold text-sky-300">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>Wasim Sir · Admin Access</span>
+                </span>
+              </div>
+              <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-slate-50 text-balance">
+                Admin Panel — Manage Students, Results &amp; Classes
+              </h1>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => void logoutAdmin()}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-200 bg-[#131C28] border border-slate-700 rounded-xl hover:border-slate-500 transition-colors cursor-pointer whitespace-nowrap self-start sm:self-auto shrink-0"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>অ্যাডমিন লগআউট</span>
+            </button>
+          </div>
+        </div>
+
+        <AdminStudio />
+      </section>
+    );
   }
 
-  // Admin signed in with Email/Password before verifying inbox
-  if (needsAdminEmailVerification) {
+  // ======================== STUDENT PANEL TRACK (ISOLATED SESSION) ========================
+  if (!authReady) {
+    return (
+      <div className="max-w-[1200px] mx-auto px-6 py-24 text-center text-sm text-slate-400">
+        পোর্টাল যাচাই করা হচ্ছে...
+      </div>
+    );
+  }
+
+  if (!user) {
+    return renderDualLoginCard('student');
+  }
+
+  if (needsLegacyGmailLink) {
+    const legacyPhone = extractPhoneFromAuthEmail(user.email);
     return (
       <section className="max-w-[1200px] mx-auto px-6 py-16">
         <div className="max-w-lg mx-auto bg-[#131C28] border border-slate-800 rounded-xl p-8 space-y-5">
+          <div className="inline-flex items-center gap-2 text-xs font-semibold text-[#FBBF24]">
+            <Mail className="w-4 h-4 shrink-0" />
+            <span>পাসওয়ার্ড রিসেটের জন্য Gmail যুক্ত করো</span>
+          </div>
           <h1 className="font-display text-2xl font-bold text-slate-50">
-            Verify Admin Gmail Once
+            তোমার একাউন্টে আসল Gmail যুক্ত করো
           </h1>
           <p className="text-sm text-slate-300 leading-relaxed">
-            আপনার <span className="font-mono text-sky-300">{user.email}</span> ইনবক্সে একটি ভেরিফিকেশন লিংক পাঠানো হয়েছে। লিংকে ক্লিক করে পেজটি রিলোড দিন অথবা নিচে <strong>Continue with Google</strong> চাপুন।
+            ভবিষ্যতে পাসওয়ার্ড ভুলে গেলে রিসেট করার জন্য তোমার আসল <strong className="text-white">Gmail</strong> থাকা আবশ্যক। তোমার <span className="font-mono text-sky-300">{legacyPhone}</span> নাম্বারের ভর্তি, ক্লাস ও পরীক্ষার রেজাল্ট আগের মতোই সুরক্ষিত থাকবে। Gmail যুক্ত করার পর তুমি মোবাইল নাম্বার অথবা Gmail যেকোনো একটি দিয়ে লগইন করতে পারবে।
           </p>
-          {verificationSentNote && (
-            <div className="p-3 rounded-lg bg-emerald-950/60 border border-emerald-800 text-xs text-emerald-200">
-              Verification email sent again to {user.email}.
+
+          {(legacyLinkMessage || legacyMigrationClaimEmail) && (
+            <div className="p-4 rounded-lg bg-emerald-950/60 border border-emerald-800 text-xs text-emerald-200 space-y-2 leading-relaxed">
+              <div className="font-semibold text-emerald-300">
+                ভেরিফিকেশন লিংক পাঠানো হয়েছে!
+              </div>
+              <p>
+                {legacyLinkMessage ||
+                  `তোমার ${legacyMigrationClaimEmail} ঠিকানায় ভেরিফিকেশন লিংক পাঠানো হয়েছে। Gmail ইনবক্সে (না পেলে Spam ফোল্ডারে) গিয়ে লিংকে ক্লিক করো।`}
+              </p>
+              <div className="flex flex-wrap items-center gap-2.5 pt-1">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setStudentVerifCheckNote(null);
+                    try {
+                      const verified = await refreshStudentVerifiedSession();
+                      if (!verified) {
+                        setStudentVerifCheckNote(
+                          'এখনো ভেরিফিকেশন সম্পন্ন হয়নি অথবা সেশন রিলোড প্রয়োজন। ইনবক্সের লিংকে ক্লিক করার পর নিচে লগআউট করে নতুন Gmail (বা মোবাইল নাম্বার) দিয়ে লগইন করো।',
+                        );
+                      }
+                    } catch {
+                      setStudentVerifCheckNote(
+                        'ইমেইল আপডেট সম্পন্ন হয়েছে! অনুগ্রহ করে নিচে লগআউট করে তোমার নতুন Gmail (বা মোবাইল নাম্বার) ও পাসওয়ার্ড দিয়ে আবার লগইন করো।',
+                      );
+                    }
+                  }}
+                  className="px-3.5 py-2 text-xs font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] rounded-lg cursor-pointer"
+                >
+                  আমি ভেরিফাই করেছি (এগিয়ে যাও)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void logout()}
+                  className="px-3.5 py-2 text-xs font-semibold text-slate-200 bg-[#0B1118] border border-slate-700 hover:border-slate-500 rounded-lg cursor-pointer"
+                >
+                  লগআউট করে Gmail দিয়ে লগইন করো
+                </button>
+              </div>
             </div>
           )}
-          {verificationCheckNote && (
+
+          {studentVerifCheckNote && (
             <div className="p-3 rounded-lg bg-amber-950/60 border border-amber-800 text-xs text-amber-200">
-              {verificationCheckNote}
+              {studentVerifCheckNote}
+            </div>
+          )}
+
+          {authError && (
+            <div className="p-3 rounded-lg bg-red-950/60 border border-red-800 text-xs text-red-200">
+              {authError}
+            </div>
+          )}
+
+          <form onSubmit={handleLegacyGmailLinkSubmit} className="space-y-4 pt-1">
+            <div>
+              <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                তোমার আসল Gmail (পাসওয়ার্ড রিসেটের জন্য লাগবে)
+              </label>
+              <div className="relative">
+                <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="email"
+                  required
+                  placeholder="yourname@gmail.com"
+                  value={legacyGmailInput}
+                  onChange={(e) => setLegacyGmailInput(e.target.value)}
+                  className="w-full pl-10 pr-3.5 py-2.5 text-sm font-mono text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                তোমার বর্তমান পাসওয়ার্ড (নিশ্চিত করার জন্য)
+              </label>
+              <div className="relative">
+                <KeyRound className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type={showLegacyPass ? 'text' : 'password'}
+                  required
+                  minLength={6}
+                  placeholder="••••••••"
+                  value={legacyCurrentPass}
+                  onChange={(e) => setLegacyCurrentPass(e.target.value)}
+                  className="w-full pl-10 pr-10 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowLegacyPass((prev) => !prev)}
+                  aria-label={showLegacyPass ? 'পাসওয়ার্ড লুকাও' : 'পাসওয়ার্ড দেখো'}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-100 transition-colors cursor-pointer"
+                >
+                  {showLegacyPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                type="submit"
+                disabled={authBusy}
+                className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 text-xs sm:text-sm font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] disabled:opacity-50 rounded-lg transition-colors cursor-pointer"
+              >
+                <Mail className="w-4 h-4" />
+                <span>
+                  {authBusy
+                    ? 'লিংক পাঠানো হচ্ছে...'
+                    : legacyMigrationClaimEmail
+                      ? 'আবার ভেরিফিকেশন লিংক পাঠাও'
+                      : 'Gmail যুক্ত করে ভেরিফিকেশন লিংক পাঠাও'}
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => void logout()}
+                className="px-4 py-3 text-xs font-medium text-slate-400 hover:text-slate-100 cursor-pointer"
+              >
+                লগআউট
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+    );
+  }
+
+  if (needsStudentEmailVerification) {
+    return (
+      <section className="max-w-[1200px] mx-auto px-6 py-16">
+        <div className="max-w-lg mx-auto bg-[#131C28] border border-slate-800 rounded-xl p-8 space-y-5">
+          <div className="inline-flex items-center gap-2 text-xs font-semibold text-[#FBBF24]">
+            <Mail className="w-4 h-4 shrink-0" />
+            <span>Gmail ভেরিফিকেশন প্রয়োজন</span>
+          </div>
+          <h1 className="font-display text-2xl font-bold text-slate-50">
+            তোমার Gmail একাউন্ট যাচাই করো
+          </h1>
+          <p className="text-sm text-slate-300 leading-relaxed">
+            তোমার <span className="font-mono text-sky-300">{user.email}</span> ইনবক্সে (না পেলে Spam ফোল্ডারে) একটি ভেরিফিকেশন লিংক পাঠানো হয়েছে। লিংকে ক্লিক করে নিচের বাটনে চাপ দাও, তাহলেই স্যারের প্যানেলে তোমার রিকোয়েস্ট জমা হবে ও ক্লাসরুম চালু হবে।
+          </p>
+          {studentVerifSent && (
+            <div className="p-3 rounded-lg bg-emerald-950/60 border border-emerald-800 text-xs text-emerald-200">
+              ভেরিফিকেশন লিংক আবার {user.email}-এ পাঠানো হয়েছে।
+            </div>
+          )}
+          {studentVerifCheckNote && (
+            <div className="p-3 rounded-lg bg-amber-950/60 border border-amber-800 text-xs text-amber-200">
+              {studentVerifCheckNote}
+            </div>
+          )}
+          {authError && (
+            <div className="p-3 rounded-lg bg-red-950/60 border border-red-800 text-xs text-red-200">
+              {authError}
             </div>
           )}
           <div className="flex flex-wrap items-center gap-3">
             <button
               type="button"
               onClick={async () => {
-                setVerificationCheckNote(null);
-                const verified = await refreshVerifiedSession();
+                setStudentVerifCheckNote(null);
+                const verified = await refreshStudentVerifiedSession();
                 if (!verified) {
-                  setVerificationCheckNote(
-                    'এখনো ভেরিফিকেশন সম্পন্ন হয়নি। ইনবক্সের লিংকে ক্লিক করে আবার চেষ্টা করুন অথবা Google দিয়ে লগইন করুন।',
+                  setStudentVerifCheckNote(
+                    'এখনো ভেরিফিকেশন সম্পন্ন হয়নি। Gmail ইনবক্সের লিংকে ক্লিক করে আবার এই বাটনে চাপ দাও।',
                   );
                 }
               }}
               className="px-4 py-2.5 text-xs font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] rounded-lg cursor-pointer"
             >
-              I Verified My Email (Reload)
+              আমি ভেরিফাই করেছি (এগিয়ে যাও)
             </button>
             <button
               type="button"
               onClick={async () => {
-                await resendAdminVerification();
-                setVerificationSentNote(true);
+                setStudentVerifSent(false);
+                try {
+                  await resendStudentVerification();
+                  setStudentVerifSent(true);
+                } catch {
+                  // Error handled in authError
+                }
               }}
               className="px-4 py-2.5 text-xs font-semibold text-slate-200 bg-[#0B1118] border border-slate-700 hover:border-slate-500 rounded-lg cursor-pointer"
             >
-              Resend Verification
-            </button>
-            <button
-              type="button"
-              onClick={() => void signInWithGoogle()}
-              className="px-4 py-2.5 text-xs font-semibold text-sky-300 bg-sky-950/50 border border-sky-800 hover:bg-sky-900/50 rounded-lg cursor-pointer"
-            >
-              Sign in with Google Instead
+              লিংক আবার পাঠাও
             </button>
             <button
               type="button"
               onClick={() => void logout()}
               className="px-3 py-2.5 text-xs text-slate-400 hover:text-slate-100 cursor-pointer"
             >
-              Sign Out
+              লগআউট
             </button>
           </div>
         </div>
@@ -699,7 +1291,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
     );
   }
 
-  const activeTab = !isAdmin && portalTab === 'studio' ? 'classroom' : portalTab;
+  const activeTab = portalTab;
   const displayAccountHandle = extractPhoneFromAuthEmail(user.email);
   const isCurrentCompleted = selectedClass ? completedClassIds.has(selectedClass.id) : false;
   const studentDisplayName =
@@ -707,19 +1299,14 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
 
   return (
     <section className="max-w-[1200px] mx-auto px-6 py-8 sm:py-10">
-      {/* Portal Top Workspace Header */}
+      {/* Student Portal Top Workspace Header */}
       <div className="pb-6 border-b border-slate-800 mb-8 space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1.5">
             <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
               <span className="font-mono text-slate-200">{displayAccountHandle}</span>
               <span aria-hidden="true">·</span>
-              {isAdmin ? (
-                <span className="inline-flex items-center gap-1 font-semibold text-sky-300">
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  <span>Wasim Sir · Admin Access</span>
-                </span>
-              ) : isPaidStudent ? (
+              {isPaidStudent ? (
                 <span className="inline-flex items-center gap-1 font-semibold text-emerald-400">
                   <CheckCircle2 className="w-3.5 h-3.5" />
                   <span>
@@ -735,15 +1322,13 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
               )}
             </div>
             <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-slate-50 text-balance">
-              {activeTab === 'studio' && isAdmin
-                ? 'Admin Panel — Manage Students, Results & Classes'
-                : activeTab === 'profile' && hasVaultAccess
-                  ? 'আমার প্রোফাইল ও ব্যক্তিগত রেজাল্ট'
-                  : activeTab === 'notices' && hasVaultAccess
-                    ? 'ব্যাচ নোটিশ ও পরীক্ষার আপডেট'
-                    : hasVaultAccess
-                      ? `স্বাগতম, ${studentDisplayName}`
-                      : 'ওয়াসিম স্যারের অনুমোদনের অপেক্ষায়'}
+              {activeTab === 'profile' && hasVaultAccess
+                ? 'আমার প্রোফাইল ও ব্যক্তিগত রেজাল্ট'
+                : activeTab === 'notices' && hasVaultAccess
+                  ? 'ব্যাচ নোটিশ ও পরীক্ষার আপডেট'
+                  : hasVaultAccess
+                    ? `স্বাগতম, ${studentDisplayName}`
+                    : 'ওয়াসিম স্যারের অনুমোদনের অপেক্ষায়'}
             </h1>
           </div>
 
@@ -753,7 +1338,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
             className="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-200 bg-[#131C28] border border-slate-700 rounded-xl hover:border-slate-500 transition-colors cursor-pointer whitespace-nowrap self-start sm:self-auto shrink-0"
           >
             <LogOut className="w-4 h-4" />
-            <span>লগআউট</span>
+            <span>স্টুডেন্ট লগআউট</span>
           </button>
         </div>
 
@@ -762,20 +1347,6 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
             aria-label="স্টুডেন্ট পোর্টাল নেভিগেশন"
             className="grid grid-cols-1 sm:grid-cols-3 lg:flex lg:flex-wrap items-stretch gap-2.5 p-1.5 bg-[#131C28] border border-slate-800 rounded-2xl"
           >
-            {isAdmin && (
-              <button
-                type="button"
-                onClick={() => setPortalTab('studio')}
-                className={`inline-flex items-center justify-center gap-2.5 px-5 py-3 text-sm sm:text-[15px] font-semibold rounded-xl transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
-                  activeTab === 'studio'
-                    ? 'bg-[#38BDF8] text-slate-950'
-                    : 'text-sky-300 hover:bg-slate-800/80'
-                }`}
-              >
-                <ShieldCheck className="w-4 h-4 shrink-0" />
-                <span>Admin Panel</span>
-              </button>
-            )}
             <button
               type="button"
               onClick={() => setPortalTab('classroom')}
@@ -786,7 +1357,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
               }`}
             >
               <Video className="w-4 h-4 shrink-0" />
-              <span>{isAdmin ? 'Student Classroom Preview' : 'আমার ক্লাসরুম'}</span>
+              <span>আমার ক্লাসরুম</span>
             </button>
             <button
               type="button"
@@ -1121,9 +1692,6 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
         </div>
       )}
 
-      {/* Admin Panel */}
-      {hasVaultAccess && activeTab === 'studio' && isAdmin && <AdminStudio />}
-
       {/* Student Panel Classroom */}
       {hasVaultAccess && activeTab === 'classroom' && (
         <div className="space-y-8">
@@ -1231,9 +1799,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                     রেকর্ডেড ক্লাস তালিকা ও অধ্যায়ভিত্তিক প্রস্তুতি
                   </h3>
                   <p className="text-sm text-slate-300 leading-relaxed">
-                    {isAdmin
-                      ? 'উপরে Admin Panel ট্যাব থেকে প্রথম HSC 2028 ক্লাস আপলোড করুন অথবা Demo Content লোড করুন।'
-                      : 'ওয়াসিম স্যারের নতুন রেকর্ডেড ক্লাস ও বোর্ড নোট PDF প্রকাশ হওয়ার সাথে সাথেই এখানে দেখা যাবে। ততক্ষণ নিচের ১০টি অধ্যায়ের যেকোনো ইন্টারঅ্যাক্টিভ ফিজিক্স ল্যাব অনুশীলন করো।'}
+                    ওয়াসিম স্যারের নতুন রেকর্ডেড ক্লাস ও বোর্ড নোট PDF প্রকাশ হওয়ার সাথে সাথেই এখানে দেখা যাবে। ততক্ষণ নিচের ১০টি অধ্যায়ের যেকোনো ইন্টারঅ্যাক্টিভ ফিজিক্স ল্যাব অনুশীলন করো।
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2.5 shrink-0">

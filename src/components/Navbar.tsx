@@ -12,6 +12,7 @@ import {
 
 interface NavbarProps {
   activeView: 'landing' | 'portal';
+  activePanelRole?: 'student' | 'admin';
   onNavigateView: (view: 'landing' | 'portal', role?: 'student' | 'admin') => void;
   onScrollToSection: (sectionId: string) => void;
 }
@@ -71,6 +72,7 @@ const SECTION_TABS = [
 
 export function Navbar({
   activeView,
+  activePanelRole = 'student',
   onNavigateView,
   onScrollToSection,
 }: NavbarProps) {
@@ -124,39 +126,45 @@ export function Navbar({
           ওয়াসিম স্যার ফিজিক্স
         </button>
 
-        {/* Zone 3: Separate Student Panel & Admin Panel corner buttons */}
+        {/* Zone 3: Homepage & Separate Student Panel / Admin Panel corner buttons */}
         <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
-          {activeView === 'portal' ? (
+          {activeView === 'portal' && (
             <button
               type="button"
               onClick={() => onNavigateView('landing')}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-100 bg-[#131C28] border border-slate-700 rounded-lg hover:bg-slate-800 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+              className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-[11px] sm:text-xs font-semibold text-slate-100 bg-[#131C28] border border-slate-700 rounded-lg hover:bg-slate-800 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
             >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>হোমপেজ</span>
+              <ArrowLeft className="w-3.5 h-3.5 shrink-0" />
+              <span className="sm:hidden">হোম</span>
+              <span className="hidden sm:inline">হোমপেজ</span>
             </button>
-          ) : (
-            <>
-              <button
-                type="button"
-                onClick={() => onNavigateView('portal', 'student')}
-                className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-xs font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
-              >
-                <UserCheck className="w-3.5 h-3.5 shrink-0" />
-                <span className="sm:hidden">স্টুডেন্ট</span>
-                <span className="hidden sm:inline">স্টুডেন্ট প্যানেল</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => onNavigateView('portal', 'admin')}
-                className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-xs font-semibold text-slate-950 bg-[#38BDF8] hover:bg-sky-300 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
-              >
-                <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
-                <span className="sm:hidden">অ্যাডমিন</span>
-                <span className="hidden sm:inline">অ্যাডমিন প্যানেল</span>
-              </button>
-            </>
           )}
+          <button
+            type="button"
+            onClick={() => onNavigateView('portal', 'student')}
+            className={`inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-xs font-semibold rounded-lg transition-all whitespace-nowrap shrink-0 cursor-pointer ${
+              activeView === 'portal' && activePanelRole === 'student'
+                ? 'text-slate-950 bg-[#FBBF24] ring-2 ring-amber-200/80'
+                : 'text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24]'
+            }`}
+          >
+            <UserCheck className="w-3.5 h-3.5 shrink-0" />
+            <span className="sm:hidden">স্টুডেন্ট</span>
+            <span className="hidden sm:inline">স্টুডেন্ট প্যানেল</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => onNavigateView('portal', 'admin')}
+            className={`inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-xs font-semibold rounded-lg transition-all whitespace-nowrap shrink-0 cursor-pointer ${
+              activeView === 'portal' && activePanelRole === 'admin'
+                ? 'text-slate-950 bg-sky-300 ring-2 ring-sky-200/80'
+                : 'text-slate-950 bg-[#38BDF8] hover:bg-sky-300'
+            }`}
+          >
+            <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
+            <span className="sm:hidden">অ্যাডমিন</span>
+            <span className="hidden sm:inline">অ্যাডমিন প্যানেল</span>
+          </button>
         </div>
       </div>
 

@@ -6,7 +6,14 @@ import { StudentPortal } from './components/StudentPortal';
 import { PortalProvider } from './context/PortalContext';
 
 function PortalShell() {
-  const [activeView, setActiveView] = useState<'landing' | 'portal'>('landing');
+  const hasPasswordResetParams =
+    typeof window !== 'undefined' &&
+    new URLSearchParams(window.location.search).get('mode') === 'resetPassword' &&
+    Boolean(new URLSearchParams(window.location.search).get('oobCode'));
+
+  const [activeView, setActiveView] = useState<'landing' | 'portal'>(
+    hasPasswordResetParams ? 'portal' : 'landing',
+  );
   const [preselectedClassId, setPreselectedClassId] = useState<string | null>(null);
   const [authRoleRequest, setAuthRoleRequest] = useState<{
     role: 'student' | 'admin';
@@ -31,6 +38,7 @@ function PortalShell() {
     <div className="min-h-screen flex flex-col bg-[#0B1118] text-[#F1F5F9]">
       <Navbar
         activeView={activeView}
+        activePanelRole={authRoleRequest.role}
         onNavigateView={(view, role) => {
           if (view === 'portal' && role) {
             setPreselectedClassId(null);

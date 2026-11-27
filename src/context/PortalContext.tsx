@@ -1,14 +1,19 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import {
+  confirmPasswordReset,
   createUserWithEmailAndPassword,
   EmailAuthProvider,
   linkWithCredential,
   onAuthStateChanged,
+  reauthenticateWithCredential,
   sendEmailVerification,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
   updateProfile,
+  verifyBeforeUpdateEmail,
+  verifyPasswordResetCode,
   type User,
 } from 'firebase/auth';
 import {
@@ -30,9 +35,15 @@ import {
   SAMPLE_SEED_CLASSES,
   SAMPLE_SEED_NOTICES,
 } from '../data/hsc28Curriculum';
-import { auth, db, googleProvider } from '../lib/firebase';
+import { adminAuth, adminDb, auth, db, googleProvider } from '../lib/firebase';
 import { handleFirestoreError, OperationType } from '../lib/firestoreError';
 import {
+  decryptEmailFromPhoneAlias,
+  derivePhoneAliasId,
+  encryptEmailForPhoneAlias,
+} from '../lib/phoneAliasCrypto';
+import {
+  extractPhoneFromAuthEmail,
   formatAuthError,
   isStudentPhoneEmail,
   normalizeBdPhone,
@@ -56,6 +67,113 @@ import type {
   RecordedClass,
   StudentResult,
 } from '../types/portal';
+
+const STUDENT_SESSION_MAX_AGE_MS = 12 * 60 * 60 * 1000;
+const STUDENT_SESSION_STORAGE_KEY = 'wsp_student_session_started_at';
+const STUDENT_FORCE_REAUTH_VERSION = '2026-11-27-gmail-req-v1';
+const STUDENT_MIGRATION_VERSION_KEY = 'wsp_student_migration_version';
+const PENDING_STUDENT_PROFILE_KEY = 'wsp_pending_student_profile';
+
+interface PendingStudentProfile {
+  uid: string;
+  email: string;
+  studentName: string;
+  phone: string;
+  college?: string;
+}
+
+function readPendingStudentProfile(uid: string): PendingStudentProfile | null {
+  try {
+    const raw = window.localStorage.getItem(PENDING_STUDENT_PROFILE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<PendingStudentProfile>;
+    if (
+      parsed.uid === uid &&
+      typeof parsed.email === 'string' &&
+      typeof parsed.studentName === 'string' &&
+      typeof parsed.phone === 'string'
+    ) {
+      return {
+        uid: parsed.uid,
+        email: parsed.email,
+        studentName: parsed.studentName,
+        phone: parsed.phone,
+        college: typeof parsed.college === 'string' ? parsed.college : undefined,
+      };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function writePendingStudentProfile(profile: PendingStudentProfile) {
+  try {
+    window.localStorage.setItem(PENDING_STUDENT_PROFILE_KEY, JSON.stringify(profile));
+  } catch {
+    // Ignore storage unavailability
+  }
+}
+
+function clearPendingStudentProfile() {
+  try {
+    window.localStorage.removeItem(PENDING_STUDENT_PROFILE_KEY);
+  } catch {
+    // Ignore storage unavailability
+  }
+}
+
+function readStudentLoginTimestamp(uid: string): number | null {
+  try {
+    const raw = window.localStorage.getItem(STUDENT_SESSION_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { uid?: unknown; startedAt?: unknown };
+    if (parsed.uid === uid && typeof parsed.startedAt === 'number' && Number.isFinite(parsed.startedAt)) {
+      return parsed.startedAt;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function writeStudentLoginTimestamp(uid: string, timestampMs = Date.now()) {
+  try {
+    window.localStorage.setItem(
+      STUDENT_SESSION_STORAGE_KEY,
+      JSON.stringify({ uid, startedAt: timestampMs }),
+    );
+  } catch {
+    // Ignore storage unavailability
+  }
+}
+
+function clearStudentLoginTimestamp() {
+  try {
+    window.localStorage.removeItem(STUDENT_SESSION_STORAGE_KEY);
+  } catch {
+    // Ignore storage unavailability
+  }
+}
+
+function getStudentSessionStartMs(targetUser: User): number {
+  const serverSignInMs = targetUser.metadata?.lastSignInTime
+    ? Date.parse(targetUser.metadata.lastSignInTime)
+    : NaN;
+  const storedSignInMs = readStudentLoginTimestamp(targetUser.uid);
+  if (Number.isFinite(serverSignInMs)) {
+    if (storedSignInMs === null || serverSignInMs > storedSignInMs + 5000) {
+      writeStudentLoginTimestamp(targetUser.uid, serverSignInMs);
+    }
+    return serverSignInMs;
+  }
+  if (storedSignInMs !== null) {
+    return storedSignInMs;
+  }
+  const now = Date.now();
+  writeStudentLoginTimestamp(targetUser.uid, now);
+  return now;
+}
 
 export interface ClassInput {
   title: string;
@@ -96,38 +214,39 @@ export interface StudentResultInput {
 }
 
 interface PortalContextValue {
+  // Student & public track (primary auth/db)
   user: User | null;
   authReady: boolean;
-  isAdmin: boolean;
   isPaidStudent: boolean;
-  needsAdminEmailVerification: boolean;
+  needsLegacyGmailLink: boolean;
+  legacyMigrationClaimEmail: string | null;
+  needsStudentEmailVerification: boolean;
   myEnrollment: Enrollment | null;
   myRequest: EnrollmentRequest | null;
   myResults: StudentResult[];
   classes: RecordedClass[];
   notices: Notice[];
   completedClassIds: Set<string>;
-  allEnrollments: Enrollment[];
-  allRequests: EnrollmentRequest[];
-  allResults: StudentResult[];
   loadingData: boolean;
   enrollmentChecked: boolean;
   authError: string | null;
   needsEmailProviderEnable: boolean;
   clearAuthFeedback: () => void;
   signInWithGoogle: () => Promise<void>;
-  registerStudentWithPhone: (input: {
+  registerStudentAccount: (input: {
     studentName: string;
     phone: string;
+    email: string;
     password: string;
     college?: string;
   }) => Promise<void>;
-  loginStudentWithPhone: (phone: string, password: string) => Promise<void>;
-  loginAdminWithEmailPassword: (email: string, password: string) => Promise<void>;
-  registerAdminWithEmailPassword: (email: string, password: string) => Promise<void>;
-  linkAdminPassword: (password: string) => Promise<void>;
-  resendAdminVerification: () => Promise<void>;
-  refreshVerifiedSession: () => Promise<boolean>;
+  loginStudentWithIdentifier: (identifier: string, password: string) => Promise<void>;
+  linkLegacyStudentGmail: (newGmail: string, currentPassword: string) => Promise<void>;
+  sendStudentPasswordReset: (email: string) => Promise<void>;
+  verifyStudentPasswordResetCode: (oobCode: string) => Promise<string>;
+  confirmStudentPasswordReset: (oobCode: string, newPassword: string) => Promise<void>;
+  resendStudentVerification: () => Promise<void>;
+  refreshStudentVerifiedSession: () => Promise<boolean>;
   logout: () => Promise<void>;
   fetchClassStream: (classId: string) => Promise<ClassStream | null>;
   toggleLectureCompleted: (classId: string, completed: boolean) => Promise<void>;
@@ -147,6 +266,28 @@ interface PortalContextValue {
     address?: string;
     photoUrl?: string;
   }) => Promise<void>;
+
+  // Admin track (isolated secondary adminAuth/adminDb)
+  adminUser: User | null;
+  adminAuthReady: boolean;
+  isAdmin: boolean;
+  needsAdminEmailVerification: boolean;
+  adminAuthError: string | null;
+  adminNeedsEmailProviderEnable: boolean;
+  clearAdminAuthFeedback: () => void;
+  signInAdminWithGoogle: () => Promise<void>;
+  loginAdminWithEmailPassword: (email: string, password: string) => Promise<void>;
+  registerAdminWithEmailPassword: (email: string, password: string) => Promise<void>;
+  linkAdminPassword: (password: string) => Promise<void>;
+  resendAdminVerification: () => Promise<void>;
+  refreshVerifiedSession: () => Promise<boolean>;
+  logoutAdmin: () => Promise<void>;
+  adminClasses: RecordedClass[];
+  adminNotices: Notice[];
+  allEnrollments: Enrollment[];
+  allRequests: EnrollmentRequest[];
+  allResults: StudentResult[];
+  fetchAdminClassStream: (classId: string) => Promise<ClassStream | null>;
   publishRecordedClass: (input: ClassInput) => Promise<void>;
   updateRecordedClass: (classId: string, input: ClassInput) => Promise<void>;
   removeRecordedClass: (classId: string) => Promise<void>;
@@ -181,10 +322,13 @@ interface PortalContextValue {
 const PortalContext = createContext<PortalContextValue | null>(null);
 
 export function PortalProvider({ children }: { children: React.ReactNode }) {
+  // --- Track 1: Student & Public Session ---
   const [user, setUser] = useState<User | null>(null);
   const [authReady, setAuthReady] = useState(false);
   const [tokenEmailVerified, setTokenEmailVerified] = useState(false);
-  const [isAdminDoc, setIsAdminDoc] = useState(false);
+  const [studentIsAdminAccount, setStudentIsAdminAccount] = useState(false);
+  const [legacyMigrationClaimEmail, setLegacyMigrationClaimEmail] = useState<string | null>(null);
+  const [migratedLegacyPhoneEmail, setMigratedLegacyPhoneEmail] = useState<string | null>(null);
   const [myEnrollment, setMyEnrollment] = useState<Enrollment | null>(null);
   const [myRequest, setMyRequest] = useState<EnrollmentRequest | null>(null);
   const [myResults, setMyResults] = useState<StudentResult[]>([]);
@@ -193,34 +337,125 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
   const [classes, setClasses] = useState<RecordedClass[]>([]);
   const [notices, setNotices] = useState<Notice[]>([]);
   const [completedClassIds, setCompletedClassIds] = useState<Set<string>>(new Set());
-  const [allEnrollments, setAllEnrollments] = useState<Enrollment[]>([]);
-  const [allRequests, setAllRequests] = useState<EnrollmentRequest[]>([]);
-  const [allResults, setAllResults] = useState<StudentResult[]>([]);
   const [loadingData, setLoadingData] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
   const [needsEmailProviderEnable, setNeedsEmailProviderEnable] = useState(false);
 
+  // --- Track 2: Isolated Admin Session ---
+  const [adminUser, setAdminUser] = useState<User | null>(null);
+  const [adminAuthReady, setAdminAuthReady] = useState(false);
+  const [adminTokenVerified, setAdminTokenVerified] = useState(false);
+  const [isAdminDoc, setIsAdminDoc] = useState(false);
+  const [adminClasses, setAdminClasses] = useState<RecordedClass[]>([]);
+  const [adminNotices, setAdminNotices] = useState<Notice[]>([]);
+  const [allEnrollments, setAllEnrollments] = useState<Enrollment[]>([]);
+  const [allRequests, setAllRequests] = useState<EnrollmentRequest[]>([]);
+  const [allResults, setAllResults] = useState<StudentResult[]>([]);
+  const [adminAuthError, setAdminAuthError] = useState<string | null>(null);
+  const [adminNeedsEmailProviderEnable, setAdminNeedsEmailProviderEnable] = useState(false);
+
   const normalizedEmail = user?.email?.trim().toLowerCase() ?? '';
   const isPhoneStudent = isStudentPhoneEmail(normalizedEmail);
+  const needsLegacyGmailLink = Boolean(user) && isPhoneStudent;
   const hasVerifiedEmail = Boolean(user?.emailVerified) && tokenEmailVerified;
   const isVerifiedAccount = hasVerifiedEmail || isPhoneStudent;
-  const isBootstrapAdmin = hasVerifiedEmail && normalizedEmail === ADMIN_BOOTSTRAP_EMAIL;
+  const needsStudentEmailVerification =
+    Boolean(user) && !isPhoneStudent && !hasVerifiedEmail;
+  const isPaidStudent =
+    (isVerifiedAccount && myEnrollment?.status === 'active') || studentIsAdminAccount;
+
+  const adminNormalizedEmail = adminUser?.email?.trim().toLowerCase() ?? '';
+  const adminHasVerifiedEmail = Boolean(adminUser?.emailVerified) && adminTokenVerified;
+  const isBootstrapAdmin =
+    adminHasVerifiedEmail && adminNormalizedEmail === ADMIN_BOOTSTRAP_EMAIL;
   const isAdmin = isBootstrapAdmin || isAdminDoc;
   const needsAdminEmailVerification =
-    Boolean(user) && normalizedEmail === ADMIN_BOOTSTRAP_EMAIL && !hasVerifiedEmail;
-  const isPaidStudent = isVerifiedAccount && myEnrollment?.status === 'active';
+    Boolean(adminUser) &&
+    adminNormalizedEmail === ADMIN_BOOTSTRAP_EMAIL &&
+    !adminHasVerifiedEmail;
 
-  const syncUserAndToken = async (targetUser: User | null) => {
-    setIsAdminDoc(false);
+  const upsertPhoneLoginAlias = async (
+    uid: string,
+    rawPhone: string,
+    realEmail: string,
+    password: string,
+  ) => {
+    const normalizedPhone = normalizeBdPhone(rawPhone);
+    const cleanEmail = realEmail.trim().toLowerCase();
+    if (!normalizedPhone || !cleanEmail || isStudentPhoneEmail(cleanEmail) || !password) return;
+    const aliasId = await derivePhoneAliasId(normalizedPhone);
+    const { ciphertext, iv } = await encryptEmailForPhoneAlias(
+      normalizedPhone,
+      password,
+      cleanEmail,
+    );
+    await setDoc(doc(db, 'phoneLoginAliases', aliasId), {
+      uid,
+      ciphertext,
+      iv,
+      updatedAt: serverTimestamp(),
+    });
+  };
+
+  const syncStudentSession = async (targetUser: User | null) => {
+    setStudentIsAdminAccount(false);
+    setLegacyMigrationClaimEmail(null);
+    setMigratedLegacyPhoneEmail(null);
     setTokenEmailVerified(false);
     setMyEnrollment(null);
     setMyRequest(null);
     setCompletedClassIds(new Set());
     setEnrollmentChecked(false);
 
+    let storedMigrationVersion: string | null = null;
+    try {
+      storedMigrationVersion = window.localStorage.getItem(STUDENT_MIGRATION_VERSION_KEY);
+    } catch {
+      // Ignore storage errors
+    }
+    if (storedMigrationVersion !== STUDENT_FORCE_REAUTH_VERSION) {
+      try {
+        window.localStorage.setItem(STUDENT_MIGRATION_VERSION_KEY, STUDENT_FORCE_REAUTH_VERSION);
+      } catch {
+        // Ignore storage errors
+      }
+      if (targetUser) {
+        clearStudentLoginTimestamp();
+        clearPendingStudentProfile();
+        setUser(null);
+        setAuthError(
+          'গুরুত্বপূর্ণ আপডেট: পাসওয়ার্ড ভুলে গেলে রিসেট সুবিধা চালু করতে সবার স্টুডেন্ট সেশন রিসেট করা হয়েছে। অনুগ্রহ করে আবার লগইন করো এবং পাসওয়ার্ড রিসেটের জন্য আসল Gmail যুক্ত করো।',
+        );
+        try {
+          await signOut(auth);
+        } catch {
+          // Ignore transient signOut errors
+        }
+        return false;
+      }
+    }
+
     if (!targetUser) {
+      clearStudentLoginTimestamp();
       setUser(null);
       return false;
+    }
+
+    const sessionStartedAt = getStudentSessionStartMs(targetUser);
+    if (Date.now() - sessionStartedAt >= STUDENT_SESSION_MAX_AGE_MS) {
+      clearStudentLoginTimestamp();
+      setUser(null);
+      setAuthError('১২ ঘণ্টা পূর্ণ হওয়ায় নিরাপত্তার জন্য আপনার স্টুডেন্ট সেশন লগআউট করা হয়েছে। অনুগ্রহ করে আবার লগইন করুন।');
+      try {
+        await signOut(auth);
+      } catch {
+        // Ignore transient signOut errors
+      }
+      return false;
+    }
+
+    if (readStudentLoginTimestamp(targetUser.uid) === null) {
+      writeStudentLoginTimestamp(targetUser.uid, sessionStartedAt);
     }
 
     const targetEmail = targetUser.email?.trim().toLowerCase() ?? '';
@@ -233,6 +468,7 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
     }
 
     const current = auth.currentUser ?? targetUser;
+    const currentEmail = current.email?.trim().toLowerCase() ?? '';
     let claimVerified = false;
     try {
       let tokenResult = await current.getIdTokenResult();
@@ -248,9 +484,161 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
     setTokenEmailVerified(claimVerified);
     setUser(current);
 
+    if (isStudentPhoneEmail(currentEmail)) {
+      try {
+        const claimSnap = await getDoc(doc(db, 'phoneMigrationClaims', current.uid));
+        if (claimSnap.exists()) {
+          const data = claimSnap.data() as { targetEmail?: unknown };
+          if (typeof data.targetEmail === 'string') {
+            setLegacyMigrationClaimEmail(data.targetEmail);
+          }
+        }
+      } catch {
+        // Ignore transient read error
+      }
+    } else if (claimVerified) {
+      const pendingProfile = readPendingStudentProfile(current.uid);
+      if (pendingProfile) {
+        try {
+          const reqRef = doc(db, 'enrollmentRequests', current.uid);
+          const existingReq = await getDoc(reqRef);
+          if (!existingReq.exists()) {
+            const payload: Record<string, unknown> = {
+              uid: current.uid,
+              email: currentEmail || pendingProfile.email,
+              studentName: pendingProfile.studentName.trim().slice(0, 100),
+              phone: pendingProfile.phone.trim().slice(0, 24),
+              paymentMethod: 'Registration',
+              status: 'pending',
+              createdAt: serverTimestamp(),
+              updatedAt: serverTimestamp(),
+            };
+            if (pendingProfile.college?.trim()) {
+              payload.college = pendingProfile.college.trim().slice(0, 120);
+            }
+            await setDoc(reqRef, payload);
+          }
+          clearPendingStudentProfile();
+        } catch {
+          // Will retry on next verified session sync
+        }
+      }
+
+      // Complete seamless enrollment migration for legacy phone-only accounts
+      try {
+        const claimSnap = await getDoc(doc(db, 'phoneMigrationClaims', current.uid));
+        if (claimSnap.exists()) {
+          const claimData = claimSnap.data() as {
+            phoneEmail?: unknown;
+            targetEmail?: unknown;
+          };
+          if (
+            claimData.targetEmail === currentEmail &&
+            typeof claimData.phoneEmail === 'string' &&
+            isStudentPhoneEmail(claimData.phoneEmail)
+          ) {
+            const sourcePhoneEmail = claimData.phoneEmail.toLowerCase();
+            setMigratedLegacyPhoneEmail(sourcePhoneEmail);
+
+            const targetEnrollRef = doc(db, 'enrollments', currentEmail);
+            const targetEnrollSnap = await getDoc(targetEnrollRef);
+            if (!targetEnrollSnap.exists()) {
+              const oldEnrollSnap = await getDoc(doc(db, 'enrollments', sourcePhoneEmail));
+              if (oldEnrollSnap.exists()) {
+                const oldData = oldEnrollSnap.data() as Enrollment;
+                if (oldData.status === 'active') {
+                  const migratedDoc: Record<string, unknown> = {
+                    email: currentEmail,
+                    studentName: oldData.studentName,
+                    batch: oldData.batch,
+                    status: 'active',
+                    addedByUid: oldData.addedByUid,
+                    createdAt: serverTimestamp(),
+                    updatedAt: serverTimestamp(),
+                  };
+                  if (oldData.rollNumber !== undefined) migratedDoc.rollNumber = oldData.rollNumber;
+                  if (oldData.college !== undefined) migratedDoc.college = oldData.college;
+                  if (oldData.phone !== undefined) migratedDoc.phone = oldData.phone;
+                  if (oldData.guardianPhone !== undefined) {
+                    migratedDoc.guardianPhone = oldData.guardianPhone;
+                  }
+                  if (oldData.sectionTime !== undefined) migratedDoc.sectionTime = oldData.sectionTime;
+                  if (oldData.sscGpa !== undefined) migratedDoc.sscGpa = oldData.sscGpa;
+                  if (oldData.address !== undefined) migratedDoc.address = oldData.address;
+                  if (oldData.photoUrl !== undefined) migratedDoc.photoUrl = oldData.photoUrl;
+                  await setDoc(targetEnrollRef, migratedDoc);
+                }
+              }
+            }
+
+            const reqRef = doc(db, 'enrollmentRequests', current.uid);
+            const reqSnap = await getDoc(reqRef);
+            if (reqSnap.exists()) {
+              const reqData = reqSnap.data() as EnrollmentRequest;
+              if (reqData.email === sourcePhoneEmail) {
+                await updateDoc(reqRef, {
+                  email: currentEmail,
+                  updatedAt: serverTimestamp(),
+                });
+              }
+            }
+          }
+        }
+      } catch {
+        // Non-fatal: will retry on next verified session sync
+      }
+
+      if (currentEmail === ADMIN_BOOTSTRAP_EMAIL) {
+        setStudentIsAdminAccount(true);
+      } else {
+        try {
+          const adminSnap = await getDoc(doc(db, 'admins', current.uid));
+          setStudentIsAdminAccount(adminSnap.exists());
+        } catch {
+          setStudentIsAdminAccount(false);
+        }
+      }
+    }
+
+    return claimVerified;
+  };
+
+  const syncAdminSession = async (targetUser: User | null) => {
+    setIsAdminDoc(false);
+    setAdminTokenVerified(false);
+
+    if (!targetUser) {
+      setAdminUser(null);
+      return false;
+    }
+
+    if (!targetUser.emailVerified) {
+      try {
+        await targetUser.reload();
+      } catch {
+        // Ignore transient network errors
+      }
+    }
+
+    const current = adminAuth.currentUser ?? targetUser;
+    let claimVerified = false;
+    try {
+      let tokenResult = await current.getIdTokenResult();
+      if (current.emailVerified && tokenResult.claims.email_verified !== true) {
+        await current.getIdToken(true);
+        tokenResult = await current.getIdTokenResult();
+      }
+      claimVerified = tokenResult.claims.email_verified === true;
+    } catch {
+      claimVerified = Boolean(current.emailVerified);
+    }
+
+    setAdminTokenVerified(claimVerified);
+    setAdminUser(current);
+
     if (claimVerified) {
       try {
-        const adminSnap = await getDoc(doc(db, 'admins', current.uid));
+        const adminSnap = await getDoc(doc(adminDb, 'admins', current.uid));
         setIsAdminDoc(adminSnap.exists());
       } catch {
         setIsAdminDoc(false);
@@ -260,13 +648,13 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
     return claimVerified;
   };
 
-  // 1. Auth Listener
+  // 1A. Student Auth Listener
   useEffect(() => {
     let mounted = true;
     const unsub = onAuthStateChanged(auth, async (nextUser) => {
       if (!mounted) return;
       setAuthReady(false);
-      await syncUserAndToken(nextUser);
+      await syncStudentSession(nextUser);
       if (mounted) {
         setAuthReady(true);
       }
@@ -277,7 +665,71 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  // 2. Personal Enrollment, Request & Lecture Progress Listeners
+  // 1A-2. Enforce 12-hour automatic logout for Student Panel (Admin Panel unaffected)
+  useEffect(() => {
+    if (!authReady || !user) return;
+
+    const enforceExpiry = () => {
+      const startedAt = getStudentSessionStartMs(user);
+      const elapsed = Date.now() - startedAt;
+      if (elapsed >= STUDENT_SESSION_MAX_AGE_MS) {
+        clearStudentLoginTimestamp();
+        setAuthError(
+          '১২ ঘণ্টা পূর্ণ হওয়ায় নিরাপত্তার জন্য আপনার স্টুডেন্ট সেশন লগআউট করা হয়েছে। অনুগ্রহ করে আবার লগইন করুন।',
+        );
+        void signOut(auth);
+        return true;
+      }
+      return false;
+    };
+
+    if (enforceExpiry()) return;
+
+    const startedAt = getStudentSessionStartMs(user);
+    const remainingMs = Math.max(0, STUDENT_SESSION_MAX_AGE_MS - (Date.now() - startedAt));
+    const timeoutId = window.setTimeout(() => {
+      enforceExpiry();
+    }, remainingMs);
+
+    const intervalId = window.setInterval(() => {
+      enforceExpiry();
+    }, 60 * 1000);
+
+    const handleResumeCheck = () => {
+      if (document.visibilityState === 'visible') {
+        enforceExpiry();
+      }
+    };
+
+    window.addEventListener('focus', handleResumeCheck);
+    document.addEventListener('visibilitychange', handleResumeCheck);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+      window.clearInterval(intervalId);
+      window.removeEventListener('focus', handleResumeCheck);
+      document.removeEventListener('visibilitychange', handleResumeCheck);
+    };
+  }, [authReady, user]);
+
+  // 1B. Admin Auth Listener (isolated)
+  useEffect(() => {
+    let mounted = true;
+    const unsub = onAuthStateChanged(adminAuth, async (nextUser) => {
+      if (!mounted) return;
+      setAdminAuthReady(false);
+      await syncAdminSession(nextUser);
+      if (mounted) {
+        setAdminAuthReady(true);
+      }
+    });
+    return () => {
+      mounted = false;
+      unsub();
+    };
+  }, []);
+
+  // 2. Personal Enrollment, Request, Progress & Private Results Listeners (Student track)
   useEffect(() => {
     if (!authReady) return;
     if (!user || !isVerifiedAccount || !normalizedEmail) {
@@ -298,7 +750,7 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
       },
       (error) => {
         setEnrollmentChecked(true);
-        handleFirestoreError(error, OperationType.GET, enrollmentPath);
+        handleFirestoreError(error, OperationType.GET, enrollmentPath, auth.currentUser);
       },
     );
 
@@ -309,7 +761,7 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
         setMyRequest(snap.exists() ? (snap.data() as EnrollmentRequest) : null);
       },
       (error) => {
-        handleFirestoreError(error, OperationType.GET, reqPath);
+        handleFirestoreError(error, OperationType.GET, reqPath, auth.currentUser);
       },
     );
 
@@ -325,50 +777,79 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
         setCompletedClassIds(nextSet);
       },
       (error) => {
-        handleFirestoreError(error, OperationType.LIST, progressPath);
+        handleFirestoreError(error, OperationType.LIST, progressPath, auth.currentUser);
       },
     );
 
     const myResultsPath = `studentResults/${normalizedEmail}`;
+    let primaryResults: StudentResult[] = [];
+    let legacyResults: StudentResult[] = [];
+    const syncMergedResults = () => {
+      const mergedMap = new Map<string, StudentResult>();
+      for (const item of legacyResults) mergedMap.set(item.id, item);
+      for (const item of primaryResults) mergedMap.set(item.id, item);
+      const items = Array.from(mergedMap.values()).sort((a, b) => {
+        if (a.examDate !== b.examDate) {
+          return b.examDate.localeCompare(a.examDate);
+        }
+        const tA = a.createdAt?.toMillis?.() ?? 0;
+        const tB = b.createdAt?.toMillis?.() ?? 0;
+        return tB - tA;
+      });
+      setMyResults(items);
+    };
+
     const unsubMyResults = onSnapshot(
       query(collection(db, 'studentResults'), where('studentEmail', '==', normalizedEmail)),
       (snap) => {
-        const items = snap.docs
-          .map((d) => d.data() as StudentResult)
-          .sort((a, b) => {
-            if (a.examDate !== b.examDate) {
-              return b.examDate.localeCompare(a.examDate);
-            }
-            const tA = a.createdAt?.toMillis?.() ?? 0;
-            const tB = b.createdAt?.toMillis?.() ?? 0;
-            return tB - tA;
-          });
-        setMyResults(items);
+        primaryResults = snap.docs.map((d) => d.data() as StudentResult);
+        syncMergedResults();
       },
       (error) => {
-        handleFirestoreError(error, OperationType.LIST, myResultsPath);
+        handleFirestoreError(error, OperationType.LIST, myResultsPath, auth.currentUser);
       },
     );
+
+    const unsubLegacyResults =
+      migratedLegacyPhoneEmail && migratedLegacyPhoneEmail !== normalizedEmail
+        ? onSnapshot(
+            query(
+              collection(db, 'studentResults'),
+              where('studentEmail', '==', migratedLegacyPhoneEmail),
+            ),
+            (snap) => {
+              legacyResults = snap.docs.map((d) => d.data() as StudentResult);
+              syncMergedResults();
+            },
+            (error) => {
+              handleFirestoreError(
+                error,
+                OperationType.LIST,
+                `studentResults/${migratedLegacyPhoneEmail}`,
+                auth.currentUser,
+              );
+            },
+          )
+        : () => {};
 
     return () => {
       unsubEnrollment();
       unsubRequest();
       unsubProgress();
       unsubMyResults();
+      unsubLegacyResults();
     };
-  }, [authReady, user, isVerifiedAccount, normalizedEmail]);
+  }, [authReady, user, isVerifiedAccount, normalizedEmail, migratedLegacyPhoneEmail]);
 
-  // 3. Classes & Notices Listeners
+  // 3. Classes & Notices Listeners (Student + Public Landing)
   useEffect(() => {
     if (!authReady || !enrollmentChecked) return;
 
-    const hasFullAccess = isAdmin || isPaidStudent;
-
-    const classesQuery = hasFullAccess
+    const classesQuery = isPaidStudent
       ? query(collection(db, 'classes'))
       : query(collection(db, 'classes'), where('isFreePreview', '==', true));
 
-    const noticesQuery = hasFullAccess
+    const noticesQuery = isPaidStudent
       ? query(collection(db, 'notices'), orderBy('createdAt', 'desc'))
       : query(collection(db, 'notices'), where('audience', '==', 'public'));
 
@@ -389,7 +870,7 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
       },
       (error) => {
         setLoadingData(false);
-        handleFirestoreError(error, OperationType.LIST, 'classes');
+        handleFirestoreError(error, OperationType.LIST, 'classes', auth.currentUser);
       },
     );
 
@@ -407,7 +888,7 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
         setNotices(items);
       },
       (error) => {
-        handleFirestoreError(error, OperationType.LIST, 'notices');
+        handleFirestoreError(error, OperationType.LIST, 'notices', auth.currentUser);
       },
     );
 
@@ -415,44 +896,86 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
       unsubClasses();
       unsubNotices();
     };
-  }, [authReady, enrollmentChecked, isAdmin, isPaidStudent]);
+  }, [authReady, enrollmentChecked, isPaidStudent]);
 
-  // 4. Admin Roster, Pending Requests & Individual Results Listeners
+  // 4. Admin Studio Listeners (on isolated adminDb)
   useEffect(() => {
-    if (!authReady || !isAdmin) {
+    if (!adminAuthReady || !isAdmin) {
       setAllEnrollments([]);
       setAllRequests([]);
       setAllResults([]);
+      setAdminClasses([]);
+      setAdminNotices([]);
       return;
     }
 
     const unsubEnrollments = onSnapshot(
-      query(collection(db, 'enrollments'), orderBy('createdAt', 'desc')),
+      query(collection(adminDb, 'enrollments'), orderBy('createdAt', 'desc')),
       (snap) => {
         setAllEnrollments(snap.docs.map((d) => d.data() as Enrollment));
       },
       (error) => {
-        handleFirestoreError(error, OperationType.LIST, 'enrollments');
+        handleFirestoreError(error, OperationType.LIST, 'enrollments', adminAuth.currentUser);
       },
     );
 
     const unsubRequests = onSnapshot(
-      query(collection(db, 'enrollmentRequests'), orderBy('createdAt', 'desc')),
+      query(collection(adminDb, 'enrollmentRequests'), orderBy('createdAt', 'desc')),
       (snap) => {
         setAllRequests(snap.docs.map((d) => d.data() as EnrollmentRequest));
       },
       (error) => {
-        handleFirestoreError(error, OperationType.LIST, 'enrollmentRequests');
+        handleFirestoreError(
+          error,
+          OperationType.LIST,
+          'enrollmentRequests',
+          adminAuth.currentUser,
+        );
       },
     );
 
     const unsubResults = onSnapshot(
-      query(collection(db, 'studentResults'), orderBy('createdAt', 'desc')),
+      query(collection(adminDb, 'studentResults'), orderBy('createdAt', 'desc')),
       (snap) => {
         setAllResults(snap.docs.map((d) => d.data() as StudentResult));
       },
       (error) => {
-        handleFirestoreError(error, OperationType.LIST, 'studentResults');
+        handleFirestoreError(error, OperationType.LIST, 'studentResults', adminAuth.currentUser);
+      },
+    );
+
+    const unsubAdminClasses = onSnapshot(
+      query(collection(adminDb, 'classes')),
+      (snap) => {
+        const items = snap.docs
+          .map((d) => d.data() as RecordedClass)
+          .sort((a, b) =>
+            a.chapterNumber !== b.chapterNumber
+              ? a.chapterNumber - b.chapterNumber
+              : a.lectureNumber - b.lectureNumber,
+          );
+        setAdminClasses(items);
+      },
+      (error) => {
+        handleFirestoreError(error, OperationType.LIST, 'classes', adminAuth.currentUser);
+      },
+    );
+
+    const unsubAdminNotices = onSnapshot(
+      query(collection(adminDb, 'notices'), orderBy('createdAt', 'desc')),
+      (snap) => {
+        const items = snap.docs
+          .map((d) => d.data() as Notice)
+          .sort((a, b) => {
+            if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+            const tA = a.createdAt?.toMillis?.() ?? 0;
+            const tB = b.createdAt?.toMillis?.() ?? 0;
+            return tB - tA;
+          });
+        setAdminNotices(items);
+      },
+      (error) => {
+        handleFirestoreError(error, OperationType.LIST, 'notices', adminAuth.currentUser);
       },
     );
 
@@ -460,18 +983,26 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
       unsubEnrollments();
       unsubRequests();
       unsubResults();
+      unsubAdminClasses();
+      unsubAdminNotices();
     };
-  }, [authReady, isAdmin]);
+  }, [adminAuthReady, isAdmin]);
 
   const clearAuthFeedback = () => {
     setAuthError(null);
     setNeedsEmailProviderEnable(false);
   };
 
+  const clearAdminAuthFeedback = () => {
+    setAdminAuthError(null);
+    setAdminNeedsEmailProviderEnable(false);
+  };
+
   const signInWithGoogle = async () => {
     clearAuthFeedback();
     try {
-      await signInWithPopup(auth, googleProvider);
+      const cred = await signInWithPopup(auth, googleProvider);
+      writeStudentLoginTimestamp(cred.user.uid, Date.now());
     } catch (error) {
       const formatted = formatAuthError(error);
       setAuthError(formatted.message);
@@ -479,9 +1010,21 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const registerStudentWithPhone = async (input: {
+  const signInAdminWithGoogle = async () => {
+    clearAdminAuthFeedback();
+    try {
+      await signInWithPopup(adminAuth, googleProvider);
+    } catch (error) {
+      const formatted = formatAuthError(error);
+      setAdminAuthError(formatted.message);
+      setAdminNeedsEmailProviderEnable(formatted.needsProviderEnable);
+    }
+  };
+
+  const registerStudentAccount = async (input: {
     studentName: string;
     phone: string;
+    email: string;
     password: string;
     college?: string;
   }) => {
@@ -491,66 +1034,129 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
       setAuthError('সঠিক ১১ ডিজিটের মোবাইল নাম্বার দিন (যেমন: 01712345678)।');
       throw new Error('Invalid mobile number');
     }
+    const cleanEmail = input.email.trim().toLowerCase();
+    if (
+      !/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/.test(cleanEmail) ||
+      isStudentPhoneEmail(cleanEmail)
+    ) {
+      setAuthError('সঠিক ও সচল Gmail ঠিকানা দিন (পাসওয়ার্ড রিসেটের জন্য এটি প্রয়োজন)।');
+      throw new Error('Invalid Gmail');
+    }
     if (input.password.length < 6) {
       setAuthError('পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।');
       throw new Error('Weak password');
     }
-    const phoneEmail = phoneToAuthEmail(normalizedPhone);
+
     try {
-      const cred = await createUserWithEmailAndPassword(auth, phoneEmail, input.password);
+      const cred = await createUserWithEmailAndPassword(auth, cleanEmail, input.password);
+      writeStudentLoginTimestamp(cred.user.uid, Date.now());
+      writePendingStudentProfile({
+        uid: cred.user.uid,
+        email: cleanEmail,
+        studentName: input.studentName.trim().slice(0, 100),
+        phone: normalizedPhone,
+        college: input.college?.trim().slice(0, 120),
+      });
+      try {
+        await upsertPhoneLoginAlias(cred.user.uid, normalizedPhone, cleanEmail, input.password);
+      } catch {
+        // Best-effort encrypted alias write; refreshed on login
+      }
       await updateProfile(cred.user, {
         displayName: input.studentName.trim().slice(0, 100),
       });
+      await sendEmailVerification(cred.user);
+    } catch (error) {
+      const formatted = formatAuthError(error);
+      setAuthError(formatted.message);
+      setNeedsEmailProviderEnable(formatted.needsProviderEnable);
+      throw error;
+    }
+  };
 
-      const payload: Record<string, unknown> = {
-        uid: cred.user.uid,
-        email: phoneEmail,
-        studentName: input.studentName.trim().slice(0, 100),
-        phone: normalizedPhone,
-        paymentMethod: 'Registration',
-        status: 'pending',
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      };
-      if (input.college?.trim()) {
-        payload.college = input.college.trim().slice(0, 120);
+  const loginStudentWithIdentifier = async (identifier: string, password: string) => {
+    clearAuthFeedback();
+    const trimmed = identifier.trim();
+    let targetEmail = '';
+    let loginPhone: string | null = null;
+
+    if (trimmed.includes('@')) {
+      const lowered = trimmed.toLowerCase();
+      if (!/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/.test(lowered)) {
+        setAuthError('সঠিক Gmail ঠিকানা অথবা ১১ ডিজিটের মোবাইল নাম্বার দিন।');
+        throw new Error('Invalid identifier');
       }
-      await setDoc(doc(db, 'enrollmentRequests', cred.user.uid), payload);
-    } catch (error) {
-      const formatted = formatAuthError(error);
-      setAuthError(formatted.message);
-      setNeedsEmailProviderEnable(formatted.needsProviderEnable);
-      throw error;
+      targetEmail = lowered;
+    } else {
+      const normalizedPhone = normalizeBdPhone(trimmed);
+      if (!normalizedPhone) {
+        setAuthError('সঠিক Gmail অথবা ১১ ডিজিটের মোবাইল নাম্বার দিন (যেমন: 01712345678)।');
+        throw new Error('Invalid mobile number');
+      }
+      loginPhone = normalizedPhone;
+      try {
+        const aliasId = await derivePhoneAliasId(normalizedPhone);
+        const aliasSnap = await getDoc(doc(db, 'phoneLoginAliases', aliasId));
+        if (aliasSnap.exists()) {
+          const aliasData = aliasSnap.data() as { ciphertext?: unknown; iv?: unknown };
+          if (typeof aliasData.ciphertext === 'string' && typeof aliasData.iv === 'string') {
+            const decrypted = await decryptEmailFromPhoneAlias(
+              normalizedPhone,
+              password,
+              aliasData.ciphertext,
+              aliasData.iv,
+            );
+            if (!decrypted) {
+              setAuthError(
+                'পাসওয়ার্ড সঠিক নয়। সম্প্রতি Gmail দিয়ে পাসওয়ার্ড রিসেট করে থাকলে প্রথমে তোমার আসল Gmail ও নতুন পাসওয়ার্ড দিয়ে লগইন করো — এরপর মোবাইল নাম্বার দিয়েও লগইন করা যাবে।',
+              );
+              throw new Error('Phone alias decryption failed');
+            }
+            targetEmail = decrypted;
+          }
+        }
+      } catch (err) {
+        if (err instanceof Error && err.message === 'Phone alias decryption failed') {
+          throw err;
+        }
+        // Fallback to legacy phone email if alias lookup isn't available
+      }
+      if (!targetEmail) {
+        targetEmail = phoneToAuthEmail(normalizedPhone);
+      }
     }
-  };
 
-  const loginStudentWithPhone = async (phone: string, password: string) => {
-    clearAuthFeedback();
-    const normalizedPhone = normalizeBdPhone(phone);
-    if (!normalizedPhone) {
-      setAuthError('সঠিক ১১ ডিজিটের মোবাইল নাম্বার দিন (যেমন: 01712345678)।');
-      throw new Error('Invalid mobile number');
-    }
-    const phoneEmail = phoneToAuthEmail(normalizedPhone);
     try {
-      await signInWithEmailAndPassword(auth, phoneEmail, password);
-    } catch (error) {
-      const formatted = formatAuthError(error);
-      setAuthError(formatted.message);
-      setNeedsEmailProviderEnable(formatted.needsProviderEnable);
-      throw error;
-    }
-  };
-
-  const loginAdminWithEmailPassword = async (email: string, password: string) => {
-    clearAuthFeedback();
-    try {
-      const cred = await signInWithEmailAndPassword(auth, email.trim(), password);
-      if (!cred.user.emailVerified) {
+      const cred = await signInWithEmailAndPassword(auth, targetEmail, password);
+      writeStudentLoginTimestamp(cred.user.uid, Date.now());
+      if (!isStudentPhoneEmail(targetEmail)) {
+        // Keep encrypted mobile login alias synchronized with the latest working password
         try {
-          await sendEmailVerification(cred.user);
+          let knownPhone = loginPhone ?? readPendingStudentProfile(cred.user.uid)?.phone ?? '';
+          if (!knownPhone && cred.user.emailVerified) {
+            const [enrollSnap, reqSnap] = await Promise.all([
+              getDoc(doc(db, 'enrollments', targetEmail)),
+              getDoc(doc(db, 'enrollmentRequests', cred.user.uid)),
+            ]);
+            if (enrollSnap.exists()) {
+              knownPhone = (enrollSnap.data() as Enrollment).phone ?? '';
+            }
+            if (!knownPhone && reqSnap.exists()) {
+              knownPhone = (reqSnap.data() as EnrollmentRequest).phone ?? '';
+            }
+          }
+          if (knownPhone) {
+            await upsertPhoneLoginAlias(cred.user.uid, knownPhone, targetEmail, password);
+          }
         } catch {
-          // Ignore rate limits
+          // Non-fatal alias sync
+        }
+        if (!cred.user.emailVerified) {
+          try {
+            await sendEmailVerification(cred.user);
+          } catch {
+            // Ignore rate limit
+          }
         }
       }
     } catch (error) {
@@ -561,15 +1167,50 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const registerAdminWithEmailPassword = async (email: string, password: string) => {
+  const linkLegacyStudentGmail = async (newGmail: string, currentPassword: string) => {
     clearAuthFeedback();
-    if (email.trim().toLowerCase() !== ADMIN_BOOTSTRAP_EMAIL) {
-      setAuthError('কেবল অনুমোদিত Admin Gmail দিয়ে সেটআপ করা যাবে।');
-      throw new Error('Invalid admin email');
+    const current = auth.currentUser;
+    const currentEmail = current?.email?.trim().toLowerCase() ?? '';
+    if (!current || !isStudentPhoneEmail(currentEmail)) {
+      setAuthError('শুধুমাত্র পুরোনো মোবাইল-ভিত্তিক একাউন্টে নতুন Gmail যুক্ত করা যাবে।');
+      throw new Error('Not a legacy phone account');
     }
+    const cleanGmail = newGmail.trim().toLowerCase();
+    if (
+      !/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/.test(cleanGmail) ||
+      isStudentPhoneEmail(cleanGmail)
+    ) {
+      setAuthError('পাসওয়ার্ড রিসেটের জন্য আপনার সঠিক আসল Gmail ঠিকানা দিন।');
+      throw new Error('Invalid Gmail');
+    }
+    if (!currentPassword) {
+      setAuthError('নিশ্চিত করতে আপনার বর্তমান পাসওয়ার্ড দিন।');
+      throw new Error('Password required');
+    }
+
     try {
-      const cred = await createUserWithEmailAndPassword(auth, email.trim(), password);
-      await sendEmailVerification(cred.user);
+      const credential = EmailAuthProvider.credential(currentEmail, currentPassword);
+      await reauthenticateWithCredential(current, credential);
+
+      const claimRef = doc(db, 'phoneMigrationClaims', current.uid);
+      const claimSnap = await getDoc(claimRef);
+      if (claimSnap.exists()) {
+        await updateDoc(claimRef, {
+          targetEmail: cleanGmail,
+        });
+      } else {
+        await setDoc(claimRef, {
+          uid: current.uid,
+          phoneEmail: currentEmail,
+          targetEmail: cleanGmail,
+          createdAt: serverTimestamp(),
+        });
+      }
+
+      const phoneNum = extractPhoneFromAuthEmail(currentEmail);
+      await upsertPhoneLoginAlias(current.uid, phoneNum, cleanGmail, currentPassword);
+      await verifyBeforeUpdateEmail(current, cleanGmail);
+      setLegacyMigrationClaimEmail(cleanGmail);
     } catch (error) {
       const formatted = formatAuthError(error);
       setAuthError(formatted.message);
@@ -578,17 +1219,18 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const linkAdminPassword = async (password: string) => {
+  const sendStudentPasswordReset = async (email: string) => {
     clearAuthFeedback();
-    if (!user || !user.email) {
-      throw new Error('Sign in with Google first to link a password.');
-    }
-    if (password.length < 6) {
-      throw new Error('Password must be at least 6 characters.');
+    const cleanEmail = email.trim().toLowerCase();
+    if (
+      !/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/.test(cleanEmail) ||
+      isStudentPhoneEmail(cleanEmail)
+    ) {
+      setAuthError('পাসওয়ার্ড রিসেটের জন্য আপনার আসল Gmail ঠিকানা লিখুন।');
+      throw new Error('Invalid reset email');
     }
     try {
-      const credential = EmailAuthProvider.credential(user.email, password);
-      await linkWithCredential(user, credential);
+      await sendPasswordResetEmail(auth, cleanEmail);
     } catch (error) {
       const formatted = formatAuthError(error);
       setAuthError(formatted.message);
@@ -597,27 +1239,132 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const resendAdminVerification = async () => {
-    if (!user) return;
-    await sendEmailVerification(user);
+  const verifyStudentPasswordResetCode = async (oobCode: string): Promise<string> => {
+    return verifyPasswordResetCode(auth, oobCode);
   };
 
-  const refreshVerifiedSession = async (): Promise<boolean> => {
+  const confirmStudentPasswordReset = async (oobCode: string, newPassword: string) => {
+    clearAuthFeedback();
+    if (newPassword.length < 6) {
+      setAuthError('নতুন পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।');
+      throw new Error('Weak password');
+    }
+    try {
+      await confirmPasswordReset(auth, oobCode, newPassword);
+    } catch (error) {
+      const formatted = formatAuthError(error);
+      setAuthError(formatted.message);
+      throw error;
+    }
+  };
+
+  const resendStudentVerification = async () => {
+    if (!auth.currentUser) return;
+    clearAuthFeedback();
+    try {
+      await sendEmailVerification(auth.currentUser);
+    } catch (error) {
+      const formatted = formatAuthError(error);
+      setAuthError(formatted.message);
+      throw error;
+    }
+  };
+
+  const refreshStudentVerifiedSession = async (): Promise<boolean> => {
     const current = auth.currentUser;
     if (!current) return false;
     setAuthReady(false);
     try {
       await current.reload();
       await current.getIdToken(true);
-      return await syncUserAndToken(auth.currentUser ?? current);
+      return await syncStudentSession(auth.currentUser ?? current);
     } finally {
       setAuthReady(true);
     }
   };
 
+  const loginAdminWithEmailPassword = async (email: string, password: string) => {
+    clearAdminAuthFeedback();
+    try {
+      const cred = await signInWithEmailAndPassword(adminAuth, email.trim(), password);
+      if (!cred.user.emailVerified) {
+        try {
+          await sendEmailVerification(cred.user);
+        } catch {
+          // Ignore rate limits
+        }
+      }
+    } catch (error) {
+      const formatted = formatAuthError(error);
+      setAdminAuthError(formatted.message);
+      setAdminNeedsEmailProviderEnable(formatted.needsProviderEnable);
+      throw error;
+    }
+  };
+
+  const registerAdminWithEmailPassword = async (email: string, password: string) => {
+    clearAdminAuthFeedback();
+    if (email.trim().toLowerCase() !== ADMIN_BOOTSTRAP_EMAIL) {
+      setAdminAuthError('কেবল অনুমোদিত Admin Gmail দিয়ে সেটআপ করা যাবে।');
+      throw new Error('Invalid admin email');
+    }
+    try {
+      const cred = await createUserWithEmailAndPassword(adminAuth, email.trim(), password);
+      await sendEmailVerification(cred.user);
+    } catch (error) {
+      const formatted = formatAuthError(error);
+      setAdminAuthError(formatted.message);
+      setAdminNeedsEmailProviderEnable(formatted.needsProviderEnable);
+      throw error;
+    }
+  };
+
+  const linkAdminPassword = async (password: string) => {
+    clearAdminAuthFeedback();
+    if (!adminUser || !adminUser.email) {
+      throw new Error('Sign in with Google first to link a password.');
+    }
+    if (password.length < 6) {
+      throw new Error('Password must be at least 6 characters.');
+    }
+    try {
+      const credential = EmailAuthProvider.credential(adminUser.email, password);
+      await linkWithCredential(adminUser, credential);
+    } catch (error) {
+      const formatted = formatAuthError(error);
+      setAdminAuthError(formatted.message);
+      setAdminNeedsEmailProviderEnable(formatted.needsProviderEnable);
+      throw error;
+    }
+  };
+
+  const resendAdminVerification = async () => {
+    if (!adminUser) return;
+    await sendEmailVerification(adminUser);
+  };
+
+  const refreshVerifiedSession = async (): Promise<boolean> => {
+    const current = adminAuth.currentUser;
+    if (!current) return false;
+    setAdminAuthReady(false);
+    try {
+      await current.reload();
+      await current.getIdToken(true);
+      return await syncAdminSession(adminAuth.currentUser ?? current);
+    } finally {
+      setAdminAuthReady(true);
+    }
+  };
+
   const logout = async () => {
     clearAuthFeedback();
+    clearStudentLoginTimestamp();
     await signOut(auth);
+  };
+
+  const logoutAdmin = async () => {
+    clearAdminAuthFeedback();
+    await signOut(adminAuth);
   };
 
   const fetchClassStream = async (classId: string): Promise<ClassStream | null> => {
@@ -626,7 +1373,17 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
       const snap = await getDoc(doc(db, 'classStreams', classId));
       return snap.exists() ? (snap.data() as ClassStream) : null;
     } catch (error) {
-      handleFirestoreError(error, OperationType.GET, path);
+      handleFirestoreError(error, OperationType.GET, path, auth.currentUser);
+    }
+  };
+
+  const fetchAdminClassStream = async (classId: string): Promise<ClassStream | null> => {
+    const path = `classStreams/${classId}`;
+    try {
+      const snap = await getDoc(doc(adminDb, 'classStreams', classId));
+      return snap.exists() ? (snap.data() as ClassStream) : null;
+    } catch (error) {
+      handleFirestoreError(error, OperationType.GET, path, adminAuth.currentUser);
     }
   };
 
@@ -650,7 +1407,7 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
         });
       }
     } catch (error) {
-      handleFirestoreError(error, OperationType.WRITE, path);
+      handleFirestoreError(error, OperationType.WRITE, path, auth.currentUser);
     }
   };
 
@@ -699,17 +1456,17 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
         });
       }
     } catch (error) {
-      handleFirestoreError(error, OperationType.WRITE, path);
+      handleFirestoreError(error, OperationType.WRITE, path, auth.currentUser);
     }
   };
 
   const publishRecordedClass = async (input: ClassInput) => {
-    if (!user || !isAdmin) throw new Error('Admin access required.');
+    if (!adminUser || !isAdmin) throw new Error('Admin access required.');
     const classId = `${slugifyId(`ch${input.chapterNumber}-lec${input.lectureNumber}-${input.title}`).slice(0, 60)}-${Date.now().toString(36)}`;
-    const batch = writeBatch(db);
+    const batch = writeBatch(adminDb);
     const now = serverTimestamp();
 
-    batch.set(doc(db, 'classes', classId), {
+    batch.set(doc(adminDb, 'classes', classId), {
       id: classId,
       title: input.title.trim().slice(0, 140),
       chapterNumber: input.chapterNumber,
@@ -718,17 +1475,17 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
       duration: input.duration.trim().slice(0, 24),
       description: input.description.trim().slice(0, 600),
       isFreePreview: input.isFreePreview,
-      authorUid: user.uid,
+      authorUid: adminUser.uid,
       createdAt: now,
       updatedAt: now,
     });
 
-    batch.set(doc(db, 'classStreams', classId), {
+    batch.set(doc(adminDb, 'classStreams', classId), {
       classId,
       videoUrl: input.videoUrl.trim().slice(0, 400),
       noteUrl: input.noteUrl.trim().slice(0, 400),
       isFreePreview: input.isFreePreview,
-      authorUid: user.uid,
+      authorUid: adminUser.uid,
       createdAt: now,
       updatedAt: now,
     });
@@ -736,16 +1493,16 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
     try {
       await batch.commit();
     } catch (error) {
-      handleFirestoreError(error, OperationType.WRITE, `classes/${classId}`);
+      handleFirestoreError(error, OperationType.WRITE, `classes/${classId}`, adminAuth.currentUser);
     }
   };
 
   const updateRecordedClass = async (classId: string, input: ClassInput) => {
-    if (!user || !isAdmin) throw new Error('Admin access required.');
-    const batch = writeBatch(db);
+    if (!adminUser || !isAdmin) throw new Error('Admin access required.');
+    const batch = writeBatch(adminDb);
     const now = serverTimestamp();
 
-    batch.update(doc(db, 'classes', classId), {
+    batch.update(doc(adminDb, 'classes', classId), {
       title: input.title.trim().slice(0, 140),
       chapterNumber: input.chapterNumber,
       chapterName: input.chapterName.trim().slice(0, 100),
@@ -756,7 +1513,7 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
       updatedAt: now,
     });
 
-    batch.update(doc(db, 'classStreams', classId), {
+    batch.update(doc(adminDb, 'classStreams', classId), {
       videoUrl: input.videoUrl.trim().slice(0, 400),
       noteUrl: input.noteUrl.trim().slice(0, 400),
       isFreePreview: input.isFreePreview,
@@ -766,29 +1523,39 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
     try {
       await batch.commit();
     } catch (error) {
-      handleFirestoreError(error, OperationType.UPDATE, `classes/${classId}`);
+      handleFirestoreError(
+        error,
+        OperationType.UPDATE,
+        `classes/${classId}`,
+        adminAuth.currentUser,
+      );
     }
   };
 
   const removeRecordedClass = async (classId: string) => {
     if (!isAdmin) throw new Error('Admin access required.');
-    const batch = writeBatch(db);
-    batch.delete(doc(db, 'classes', classId));
-    batch.delete(doc(db, 'classStreams', classId));
+    const batch = writeBatch(adminDb);
+    batch.delete(doc(adminDb, 'classes', classId));
+    batch.delete(doc(adminDb, 'classStreams', classId));
     try {
       await batch.commit();
     } catch (error) {
-      handleFirestoreError(error, OperationType.DELETE, `classes/${classId}`);
+      handleFirestoreError(
+        error,
+        OperationType.DELETE,
+        `classes/${classId}`,
+        adminAuth.currentUser,
+      );
     }
   };
 
   const publishNotice = async (input: NoticeInput) => {
-    if (!user || !isAdmin) throw new Error('Admin access required.');
+    if (!adminUser || !isAdmin) throw new Error('Admin access required.');
     const noticeId = `${slugifyId(input.title).slice(0, 50)}-${Date.now().toString(36)}`;
     const safeImageUrl = sanitizeNoticeImageUrl(input.imageUrl ?? '');
     const safeVideoUrl = sanitizeNoticeVideoUrl(input.videoUrl ?? '');
     try {
-      await setDoc(doc(db, 'notices', noticeId), {
+      await setDoc(doc(adminDb, 'notices', noticeId), {
         id: noticeId,
         title: input.title.trim().slice(0, 140),
         body: input.body.trim().slice(0, 1200),
@@ -797,21 +1564,26 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
         pinned: input.pinned,
         imageUrl: safeImageUrl,
         videoUrl: safeVideoUrl,
-        authorUid: user.uid,
+        authorUid: adminUser.uid,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
     } catch (error) {
-      handleFirestoreError(error, OperationType.CREATE, `notices/${noticeId}`);
+      handleFirestoreError(
+        error,
+        OperationType.CREATE,
+        `notices/${noticeId}`,
+        adminAuth.currentUser,
+      );
     }
   };
 
   const updateNotice = async (noticeId: string, input: NoticeInput) => {
-    if (!user || !isAdmin) throw new Error('Admin access required.');
+    if (!adminUser || !isAdmin) throw new Error('Admin access required.');
     const safeImageUrl = sanitizeNoticeImageUrl(input.imageUrl ?? '');
     const safeVideoUrl = sanitizeNoticeVideoUrl(input.videoUrl ?? '');
     try {
-      await updateDoc(doc(db, 'notices', noticeId), {
+      await updateDoc(doc(adminDb, 'notices', noticeId), {
         title: input.title.trim().slice(0, 140),
         body: input.body.trim().slice(0, 1200),
         category: input.category,
@@ -822,16 +1594,26 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
         updatedAt: serverTimestamp(),
       });
     } catch (error) {
-      handleFirestoreError(error, OperationType.UPDATE, `notices/${noticeId}`);
+      handleFirestoreError(
+        error,
+        OperationType.UPDATE,
+        `notices/${noticeId}`,
+        adminAuth.currentUser,
+      );
     }
   };
 
   const removeNotice = async (noticeId: string) => {
     if (!isAdmin) throw new Error('Admin access required.');
     try {
-      await deleteDoc(doc(db, 'notices', noticeId));
+      await deleteDoc(doc(adminDb, 'notices', noticeId));
     } catch (error) {
-      handleFirestoreError(error, OperationType.DELETE, `notices/${noticeId}`);
+      handleFirestoreError(
+        error,
+        OperationType.DELETE,
+        `notices/${noticeId}`,
+        adminAuth.currentUser,
+      );
     }
   };
 
@@ -880,7 +1662,7 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
         updatedAt: serverTimestamp(),
       });
     } catch (error) {
-      handleFirestoreError(error, OperationType.UPDATE, path);
+      handleFirestoreError(error, OperationType.UPDATE, path, auth.currentUser);
     }
   };
 
@@ -897,7 +1679,7 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
     photoUrl?: string;
     status: 'active' | 'suspended';
   }) => {
-    if (!user || !isAdmin) throw new Error('Admin access required.');
+    if (!adminUser || !isAdmin) throw new Error('Admin access required.');
     const resolved = resolveIdentifierToEmailAndPhone(input.identifier, input.phone);
     if (!resolved) {
       throw new Error('Enter a valid 11-digit mobile number (01XXXXXXXXX) or Gmail.');
@@ -905,10 +1687,10 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
 
     const path = `enrollments/${resolved.emailKey}`;
     try {
-      const existingSnap = await getDoc(doc(db, 'enrollments', resolved.emailKey));
+      const existingSnap = await getDoc(doc(adminDb, 'enrollments', resolved.emailKey));
       if (existingSnap.exists()) {
         const prev = existingSnap.data() as Enrollment;
-        await updateDoc(doc(db, 'enrollments', resolved.emailKey), {
+        await updateDoc(doc(adminDb, 'enrollments', resolved.emailKey), {
           studentName: input.studentName.trim().slice(0, 100),
           rollNumber: (input.rollNumber ?? prev.rollNumber ?? '').trim().slice(0, 32),
           college: (input.college ?? prev.college ?? '').trim().slice(0, 120),
@@ -925,7 +1707,7 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
           updatedAt: serverTimestamp(),
         });
       } else {
-        await setDoc(doc(db, 'enrollments', resolved.emailKey), {
+        await setDoc(doc(adminDb, 'enrollments', resolved.emailKey), {
           email: resolved.emailKey,
           studentName: input.studentName.trim().slice(0, 100),
           batch: 'HSC-28',
@@ -938,18 +1720,18 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
           address: (input.address ?? '').trim().slice(0, 200),
           photoUrl: sanitizeProfilePhotoUrl(input.photoUrl ?? ''),
           status: input.status,
-          addedByUid: user.uid,
+          addedByUid: adminUser.uid,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
         });
       }
     } catch (error) {
-      handleFirestoreError(error, OperationType.WRITE, path);
+      handleFirestoreError(error, OperationType.WRITE, path, adminAuth.currentUser);
     }
   };
 
   const bulkAddEnrollments = async (identifiers: string[]): Promise<number> => {
-    if (!user || !isAdmin) throw new Error('Admin access required.');
+    if (!adminUser || !isAdmin) throw new Error('Admin access required.');
     const mapped = new Map<string, { emailKey: string; phone: string }>();
 
     for (const raw of identifiers) {
@@ -958,7 +1740,7 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
     }
     if (mapped.size === 0) return 0;
 
-    const batch = writeBatch(db);
+    const batch = writeBatch(adminDb);
     const now = serverTimestamp();
 
     for (const { emailKey, phone } of mapped.values()) {
@@ -966,7 +1748,7 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
         ? `Student ${phone.slice(-4)}`
         : emailKey.split('@')[0]?.replace(/[._-]+/g, ' ') || 'HSC 28 Student';
       batch.set(
-        doc(db, 'enrollments', emailKey),
+        doc(adminDb, 'enrollments', emailKey),
         {
           email: emailKey,
           studentName: fallbackName.slice(0, 100),
@@ -975,7 +1757,7 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
           college: '',
           phone,
           status: 'active',
-          addedByUid: user.uid,
+          addedByUid: adminUser.uid,
           createdAt: now,
           updatedAt: now,
         },
@@ -987,16 +1769,21 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
       await batch.commit();
       return mapped.size;
     } catch (error) {
-      handleFirestoreError(error, OperationType.WRITE, 'enrollments/bulk');
+      handleFirestoreError(error, OperationType.WRITE, 'enrollments/bulk', adminAuth.currentUser);
     }
   };
 
   const removeEnrollment = async (emailKey: string) => {
     if (!isAdmin) throw new Error('Admin access required.');
     try {
-      await deleteDoc(doc(db, 'enrollments', emailKey));
+      await deleteDoc(doc(adminDb, 'enrollments', emailKey));
     } catch (error) {
-      handleFirestoreError(error, OperationType.DELETE, `enrollments/${emailKey}`);
+      handleFirestoreError(
+        error,
+        OperationType.DELETE,
+        `enrollments/${emailKey}`,
+        adminAuth.currentUser,
+      );
     }
   };
 
@@ -1004,18 +1791,18 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
     request: EnrollmentRequest,
     decision: 'approved' | 'rejected',
   ) => {
-    if (!user || !isAdmin) throw new Error('Admin access required.');
-    const batch = writeBatch(db);
+    if (!adminUser || !isAdmin) throw new Error('Admin access required.');
+    const batch = writeBatch(adminDb);
     const now = serverTimestamp();
 
-    batch.update(doc(db, 'enrollmentRequests', request.uid), {
+    batch.update(doc(adminDb, 'enrollmentRequests', request.uid), {
       status: decision,
       updatedAt: now,
     });
 
     if (decision === 'approved') {
       const emailKey = request.email.trim().toLowerCase();
-      batch.set(doc(db, 'enrollments', emailKey), {
+      batch.set(doc(adminDb, 'enrollments', emailKey), {
         email: emailKey,
         studentName: request.studentName,
         batch: 'HSC-28',
@@ -1023,7 +1810,7 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
         phone: request.phone,
         rollNumber: `HSC28-${request.uid.slice(0, 4).toUpperCase()}`,
         status: 'active',
-        addedByUid: user.uid,
+        addedByUid: adminUser.uid,
         createdAt: now,
         updatedAt: now,
       });
@@ -1032,12 +1819,17 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
     try {
       await batch.commit();
     } catch (error) {
-      handleFirestoreError(error, OperationType.WRITE, `enrollmentRequests/${request.uid}`);
+      handleFirestoreError(
+        error,
+        OperationType.WRITE,
+        `enrollmentRequests/${request.uid}`,
+        adminAuth.currentUser,
+      );
     }
   };
 
   const publishStudentResult = async (input: StudentResultInput) => {
-    if (!user || !isAdmin) throw new Error('Admin access required.');
+    if (!adminUser || !isAdmin) throw new Error('Admin access required.');
     const studentEmail = input.studentEmail.trim().toLowerCase();
     const resultId = `${slugifyId(input.examTitle).slice(0, 40)}-${Date.now().toString(36)}`;
     const totalMarks = Math.max(1, Math.min(500, Number(input.totalMarks) || 1));
@@ -1054,7 +1846,7 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
       totalMarks,
       meritRank: (input.meritRank ?? '').trim().slice(0, 40),
       remarks: (input.remarks ?? '').trim().slice(0, 500),
-      authorUid: user.uid,
+      authorUid: adminUser.uid,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     };
@@ -1069,14 +1861,19 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      await setDoc(doc(db, 'studentResults', resultId), payload);
+      await setDoc(doc(adminDb, 'studentResults', resultId), payload);
     } catch (error) {
-      handleFirestoreError(error, OperationType.CREATE, `studentResults/${resultId}`);
+      handleFirestoreError(
+        error,
+        OperationType.CREATE,
+        `studentResults/${resultId}`,
+        adminAuth.currentUser,
+      );
     }
   };
 
   const updateStudentResult = async (resultId: string, input: StudentResultInput) => {
-    if (!user || !isAdmin) throw new Error('Admin access required.');
+    if (!adminUser || !isAdmin) throw new Error('Admin access required.');
     const totalMarks = Math.max(1, Math.min(500, Number(input.totalMarks) || 1));
     const obtainedMarks = Math.max(0, Math.min(totalMarks, Number(input.obtainedMarks) || 0));
     const payload: Record<string, unknown> = {
@@ -1102,28 +1899,38 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      await updateDoc(doc(db, 'studentResults', resultId), payload);
+      await updateDoc(doc(adminDb, 'studentResults', resultId), payload);
     } catch (error) {
-      handleFirestoreError(error, OperationType.UPDATE, `studentResults/${resultId}`);
+      handleFirestoreError(
+        error,
+        OperationType.UPDATE,
+        `studentResults/${resultId}`,
+        adminAuth.currentUser,
+      );
     }
   };
 
   const removeStudentResult = async (resultId: string) => {
     if (!isAdmin) throw new Error('Admin access required.');
     try {
-      await deleteDoc(doc(db, 'studentResults', resultId));
+      await deleteDoc(doc(adminDb, 'studentResults', resultId));
     } catch (error) {
-      handleFirestoreError(error, OperationType.DELETE, `studentResults/${resultId}`);
+      handleFirestoreError(
+        error,
+        OperationType.DELETE,
+        `studentResults/${resultId}`,
+        adminAuth.currentUser,
+      );
     }
   };
 
   const seedDemoContent = async () => {
-    if (!user || !isAdmin) throw new Error('Admin access required.');
-    const batch = writeBatch(db);
+    if (!adminUser || !isAdmin) throw new Error('Admin access required.');
+    const batch = writeBatch(adminDb);
     const now = serverTimestamp();
 
     for (const item of SAMPLE_SEED_CLASSES) {
-      batch.set(doc(db, 'classes', item.id), {
+      batch.set(doc(adminDb, 'classes', item.id), {
         id: item.id,
         title: item.title,
         chapterNumber: item.chapterNumber,
@@ -1132,31 +1939,31 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
         duration: item.duration,
         description: item.description,
         isFreePreview: item.isFreePreview,
-        authorUid: user.uid,
+        authorUid: adminUser.uid,
         createdAt: now,
         updatedAt: now,
       });
 
-      batch.set(doc(db, 'classStreams', item.id), {
+      batch.set(doc(adminDb, 'classStreams', item.id), {
         classId: item.id,
         videoUrl: item.videoUrl,
         noteUrl: item.noteUrl,
         isFreePreview: item.isFreePreview,
-        authorUid: user.uid,
+        authorUid: adminUser.uid,
         createdAt: now,
         updatedAt: now,
       });
     }
 
     for (const notice of SAMPLE_SEED_NOTICES) {
-      batch.set(doc(db, 'notices', notice.id), {
+      batch.set(doc(adminDb, 'notices', notice.id), {
         id: notice.id,
         title: notice.title,
         body: notice.body,
         category: notice.category,
         audience: notice.audience,
         pinned: notice.pinned,
-        authorUid: user.uid,
+        authorUid: adminUser.uid,
         createdAt: now,
         updatedAt: now,
       });
@@ -1165,7 +1972,7 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
     try {
       await batch.commit();
     } catch (error) {
-      handleFirestoreError(error, OperationType.WRITE, 'classes/seed');
+      handleFirestoreError(error, OperationType.WRITE, 'classes/seed', adminAuth.currentUser);
     }
   };
 
@@ -1173,36 +1980,55 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
     () => ({
       user,
       authReady,
-      isAdmin,
       isPaidStudent,
-      needsAdminEmailVerification,
+      needsLegacyGmailLink,
+      legacyMigrationClaimEmail,
+      needsStudentEmailVerification,
       myEnrollment,
       myRequest,
       myResults,
       classes,
       notices,
       completedClassIds,
-      allEnrollments,
-      allRequests,
-      allResults,
       loadingData,
       enrollmentChecked,
       authError,
       needsEmailProviderEnable,
       clearAuthFeedback,
       signInWithGoogle,
-      registerStudentWithPhone,
-      loginStudentWithPhone,
-      loginAdminWithEmailPassword,
-      registerAdminWithEmailPassword,
-      linkAdminPassword,
-      resendAdminVerification,
-      refreshVerifiedSession,
+      registerStudentAccount,
+      loginStudentWithIdentifier,
+      linkLegacyStudentGmail,
+      sendStudentPasswordReset,
+      verifyStudentPasswordResetCode,
+      confirmStudentPasswordReset,
+      resendStudentVerification,
+      refreshStudentVerifiedSession,
       logout,
       fetchClassStream,
       toggleLectureCompleted,
       submitEnrollmentRequest,
       updateMyProfile,
+      adminUser,
+      adminAuthReady,
+      isAdmin,
+      needsAdminEmailVerification,
+      adminAuthError,
+      adminNeedsEmailProviderEnable,
+      clearAdminAuthFeedback,
+      signInAdminWithGoogle,
+      loginAdminWithEmailPassword,
+      registerAdminWithEmailPassword,
+      linkAdminPassword,
+      resendAdminVerification,
+      refreshVerifiedSession,
+      logoutAdmin,
+      adminClasses,
+      adminNotices,
+      allEnrollments,
+      allRequests,
+      allResults,
+      fetchAdminClassStream,
       publishRecordedClass,
       updateRecordedClass,
       removeRecordedClass,
@@ -1222,22 +2048,33 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
       user,
       authReady,
       tokenEmailVerified,
-      isAdmin,
+      studentIsAdminAccount,
       isPaidStudent,
-      needsAdminEmailVerification,
+      needsLegacyGmailLink,
+      legacyMigrationClaimEmail,
+      needsStudentEmailVerification,
       myEnrollment,
       myRequest,
       myResults,
       classes,
       notices,
       completedClassIds,
-      allEnrollments,
-      allRequests,
-      allResults,
       loadingData,
       enrollmentChecked,
       authError,
       needsEmailProviderEnable,
+      adminUser,
+      adminAuthReady,
+      adminTokenVerified,
+      isAdmin,
+      needsAdminEmailVerification,
+      adminAuthError,
+      adminNeedsEmailProviderEnable,
+      adminClasses,
+      adminNotices,
+      allEnrollments,
+      allRequests,
+      allResults,
     ],
   );
 

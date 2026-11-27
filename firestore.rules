@@ -184,6 +184,44 @@ service cloud.firestore {
         && data.updatedAt is timestamp;
     }
 
+    function isValidPhoneLoginAlias(data) {
+      return data.keys().hasAll(['uid', 'ciphertext', 'iv', 'updatedAt'])
+        && data.keys().hasOnly(['uid', 'ciphertext', 'iv', 'updatedAt'])
+        && isValidId(data.uid)
+        && data.ciphertext is string && data.ciphertext.size() >= 16 && data.ciphertext.size() <= 512
+        && data.iv is string && data.iv.size() >= 12 && data.iv.size() <= 64
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidPhoneMigrationClaim(data, uid) {
+      return data.keys().hasAll(['uid', 'phoneEmail', 'targetEmail', 'createdAt'])
+        && data.keys().hasOnly(['uid', 'phoneEmail', 'targetEmail', 'createdAt'])
+        && data.uid == uid && isValidId(data.uid)
+        && data.phoneEmail is string && data.phoneEmail.matches('^01[0-9]{9}@student\\.wasimsirphysics\\.app$')
+        && isValidEmailKey(data.targetEmail)
+        && !data.targetEmail.matches('^01[0-9]{9}@student\\.wasimsirphysics\\.app$')
+        && data.createdAt is timestamp;
+    }
+
+    function canMigrateActiveEnrollment(emailKey, data) {
+      return isVerifiedEmail()
+        && request.auth.token.email.lower() == emailKey
+        && exists(/databases/$(database)/documents/phoneMigrationClaims/$(request.auth.uid))
+        && get(/databases/$(database)/documents/phoneMigrationClaims/$(request.auth.uid)).data.targetEmail == emailKey
+        && exists(/databases/$(database)/documents/enrollments/$(get(/databases/$(database)/documents/phoneMigrationClaims/$(request.auth.uid)).data.phoneEmail))
+        && get(/databases/$(database)/documents/enrollments/$(get(/databases/$(database)/documents/phoneMigrationClaims/$(request.auth.uid)).data.phoneEmail)).data.status == 'active'
+        && data.status == 'active'
+        && data.addedByUid == get(/databases/$(database)/documents/enrollments/$(get(/databases/$(database)/documents/phoneMigrationClaims/$(request.auth.uid)).data.phoneEmail)).data.addedByUid
+        && (
+          (!('rollNumber' in get(/databases/$(database)/documents/enrollments/$(get(/databases/$(database)/documents/phoneMigrationClaims/$(request.auth.uid)).data.phoneEmail)).data) && !('rollNumber' in data))
+          || (
+            'rollNumber' in get(/databases/$(database)/documents/enrollments/$(get(/databases/$(database)/documents/phoneMigrationClaims/$(request.auth.uid)).data.phoneEmail)).data
+            && 'rollNumber' in data
+            && data.rollNumber == get(/databases/$(database)/documents/enrollments/$(get(/databases/$(database)/documents/phoneMigrationClaims/$(request.auth.uid)).data.phoneEmail)).data.rollNumber
+          )
+        );
+    }
+
     // --- Collection Rules ---
 
     match /admins/{uid} {
@@ -200,14 +238,23 @@ service cloud.firestore {
 
     match /enrollments/{emailKey} {
       allow get: if isValidEmailKey(emailKey) && (
-        isAdmin() || (isVerifiedAccount() && request.auth.token.email.lower() == emailKey)
+        isAdmin()
+        || (isVerifiedAccount() && request.auth.token.email.lower() == emailKey)
+        || (
+          isVerifiedEmail()
+          && exists(/databases/$(database)/documents/phoneMigrationClaims/$(request.auth.uid))
+          && get(/databases/$(database)/documents/phoneMigrationClaims/$(request.auth.uid)).data.phoneEmail == emailKey
+        )
       );
       allow list: if isAdmin();
-      allow create: if isAdmin() && isValidEmailKey(emailKey)
+      allow create: if isValidEmailKey(emailKey)
         && isValidEnrollment(incoming(), emailKey)
-        && incoming().addedByUid == request.auth.uid
         && incoming().createdAt == request.time
-        && incoming().updatedAt == request.time;
+        && incoming().updatedAt == request.time
+        && (
+          (isAdmin() && incoming().addedByUid == request.auth.uid)
+          || canMigrateActiveEnrollment(emailKey, incoming())
+        );
       allow update: if isValidEmailKey(emailKey)
         && isValidEnrollment(incoming(), emailKey)
         && incoming().email == existing().email
@@ -242,19 +289,66 @@ service cloud.firestore {
       allow update: if isVerifiedAccount() && isValidId(uid)
         && isValidEnrollmentRequest(incoming())
         && incoming().uid == existing().uid
-        && incoming().email == existing().email
         && incoming().createdAt == existing().createdAt
         && incoming().updatedAt == request.time
         && (
-          (isAdmin() && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt']))
+          (
+            isAdmin()
+            && incoming().email == existing().email
+            && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt'])
+          )
           || (
             request.auth.uid == uid
+            && incoming().email == existing().email
             && existing().status == 'pending'
             && incoming().status == 'pending'
             && incoming().diff(existing()).affectedKeys().hasOnly(['studentName', 'college', 'phone', 'paymentMethod', 'transactionId', 'updatedAt'])
           )
+          || (
+            isVerifiedEmail()
+            && request.auth.uid == uid
+            && incoming().email == request.auth.token.email.lower()
+            && incoming().status == existing().status
+            && exists(/databases/$(database)/documents/phoneMigrationClaims/$(request.auth.uid))
+            && get(/databases/$(database)/documents/phoneMigrationClaims/$(request.auth.uid)).data.phoneEmail == existing().email
+            && incoming().diff(existing()).affectedKeys().hasOnly(['email', 'updatedAt'])
+          )
         );
       allow delete: if isAdmin() && isValidId(uid);
+    }
+
+    match /phoneLoginAliases/{aliasId} {
+      allow get: if isValidId(aliasId) && aliasId.matches('^[a-f0-9]{64}$');
+      allow list: if false;
+      allow create: if isSignedIn() && isValidId(aliasId)
+        && aliasId.matches('^[a-f0-9]{64}$')
+        && isValidPhoneLoginAlias(incoming())
+        && incoming().uid == request.auth.uid
+        && incoming().updatedAt == request.time;
+      allow update: if isSignedIn() && isValidId(aliasId)
+        && aliasId.matches('^[a-f0-9]{64}$')
+        && isValidPhoneLoginAlias(incoming())
+        && incoming().uid == existing().uid
+        && incoming().uid == request.auth.uid
+        && incoming().updatedAt == request.time;
+      allow delete: if isAdmin() || (isSignedIn() && isValidId(aliasId) && existing().uid == request.auth.uid);
+    }
+
+    match /phoneMigrationClaims/{uid} {
+      allow get: if isValidId(uid) && (isAdmin() || (isSignedIn() && request.auth.uid == uid));
+      allow list: if isAdmin();
+      allow create: if isStudentPhoneEmail() && isValidId(uid)
+        && request.auth.uid == uid
+        && isValidPhoneMigrationClaim(incoming(), uid)
+        && incoming().phoneEmail == request.auth.token.email.lower()
+        && incoming().createdAt == request.time;
+      allow update: if isStudentPhoneEmail() && isValidId(uid)
+        && request.auth.uid == uid
+        && isValidPhoneMigrationClaim(incoming(), uid)
+        && incoming().uid == existing().uid
+        && incoming().phoneEmail == existing().phoneEmail
+        && incoming().createdAt == existing().createdAt;
+      allow delete: if isAdmin() || (isSignedIn() && isValidId(uid) && request.auth.uid == uid);
     }
 
     match /classes/{classId} {
@@ -338,10 +432,24 @@ service cloud.firestore {
 
     match /studentResults/{resultId} {
       allow get: if isValidId(resultId) && (
-        isAdmin() || (isVerifiedAccount() && existing().studentEmail == request.auth.token.email.lower())
+        isAdmin() || (
+          isVerifiedAccount() && (
+            existing().studentEmail == request.auth.token.email.lower()
+            || (
+              exists(/databases/$(database)/documents/phoneMigrationClaims/$(request.auth.uid))
+              && existing().studentEmail == get(/databases/$(database)/documents/phoneMigrationClaims/$(request.auth.uid)).data.phoneEmail
+            )
+          )
+        )
       );
       allow list: if isAdmin() || (
-        isVerifiedAccount() && resource.data.studentEmail == request.auth.token.email.lower()
+        isVerifiedAccount() && (
+          resource.data.studentEmail == request.auth.token.email.lower()
+          || (
+            exists(/databases/$(database)/documents/phoneMigrationClaims/$(request.auth.uid))
+            && resource.data.studentEmail == get(/databases/$(database)/documents/phoneMigrationClaims/$(request.auth.uid)).data.phoneEmail
+          )
+        )
       );
       allow create: if isAdmin() && isValidId(resultId)
         && isValidStudentResult(incoming(), resultId)

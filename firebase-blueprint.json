@@ -467,6 +467,64 @@
         "createdAt",
         "updatedAt"
       ]
+    },
+    "PhoneLoginAlias": {
+      "title": "PhoneLoginAlias",
+      "description": "Encrypted login alias keyed by SHA-256 of normalized student phone so students can sign in with either phone number or Gmail without exposing PII.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "ciphertext": {
+          "type": "string",
+          "minLength": 16,
+          "maxLength": 512
+        },
+        "iv": {
+          "type": "string",
+          "minLength": 12,
+          "maxLength": 64
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["uid", "ciphertext", "iv", "updatedAt"]
+    },
+    "PhoneMigrationClaim": {
+      "title": "PhoneMigrationClaim",
+      "description": "Owner-verified claim binding a legacy phone-only account UID to its verified real Gmail during migration.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "phoneEmail": {
+          "type": "string",
+          "format": "email",
+          "minLength": 15,
+          "maxLength": 128
+        },
+        "targetEmail": {
+          "type": "string",
+          "format": "email",
+          "minLength": 5,
+          "maxLength": 128
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["uid", "phoneEmail", "targetEmail", "createdAt"]
     }
   },
   "firestore": {
@@ -501,6 +559,14 @@
     "/studentResults/{resultId}": {
       "schema": { "$ref": "#/entities/StudentResult" },
       "description": "Private individual exam results readable only by the student owner and admin."
+    },
+    "/phoneLoginAliases/{aliasId}": {
+      "schema": { "$ref": "#/entities/PhoneLoginAlias" },
+      "description": "Zero-knowledge AES-GCM encrypted email alias keyed by SHA-256 of student phone number."
+    },
+    "/phoneMigrationClaims/{uid}": {
+      "schema": { "$ref": "#/entities/PhoneMigrationClaim" },
+      "description": "Self-migration claim enabling legacy phone-only accounts to link a verified Gmail without losing enrollment."
     }
   }
 }
