@@ -268,13 +268,13 @@ export function CampusGallery() {
   return (
     <section
       id="campus-gallery"
-      className="py-14 sm:py-20 border-t border-slate-800/80 bg-[#0E1621]"
+      className="py-14 sm:py-20 border-t border-[#262B36] bg-[#14171D]"
     >
       <div className="max-w-[1200px] mx-auto px-6">
         {/* Header + Filter Controls */}
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-10">
           <div>
-            <p className="text-xs font-medium text-[#FBBF24] tracking-wide mb-2">
+            <p className="text-xs font-medium text-pink-300 tracking-wide mb-2">
               অবজারভেটরি ফটো কনসোল · ১২টি বাস্তব দৃশ্যপট
             </p>
             <h2 className="font-display text-3xl font-bold tracking-tight text-slate-100 text-balance">
@@ -282,7 +282,7 @@ export function CampusGallery() {
             </h2>
           </div>
 
-          <div className="inline-flex flex-wrap items-center gap-1 p-1 bg-[#131C28] border border-slate-800 rounded-lg self-start lg:self-auto">
+          <div className="inline-flex flex-wrap items-center gap-1 p-1 bg-[#181C24] border border-[#262B36] rounded-lg self-start lg:self-auto">
             {(
               [
                 { id: 'all', label: 'সকল মুহূর্ত (১২)' },
@@ -303,7 +303,7 @@ export function CampusGallery() {
                 }}
                 className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors cursor-pointer whitespace-nowrap ${
                   filter === tab.id
-                    ? 'bg-[#F59E0B] text-slate-950 font-semibold'
+                    ? 'bg-sky-400 text-slate-950 font-semibold'
                     : 'text-slate-300 hover:text-white'
                 }`}
               >
@@ -317,10 +317,10 @@ export function CampusGallery() {
         <div
           onMouseEnter={() => setStageHovered(true)}
           onMouseLeave={() => setStageHovered(false)}
-          className="grid grid-cols-1 lg:grid-cols-12 border border-slate-800 rounded-2xl overflow-hidden bg-[#131C28] mb-5"
+          className="grid grid-cols-1 lg:grid-cols-12 border border-[#262B36] rounded-2xl overflow-hidden bg-[#181C24] mb-5"
         >
           {/* Left Stage: Uncropped Full View */}
-          <div className="lg:col-span-8 relative bg-[#070B11] h-[300px] sm:h-[400px] lg:h-[440px] flex items-center justify-center p-3 sm:p-5">
+          <div className="lg:col-span-8 relative bg-[#0C0E13] h-[300px] sm:h-[400px] lg:h-[440px] flex items-center justify-center p-3 sm:p-5">
             <button
               type="button"
               onClick={() => setLightboxOpen(true)}
@@ -340,7 +340,7 @@ export function CampusGallery() {
               type="button"
               onClick={() => setLightboxOpen(true)}
               aria-label="পূর্ণ স্ক্রিন"
-              className="absolute top-4 right-4 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-200 bg-[#0B1118]/90 border border-slate-700 rounded-lg hover:border-[#F59E0B] hover:text-[#FBBF24] transition-colors cursor-pointer"
+              className="absolute top-4 right-4 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-200 bg-[#111318]/90 border border-[#2E3442] rounded-lg hover:border-white/60 hover:text-white transition-colors cursor-pointer"
             >
               <Maximize2 className="w-3.5 h-3.5" />
               <span>বড় করে দেখো</span>
@@ -348,10 +348,10 @@ export function CampusGallery() {
           </div>
 
           {/* Right Dossier Panel */}
-          <div className="lg:col-span-4 p-6 sm:p-7 flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-slate-800">
+          <div className="lg:col-span-4 p-6 sm:p-7 flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-[#262B36]">
             <div className="space-y-4">
               <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
-                <span className="font-sans font-semibold text-[#FBBF24] tabular-nums">
+                <span className="font-sans font-semibold text-pink-300 tabular-nums">
                   {activeItem.indexLabel} / ১২
                 </span>
                 <span aria-hidden="true">·</span>
@@ -363,7 +363,7 @@ export function CampusGallery() {
                   {activeItem.title}
                 </h3>
                 {activeItem.highlightStat && (
-                  <p className="font-sans text-sm font-semibold text-[#FBBF24] mt-2 tabular-nums">
+                  <p className="font-sans text-sm font-semibold text-green-300 mt-2 tabular-nums">
                     {activeItem.highlightStat}
                   </p>
                 )}
@@ -374,19 +374,19 @@ export function CampusGallery() {
               </p>
 
               {activeItem.physicsTag && (
-                <div className="pt-3 border-t border-slate-800 text-xs font-sans font-medium text-sky-300">
+                <div className="pt-3 border-t border-[#262B36] text-xs font-sans font-medium text-purple-300">
                   {activeItem.physicsTag}
                 </div>
               )}
             </div>
 
-            <div className="pt-6 mt-6 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2.5">
+            <div className="pt-6 mt-6 border-t border-[#262B36] flex flex-wrap items-center justify-between gap-2.5">
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={showPrev}
                   aria-label="আগের দৃশ্য"
-                  className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-200 bg-[#0B1118] border border-slate-700 rounded-lg hover:border-[#F59E0B] transition-colors cursor-pointer whitespace-nowrap"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-200 bg-[#111318] border border-[#2E3442] rounded-lg hover:border-sky-400 transition-colors cursor-pointer whitespace-nowrap"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" />
                   <span>আগে</span>
@@ -395,7 +395,7 @@ export function CampusGallery() {
                   type="button"
                   onClick={showNext}
                   aria-label="পরের দৃশ্য"
-                  className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-200 bg-[#0B1118] border border-slate-700 rounded-lg hover:border-[#F59E0B] transition-colors cursor-pointer whitespace-nowrap"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-200 bg-[#111318] border border-[#2E3442] rounded-lg hover:border-sky-400 transition-colors cursor-pointer whitespace-nowrap"
                 >
                   <span>পরে</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -409,8 +409,8 @@ export function CampusGallery() {
                   aria-pressed={slideshowPlaying}
                   className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg border transition-colors cursor-pointer whitespace-nowrap ${
                     slideshowPlaying
-                      ? 'bg-[#0B1118] border-[#F59E0B]/70 text-[#FBBF24] hover:border-[#F59E0B]'
-                      : 'bg-[#0B1118] border-slate-700 text-slate-300 hover:border-slate-500'
+                      ? 'bg-[#111318] border-green-400/70 text-green-300 hover:border-green-400'
+                      : 'bg-[#111318] border-[#2E3442] text-slate-300 hover:border-slate-500'
                   }`}
                 >
                   {slideshowPlaying ? (
@@ -436,7 +436,7 @@ export function CampusGallery() {
                         }),
                       )
                     }
-                    className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] rounded-lg transition-colors whitespace-nowrap"
+                    className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-white bg-pink-500 hover:bg-pink-400 rounded-lg transition-colors whitespace-nowrap"
                   >
                     <Compass className="w-3.5 h-3.5" />
                     <span>ল্যাবে দেখো</span>
@@ -466,12 +466,12 @@ export function CampusGallery() {
                   selectById(item.id);
                   setLightboxOpen(true);
                 }}
-                className={`group relative overflow-hidden rounded-xl border text-left transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F59E0B] ${
+                className={`group relative overflow-hidden rounded-xl border text-left transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 ${
                   filter === 'all' ? `${item.spanClass} h-[165px] sm:h-[185px]` : 'h-[210px]'
                 } ${
                   isSelected
-                    ? 'border-[#F59E0B] bg-[#172333]'
-                    : 'border-slate-800 bg-[#131C28] hover:border-slate-600'
+                    ? 'border-white bg-[#1F2430]'
+                    : 'border-[#262B36] bg-[#181C24] hover:border-purple-400/60'
                 }`}
               >
                 <ResilientImage
@@ -482,17 +482,17 @@ export function CampusGallery() {
                   }`}
                   fallbackLabel={item.title}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#060A10]/95 via-[#060A10]/30 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0C0E13]/95 via-[#0C0E13]/30 to-transparent" />
 
                 <div className="absolute inset-x-0 bottom-0 p-3">
                   <div className="flex items-center gap-1.5 text-[11px] font-sans text-slate-300 mb-0.5 tabular-nums">
-                    <span className={isSelected ? 'text-[#FBBF24] font-semibold' : 'text-sky-300 font-medium'}>
+                    <span className={isSelected ? 'text-pink-300 font-semibold' : 'text-sky-300 font-medium'}>
                       {item.indexLabel}
                     </span>
                     {item.highlightStat && (
                       <>
                         <span aria-hidden="true">·</span>
-                        <span className="text-[#FBBF24] truncate">{item.highlightStat}</span>
+                        <span className="text-green-300 truncate">{item.highlightStat}</span>
                       </>
                     )}
                   </div>
@@ -512,15 +512,15 @@ export function CampusGallery() {
           role="dialog"
           aria-modal="true"
           aria-label={activeItem.title}
-          className="fixed inset-0 z-50 bg-[#05090F]/95 backdrop-blur-md flex flex-col justify-between p-4 sm:p-6"
+          className="fixed inset-0 z-50 bg-[#0A0C10]/95 backdrop-blur-md flex flex-col justify-between p-4 sm:p-6"
           onClick={() => setLightboxOpen(false)}
         >
           <div
-            className="max-w-[1200px] w-full mx-auto flex items-center justify-between gap-4 pb-3 border-b border-slate-800/80"
+            className="max-w-[1200px] w-full mx-auto flex items-center justify-between gap-4 pb-3 border-b border-[#262B36]"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center gap-3 text-xs text-slate-300 min-w-0">
-              <span className="font-mono font-semibold text-[#FBBF24] tabular-nums shrink-0">
+              <span className="font-mono font-semibold text-pink-300 tabular-nums shrink-0">
                 {String(stageIndex + 1).padStart(2, '0')} / {String(GALLERY_ITEMS.length).padStart(2, '0')}
               </span>
               <span aria-hidden="true">·</span>
@@ -531,7 +531,7 @@ export function CampusGallery() {
               type="button"
               onClick={() => setLightboxOpen(false)}
               aria-label="বন্ধ করুন"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-200 bg-[#131C28] border border-slate-700 rounded-lg hover:border-[#F59E0B] hover:text-white transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-200 bg-[#181C24] border border-[#2E3442] rounded-lg hover:border-[#CBD5E1] hover:text-[#E2E8F0] transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
               <span>বন্ধ</span>
@@ -546,7 +546,7 @@ export function CampusGallery() {
               type="button"
               onClick={showPrev}
               aria-label="আগের ছবি"
-              className="hidden sm:flex absolute left-2 z-10 w-10 h-10 rounded-lg bg-[#131C28]/90 border border-slate-700 items-center justify-center text-slate-200 hover:border-[#F59E0B] hover:text-[#FBBF24] transition-colors cursor-pointer"
+              className="hidden sm:flex absolute left-2 z-10 w-10 h-10 rounded-lg bg-[#181C24]/90 border border-[#2E3442] items-center justify-center text-slate-200 hover:border-sky-400 hover:text-sky-300 transition-colors cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4" />
             </button>
@@ -555,21 +555,21 @@ export function CampusGallery() {
               src={activeItem.src}
               alt={activeItem.alt}
               referrerPolicy="no-referrer"
-              className="max-h-[60vh] sm:max-h-[64vh] max-w-full w-auto object-contain rounded-lg border border-slate-800 bg-[#0B1118]"
+              className="max-h-[60vh] sm:max-h-[64vh] max-w-full w-auto object-contain rounded-lg border border-[#262B36] bg-[#0C0E13]"
             />
 
             <button
               type="button"
               onClick={showNext}
               aria-label="পরের ছবি"
-              className="hidden sm:flex absolute right-2 z-10 w-10 h-10 rounded-lg bg-[#131C28]/90 border border-slate-700 items-center justify-center text-slate-200 hover:border-[#F59E0B] hover:text-[#FBBF24] transition-colors cursor-pointer"
+              className="hidden sm:flex absolute right-2 z-10 w-10 h-10 rounded-lg bg-[#181C24]/90 border border-[#2E3442] items-center justify-center text-slate-200 hover:border-sky-400 hover:text-sky-300 transition-colors cursor-pointer"
             >
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
 
           <div
-            className="max-w-[1200px] w-full mx-auto space-y-3 pt-3 border-t border-slate-800/80"
+            className="max-w-[1200px] w-full mx-auto space-y-3 pt-3 border-t border-[#262B36]"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
@@ -579,7 +579,7 @@ export function CampusGallery() {
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-300 mt-0.5">{activeItem.subtitle}</p>
                 {activeItem.physicsTag && (
-                  <p className="text-xs font-sans font-medium text-sky-300 mt-1">{activeItem.physicsTag}</p>
+                  <p className="text-xs font-sans font-medium text-purple-300 mt-1">{activeItem.physicsTag}</p>
                 )}
               </div>
 
@@ -595,7 +595,7 @@ export function CampusGallery() {
                         }),
                       );
                     }}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] rounded-lg transition-colors whitespace-nowrap"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-pink-500 hover:bg-pink-400 rounded-lg transition-colors whitespace-nowrap"
                   >
                     <Compass className="w-3.5 h-3.5" />
                     <span>ল্যাবে পরীক্ষা করো</span>
@@ -604,7 +604,7 @@ export function CampusGallery() {
                 <button
                   type="button"
                   onClick={showPrev}
-                  className="sm:hidden inline-flex items-center gap-1 px-3 py-2 text-xs font-semibold text-slate-200 bg-[#131C28] border border-slate-700 rounded-lg cursor-pointer"
+                  className="sm:hidden inline-flex items-center gap-1 px-3 py-2 text-xs font-semibold text-slate-200 bg-[#181C24] border border-[#2E3442] rounded-lg cursor-pointer"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" />
                   <span>আগে</span>
@@ -612,7 +612,7 @@ export function CampusGallery() {
                 <button
                   type="button"
                   onClick={showNext}
-                  className="sm:hidden inline-flex items-center gap-1 px-3 py-2 text-xs font-semibold text-slate-200 bg-[#131C28] border border-slate-700 rounded-lg cursor-pointer"
+                  className="sm:hidden inline-flex items-center gap-1 px-3 py-2 text-xs font-semibold text-slate-200 bg-[#181C24] border border-[#2E3442] rounded-lg cursor-pointer"
                 >
                   <span>পরে</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -628,7 +628,7 @@ export function CampusGallery() {
                   onClick={() => setStageIndex(idx)}
                   className={`relative w-14 h-10 rounded-md overflow-hidden border shrink-0 transition-opacity cursor-pointer ${
                     idx === stageIndex
-                      ? 'border-[#F59E0B] opacity-100'
+                      ? 'border-pink-400 opacity-100'
                       : 'border-slate-800 opacity-50 hover:opacity-85'
                   }`}
                 >

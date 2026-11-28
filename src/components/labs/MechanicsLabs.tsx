@@ -101,15 +101,15 @@ export function VernierCalipersLab() {
       if (isCm) ctx.fillText(`${mm / 10}`, x - 3, beamY - 21);
     }
 
-    // Measured Object (Cylindrical metal rod with 3D gradient)
+    // Measured Object (Cylindrical metal rod with 3D studio rose-pink gradient)
     const objW = trueLengthCm * pxPerCm;
     const objGrad = ctx.createLinearGradient(originX, 0, originX + objW, 0);
-    objGrad.addColorStop(0, '#D97706');
-    objGrad.addColorStop(0.5, '#FDE68A');
-    objGrad.addColorStop(1, '#B45309');
+    objGrad.addColorStop(0, '#DB2777');
+    objGrad.addColorStop(0.5, '#FBCFE8');
+    objGrad.addColorStop(1, '#9D174D');
     ctx.fillStyle = objGrad;
     ctx.fillRect(originX, beamY + 36, objW, 52);
-    ctx.strokeStyle = '#F59E0B';
+    ctx.strokeStyle = '#F472B6';
     ctx.lineWidth = 1.5;
     ctx.strokeRect(originX, beamY + 36, objW, 52);
 
@@ -120,7 +120,7 @@ export function VernierCalipersLab() {
     // Sliding Vernier caliper jaw
     const jawX = originX + calc.observed * pxPerCm;
     const vernierSpan = (calc.maxDivs === 10 ? 0.9 : 1.9) * pxPerCm;
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
+    ctx.fillStyle = 'rgba(10, 13, 22, 0.95)';
     ctx.strokeStyle = '#38BDF8';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
@@ -142,7 +142,7 @@ export function VernierCalipersLab() {
     for (let i = 0; i <= calc.maxDivs; i++) {
       const vx = jawX + (i / calc.maxDivs) * vernierSpan;
       const isCoincide = i === calc.vernierDiv;
-      ctx.strokeStyle = isCoincide ? '#F59E0B' : '#38BDF8';
+      ctx.strokeStyle = isCoincide ? '#F472B6' : '#38BDF8';
       ctx.lineWidth = isCoincide ? 2 : 1;
       ctx.beginPath();
       ctx.moveTo(vx, beamY + 2);
@@ -151,13 +151,13 @@ export function VernierCalipersLab() {
 
       if (isCoincide) {
         ctx.setLineDash([3, 3]);
-        ctx.strokeStyle = '#F59E0B';
+        ctx.strokeStyle = '#F472B6';
         ctx.beginPath();
         ctx.moveTo(vx, beamY - 14);
         ctx.lineTo(vx, beamY + 26);
         ctx.stroke();
         ctx.setLineDash([]);
-        ctx.fillStyle = '#FBBF24';
+        ctx.fillStyle = '#F472B6';
         ctx.font = 'bold 10px "IBM Plex Mono", monospace';
         ctx.fillText(`V = ${calc.vernierDiv}`, vx - 12, beamY + 32);
       }
@@ -180,9 +180,9 @@ export function VernierCalipersLab() {
       canvas={<canvas ref={canvasRef} className="w-full h-full block" aria-label="ভার্নিয়ার ক্যালিপার্স সিমুলেশন" />}
       metrics={[
         { label: 'প্রধান স্কেল (M)', value: `${calc.mainScaleCm.toFixed(1)} cm`, accentClass: 'text-sky-300' },
-        { label: 'ভার্নিয়ার সমপাতন (V)', value: `${calc.vernierDiv} দাগ`, accentClass: 'text-amber-300' },
-        { label: 'পর্যবেক্ষিত পাঠ', value: `${calc.observed.toFixed(3)} cm`, accentClass: 'text-slate-100' },
-        { label: 'প্রকৃত দৈর্ঘ্য (L)', value: `${calc.measured.toFixed(3)} cm`, accentClass: 'text-emerald-300' },
+        { label: 'ভার্নিয়ার সমপাতন (V)', value: `${calc.vernierDiv} দাগ`, accentClass: 'text-pink-300' },
+        { label: 'পর্যবেক্ষিত পাঠ', value: `${calc.observed.toFixed(3)} cm`, accentClass: 'text-purple-300' },
+        { label: 'প্রকৃত দৈর্ঘ্য (L)', value: `${calc.measured.toFixed(3)} cm`, accentClass: 'text-green-300' },
       ]}
       controls={
         <>
@@ -210,7 +210,7 @@ export function VernierCalipersLab() {
                   type="button"
                   onClick={() => setVcCm(val)}
                   className={`px-3 py-2 text-xs font-mono rounded-lg border transition-colors cursor-pointer ${
-                    vcCm === val ? 'bg-amber-500/20 border-amber-400 text-amber-200 font-semibold' : 'bg-[#0B1118] border-slate-700 text-slate-300'
+                    vcCm === val ? 'bg-purple-500/20 border-purple-400 text-purple-200 font-semibold' : 'bg-[#0C0E13] border-[#2E3442] text-slate-300'
                   }`}
                 >
                   {val === 0.01 ? '0.01 cm (১০ ভাগ)' : '0.005 cm (২০ ভাগ)'}
@@ -299,14 +299,14 @@ export function ScrewGaugeLab() {
           // Measured Wire (with 3D radial shine)
           const wirePx = wireDiaMm * 14;
           const wireGrad = ctx.createRadialGradient(cx - 34 + wirePx / 2, cy, 2, cx - 34 + wirePx / 2, cy, wirePx);
-          wireGrad.addColorStop(0, '#FDE68A');
-          wireGrad.addColorStop(0.7, '#F59E0B');
-          wireGrad.addColorStop(1, '#78350F');
+          wireGrad.addColorStop(0, '#FBCFE8');
+          wireGrad.addColorStop(0.7, '#EC4899');
+          wireGrad.addColorStop(1, '#831843');
           ctx.fillStyle = wireGrad;
           ctx.beginPath();
           ctx.roundRect(cx - 34, cy - 28, wirePx, 56, 4);
           ctx.fill();
-          ctx.strokeStyle = '#FBBF24';
+          ctx.strokeStyle = '#F472B6';
           ctx.lineWidth = 1.5;
           ctx.stroke();
 
@@ -361,7 +361,7 @@ export function ScrewGaugeLab() {
           ctx.beginPath();
           ctx.roundRect(thimbleX, cy - 26, 75, 52, 4);
           ctx.fill();
-          ctx.strokeStyle = '#F59E0B';
+          ctx.strokeStyle = '#C084FC';
           ctx.lineWidth = 2;
           ctx.stroke();
 
@@ -370,14 +370,14 @@ export function ScrewGaugeLab() {
             const angleVal = (circularReading + i + (running ? Math.sin(rotationAngle) * 2 : 0) + circularDivs) % circularDivs;
             const ty = cy + i * 4.5;
             if (ty >= cy - 24 && ty <= cy + 24) {
-              ctx.strokeStyle = i === 0 ? '#FBBF24' : 'rgba(248, 250, 252, 0.6)';
+              ctx.strokeStyle = i === 0 ? '#F472B6' : 'rgba(248, 250, 252, 0.6)';
               ctx.lineWidth = i === 0 ? 2 : 1;
               ctx.beginPath();
               ctx.moveTo(thimbleX, ty);
               ctx.lineTo(thimbleX + (i === 0 ? 14 : 7), ty);
               ctx.stroke();
               if (i === 0) {
-                ctx.fillStyle = '#FBBF24';
+                ctx.fillStyle = '#F472B6';
                 ctx.font = 'bold 10px "IBM Plex Mono", monospace';
                 ctx.fillText(`${Math.round(angleVal)}`, thimbleX + 18, ty + 3);
               }
@@ -389,7 +389,7 @@ export function ScrewGaugeLab() {
           ctx.fillRect(thimbleX + 75, cy - 14, 28, 28);
 
           // Specular highlights
-          ctx.fillStyle = '#FBBF24';
+          ctx.fillStyle = '#F472B6';
           ctx.font = '11px "IBM Plex Mono", monospace';
           ctx.fillText(`LC = ${leastCount.toFixed(3)} mm | তারের ব্যাস = ${measuredDia.toFixed(3)} mm`, 18, height - 16);
           ctx.restore();
@@ -416,9 +416,9 @@ export function ScrewGaugeLab() {
       canvas={<canvas ref={canvasRef} className="w-full h-full block" aria-label="স্ক্রু-গজ মাইক্রোমিটার সিমুলেশন" />}
       metrics={[
         { label: 'রৈখিক স্কেল পাঠ (M)', value: `${mainScaleMm}.0 mm`, accentClass: 'text-sky-300' },
-        { label: 'ঘুর্ণন স্কেল (C)', value: `${circularReading} ভাগ`, accentClass: 'text-amber-300' },
-        { label: 'লঘিষ্ঠ ধ্রুবক (LC)', value: `${leastCount.toFixed(3)} mm`, accentClass: 'text-emerald-300' },
-        { label: 'পরিমাপকৃত ব্যাস (d)', value: `${measuredDia.toFixed(3)} mm`, accentClass: 'text-slate-100' },
+        { label: 'ঘুর্ণন স্কেল (C)', value: `${circularReading} ভাগ`, accentClass: 'text-pink-300' },
+        { label: 'লঘিষ্ঠ ধ্রুবক (LC)', value: `${leastCount.toFixed(3)} mm`, accentClass: 'text-green-300' },
+        { label: 'পরিমাপকৃত ব্যাস (d)', value: `${measuredDia.toFixed(3)} mm`, accentClass: 'text-purple-300' },
       ]}
       controls={
         <>
@@ -449,7 +449,7 @@ export function ScrewGaugeLab() {
                   type="button"
                   onClick={() => setPitchMm(item.p)}
                   className={`px-3 py-2 text-xs font-mono rounded-lg border transition-colors cursor-pointer ${
-                    pitchMm === item.p ? 'bg-amber-500/20 border-amber-400 text-amber-200 font-semibold' : 'bg-[#0B1118] border-slate-700 text-slate-300'
+                    pitchMm === item.p ? 'bg-purple-500/20 border-purple-400 text-purple-200 font-semibold' : 'bg-[#0C0E13] border-[#2E3442] text-slate-300'
                   }`}
                 >
                   {item.label}
@@ -469,7 +469,7 @@ export function ScrewGaugeLab() {
                   type="button"
                   onClick={() => setCircularDivs(divs)}
                   className={`px-3 py-2 text-xs font-mono rounded-lg border transition-colors cursor-pointer ${
-                    circularDivs === divs ? 'bg-amber-500/20 border-amber-400 text-amber-200 font-semibold' : 'bg-[#0B1118] border-slate-700 text-slate-300'
+                    circularDivs === divs ? 'bg-purple-500/20 border-purple-400 text-purple-200 font-semibold' : 'bg-[#0C0E13] border-[#2E3442] text-slate-300'
                   }`}
                 >
                   {divs} ভাগ (LC = {(pitchMm / divs).toFixed(3)})
@@ -620,7 +620,7 @@ export function VectorRiverLab() {
           ctx.lineTo(6, -9);
           ctx.closePath();
           ctx.fill();
-          ctx.strokeStyle = '#F59E0B';
+          ctx.strokeStyle = '#F472B6';
           ctx.lineWidth = 1.5;
           ctx.stroke();
 
@@ -669,11 +669,11 @@ export function VectorRiverLab() {
 
           // Draw the 3 distinct vectors
           renderArrow(uDx, uDy, '#38BDF8'); // u (river)
-          renderArrow(vDx, vDy, '#F59E0B'); // v (boat)
-          renderArrow(rDx, rDy, '#10B981', 3); // R (resultant)
+          renderArrow(vDx, vDy, '#F472B6'); // v (boat)
+          renderArrow(rDx, rDy, '#4ADE80', 3); // R (resultant)
 
           // Angle alpha arc between u and v
-          ctx.strokeStyle = '#FBBF24';
+          ctx.strokeStyle = '#C084FC';
           ctx.lineWidth = 1.6;
           ctx.beginPath();
           ctx.arc(boatX, boatY, 26, -boatRad, 0);
@@ -685,7 +685,7 @@ export function VectorRiverLab() {
             const tw = ctx.measureText(text).width;
             const clampedX = Math.max(8, Math.min(width - tw - 12, bx));
             const clampedY = Math.max(20, Math.min(height - 16, by));
-            ctx.fillStyle = 'rgba(11, 17, 24, 0.95)';
+            ctx.fillStyle = 'rgba(10, 13, 22, 0.95)';
             ctx.strokeStyle = color;
             ctx.lineWidth = 1.2;
             ctx.beginPath();
@@ -697,10 +697,10 @@ export function VectorRiverLab() {
           };
 
           // Smart collision-free symbol labels
-          drawLabelBadge(boatX + 18, boatY - 16, 'α', '#FBBF24');
+          drawLabelBadge(boatX + 18, boatY - 16, 'α', '#C084FC');
           drawLabelBadge(boatX + uDx * 0.5 - 20, boatY + 22, 'u (স্রোত)', '#38BDF8');
-          drawLabelBadge(boatX + vDx - 48, boatY + vDy + 10, 'v (নৌকা)', '#F59E0B');
-          drawLabelBadge(boatX + rDx + 14, boatY + rDy - 18, 'R (লব্ধি)', '#34D399');
+          drawLabelBadge(boatX + vDx - 48, boatY + vDy + 10, 'v (নৌকা)', '#F472B6');
+          drawLabelBadge(boatX + rDx + 14, boatY + rDy - 18, 'R (লব্ধি)', '#4ADE80');
 
           ctx.fillStyle = '#CBD5E1';
           ctx.font = '11px "IBM Plex Mono", monospace';
@@ -731,10 +731,10 @@ export function VectorRiverLab() {
       }}
       canvas={<canvas ref={canvasRef} className="w-full h-full block" aria-label="নদী-নৌকা ভেক্টর সিমুলেশন" />}
       metrics={[
-        { label: 'লব্ধি বেগ (R)', value: `${metrics.resultant.toFixed(2)} m/s`, accentClass: 'text-emerald-300' },
+        { label: 'লব্ধি বেগ (R)', value: `${metrics.resultant.toFixed(2)} m/s`, accentClass: 'text-green-300' },
         { label: 'পারাপারের সময় (t)', value: `${metrics.crossTime.toFixed(1)} s`, accentClass: 'text-sky-300' },
-        { label: 'পার্শ্ব সরণ (Drift)', value: `${Math.abs(metrics.drift).toFixed(1)} m`, accentClass: 'text-amber-300' },
-        { label: 'সোজাসুজি পারাপার', value: Math.abs(metrics.drift) < 5 ? 'সম্ভব (০ m)' : 'ড্রিফট রয়েছে', accentClass: 'text-slate-100' },
+        { label: 'পার্শ্ব সরণ (Drift)', value: `${Math.abs(metrics.drift).toFixed(1)} m`, accentClass: 'text-pink-300' },
+        { label: 'সোজাসুজি পারাপার', value: Math.abs(metrics.drift) < 5 ? 'সম্ভব (০ m)' : 'ড্রিফট রয়েছে', accentClass: 'text-purple-300' },
       ]}
       controls={
         <>
@@ -1010,26 +1010,26 @@ export function VectorRainLab() {
           ctx.lineTo(frontKneeX + 6, groundY);
           ctx.stroke();
 
-          // Shoes (Orange running sneakers with splash contact)
-          ctx.fillStyle = '#F59E0B';
+          // Shoes (Pink running sneakers with splash contact)
+          ctx.fillStyle = '#EC4899';
           ctx.fillRect(rearKneeX - 9, groundY - 3, 10, 4);
           ctx.fillRect(frontKneeX + 3, groundY - 3, 10, 4);
 
           // Torso (Windbreaker Jacket with gradient)
           const jacketGrad = ctx.createLinearGradient(manX, torsoY - 12, manX + lean, torsoY + 16);
-          jacketGrad.addColorStop(0, '#D97706');
-          jacketGrad.addColorStop(0.5, '#F59E0B');
-          jacketGrad.addColorStop(1, '#B45309');
+          jacketGrad.addColorStop(0, '#A855F7');
+          jacketGrad.addColorStop(0.5, '#EC4899');
+          jacketGrad.addColorStop(1, '#7E22CE');
           ctx.fillStyle = jacketGrad;
           ctx.beginPath();
           ctx.roundRect(manX - 8 + lean * 0.2, torsoY - 12, 16, 28, 4);
           ctx.fill();
-          ctx.strokeStyle = '#FDE68A';
+          ctx.strokeStyle = '#FBCFE8';
           ctx.lineWidth = 1.2;
           ctx.stroke();
 
           // Head with Athletic Running Cap
-          ctx.fillStyle = '#FDE68A';
+          ctx.fillStyle = '#FBCFE8';
           ctx.beginPath();
           ctx.arc(manX + lean * 0.3, torsoY - 20, 8, 0, Math.PI * 2);
           ctx.fill();
@@ -1043,7 +1043,7 @@ export function VectorRainLab() {
           ctx.fill();
 
           // Arm holding umbrella forward
-          ctx.strokeStyle = '#D97706';
+          ctx.strokeStyle = '#C084FC';
           ctx.lineWidth = 4;
           ctx.beginPath();
           ctx.moveTo(manX - 2, torsoY - 4);
@@ -1138,15 +1138,15 @@ export function VectorRainLab() {
           ctx.closePath();
           ctx.fill();
 
-          // 2. -vm vector (horizontal to right - amber)
-          ctx.strokeStyle = '#F59E0B';
+          // 2. -vm vector (horizontal to right - pink)
+          ctx.strokeStyle = '#F472B6';
           ctx.lineWidth = 2.2;
           ctx.beginPath();
           ctx.moveTo(originX, botY);
           ctx.lineTo(rightX, botY);
           ctx.stroke();
           // Arrowhead
-          ctx.fillStyle = '#F59E0B';
+          ctx.fillStyle = '#F472B6';
           ctx.beginPath();
           ctx.moveTo(rightX, botY);
           ctx.lineTo(rightX - 6, botY - 4);
@@ -1154,8 +1154,8 @@ export function VectorRainLab() {
           ctx.closePath();
           ctx.fill();
 
-          // 3. v_mr resultant hypotenuse (emerald)
-          ctx.strokeStyle = '#10B981';
+          // 3. v_mr resultant hypotenuse (light green)
+          ctx.strokeStyle = '#4ADE80';
           ctx.lineWidth = 2.5;
           ctx.beginPath();
           ctx.moveTo(originX, originY);
@@ -1163,7 +1163,7 @@ export function VectorRainLab() {
           ctx.stroke();
           // Arrowhead
           const hypAngle = Math.atan2(vrLen, vmLen);
-          ctx.fillStyle = '#10B981';
+          ctx.fillStyle = '#4ADE80';
           ctx.beginPath();
           ctx.moveTo(rightX, botY);
           ctx.lineTo(rightX - 7 * Math.cos(hypAngle - 0.4), botY - 7 * Math.sin(hypAngle - 0.4));
@@ -1172,7 +1172,7 @@ export function VectorRainLab() {
           ctx.fill();
 
           // Angle arc θ at top origin (shows optimum relative rain angle)
-          ctx.strokeStyle = '#FBBF24';
+          ctx.strokeStyle = '#C084FC';
           ctx.lineWidth = 1.4;
           ctx.beginPath();
           ctx.arc(originX, originY, 14, Math.PI * 0.5 - optimumAngleRad, Math.PI * 0.5);
@@ -1182,7 +1182,7 @@ export function VectorRainLab() {
           const drawHudBadge = (bx: number, by: number, text: string, color: string) => {
             ctx.font = 'bold 9px "IBM Plex Mono", monospace';
             const tw = ctx.measureText(text).width;
-            ctx.fillStyle = 'rgba(11, 17, 24, 0.95)';
+            ctx.fillStyle = 'rgba(10, 13, 22, 0.95)';
             ctx.strokeStyle = color;
             ctx.lineWidth = 1;
             ctx.beginPath();
@@ -1198,18 +1198,18 @@ export function VectorRainLab() {
           drawHudBadge(hudX + 6, originY + vrLen * 0.5, 'v_r', '#38BDF8');
 
           // -v_m: placed cleanly BELOW the bottom leg
-          drawHudBadge(originX + vmLen * 0.5 - 12, botY + 14, '-v_m', '#F59E0B');
+          drawHudBadge(originX + vmLen * 0.5 - 12, botY + 14, '-v_m', '#F472B6');
 
           // v_mr: placed OUTSIDE to the right of the hypotenuse
-          drawHudBadge(rightX + 6, originY + vrLen * 0.5, 'v_mr', '#34D399');
+          drawHudBadge(rightX + 6, originY + vrLen * 0.5, 'v_mr', '#4ADE80');
 
           // Angle theta symbol readout
-          ctx.fillStyle = '#FBBF24';
+          ctx.fillStyle = '#C084FC';
           ctx.font = 'bold 10px "IBM Plex Mono", monospace';
           ctx.fillText('θ', hudX + 12, hudH + hudY - 10);
 
           // Shield status tag in top-left
-          ctx.fillStyle = shieldEfficiency >= 85 ? '#34D399' : shieldEfficiency >= 55 ? '#FBBF24' : '#F87171';
+          ctx.fillStyle = shieldEfficiency >= 85 ? '#4ADE80' : shieldEfficiency >= 55 ? '#F472B6' : '#CBD5E1';
           ctx.font = 'bold 11px "Noto Sans Bengali", sans-serif';
           ctx.fillText(
             shieldEfficiency >= 85 ? '● সুরক্ষিত' : '▲ বৃষ্টি গায়ে লাগবে',
@@ -1242,12 +1242,12 @@ export function VectorRainLab() {
       canvas={<canvas ref={canvasRef} className="w-full h-full block" aria-label="বৃষ্টি ও ছাতার আপেক্ষিক বেগ 3D অ্যানিমেশন" />}
       metrics={[
         { label: 'বৃষ্টির বেগ (v_r)', value: `${rainSpeed} m/s`, accentClass: 'text-sky-300' },
-        { label: 'মানুষের বেগ (v_m)', value: `${manSpeed} m/s`, accentClass: 'text-amber-300' },
-        { label: 'উপযুক্ত / বর্তমান কোণ', value: `${optimumAngleDeg.toFixed(1)}° / ${currentAngleDeg.toFixed(0)}°`, accentClass: 'text-emerald-300' },
+        { label: 'মানুষের বেগ (v_m)', value: `${manSpeed} m/s`, accentClass: 'text-pink-300' },
+        { label: 'উপযুক্ত / বর্তমান কোণ', value: `${optimumAngleDeg.toFixed(1)}° / ${currentAngleDeg.toFixed(0)}°`, accentClass: 'text-purple-300' },
         {
           label: 'সুরক্ষা দক্ষতা',
           value: `${shieldEfficiency}%`,
-          accentClass: shieldEfficiency >= 85 ? 'text-emerald-300' : shieldEfficiency >= 55 ? 'text-amber-300' : 'text-red-400',
+          accentClass: shieldEfficiency >= 85 ? 'text-green-300' : shieldEfficiency >= 55 ? 'text-pink-300' : 'text-[#CBD5E1]',
         },
       ]}
       controls={
@@ -1278,14 +1278,14 @@ export function VectorRainLab() {
             onChange={setManSpeed}
           />
 
-          <div className="p-3 rounded-lg bg-[#0B1118] border border-slate-800 space-y-3">
+          <div className="p-3 rounded-lg bg-[#0C0E13] border border-[#262B36] space-y-3">
             <div className="flex items-center justify-between gap-2">
               <span className="text-xs font-semibold text-slate-200">ছাতা নিয়ন্ত্রণের মোড</span>
               <button
                 type="button"
                 onClick={() => setAutoAngle((a) => !a)}
                 className={`px-3 py-1 text-xs rounded border transition-colors cursor-pointer ${
-                  autoAngle ? 'bg-amber-500/20 border-amber-400 text-amber-200 font-semibold' : 'bg-slate-800 border-slate-700 text-slate-300'
+                  autoAngle ? 'bg-purple-500/20 border-purple-400 text-purple-200 font-semibold' : 'bg-slate-800 border-slate-700 text-slate-300'
                 }`}
               >
                 {autoAngle ? 'স্বয়ংক্রিয় নিখুঁত কোণ' : 'ম্যানুয়াল কোণ পরিবর্তন'}
@@ -1424,7 +1424,7 @@ export function ProjectileLabCanvas({ initialPreset }: { initialPreset?: 'defaul
             const clampedX = Math.max(6, Math.min(width - tw - 16, startX));
             const clampedY = Math.max(16, Math.min(height - 12, by));
 
-            ctx.fillStyle = 'rgba(11, 17, 24, 0.96)';
+            ctx.fillStyle = 'rgba(10, 13, 22, 0.96)';
             ctx.strokeStyle = borderColor || textColor;
             ctx.lineWidth = 1.2;
             ctx.beginPath();
@@ -1459,13 +1459,13 @@ export function ProjectileLabCanvas({ initialPreset }: { initialPreset?: 'defaul
 
           // 2. Solid Ground Surface Strip
           const groundGrad = ctx.createLinearGradient(0, groundY, 0, groundY + 24);
-          groundGrad.addColorStop(0, '#152233');
-          groundGrad.addColorStop(1, '#0B1118');
+          groundGrad.addColorStop(0, '#181C24');
+          groundGrad.addColorStop(1, '#0C0E13');
           ctx.fillStyle = groundGrad;
           ctx.fillRect(0, groundY, width, height - groundY);
 
           // Glowing Grass Line
-          ctx.strokeStyle = '#22C55E';
+          ctx.strokeStyle = '#4ADE80';
           ctx.lineWidth = 2.5;
           ctx.beginPath();
           ctx.moveTo(0, groundY);
@@ -1518,7 +1518,7 @@ export function ProjectileLabCanvas({ initialPreset }: { initialPreset?: 'defaul
             // Vertical dashed plumb line
             ctx.save();
             ctx.setLineDash([3, 3]);
-            ctx.strokeStyle = 'rgba(245, 158, 11, 0.5)';
+            ctx.strokeStyle = 'rgba(244, 114, 182, 0.5)';
             ctx.lineWidth = 1.4;
             ctx.beginPath();
             ctx.moveTo(apexPxX, groundY);
@@ -1527,11 +1527,11 @@ export function ProjectileLabCanvas({ initialPreset }: { initialPreset?: 'defaul
             ctx.restore();
 
             // Apex indicator dot & ring
-            ctx.fillStyle = '#F59E0B';
+            ctx.fillStyle = '#EC4899';
             ctx.beginPath();
             ctx.arc(apexPxX, apexPxY, 4.5, 0, Math.PI * 2);
             ctx.fill();
-            ctx.strokeStyle = '#FDE68A';
+            ctx.strokeStyle = '#FBCFE8';
             ctx.lineWidth = 1.5;
             ctx.beginPath();
             ctx.arc(apexPxX, apexPxY, 7.5, 0, Math.PI * 2);
@@ -1539,8 +1539,8 @@ export function ProjectileLabCanvas({ initialPreset }: { initialPreset?: 'defaul
 
             // Vertical Dimension Arrow Bar (at apexPxX + 18)
             const dimBarX = apexPxX + 18;
-            ctx.strokeStyle = '#F59E0B';
-            ctx.fillStyle = '#F59E0B';
+            ctx.strokeStyle = '#F472B6';
+            ctx.fillStyle = '#F472B6';
             ctx.lineWidth = 1.5;
             ctx.beginPath();
             ctx.moveTo(dimBarX, groundY - 2);
@@ -1575,8 +1575,8 @@ export function ProjectileLabCanvas({ initialPreset }: { initialPreset?: 'defaul
               dimBarX + 8,
               (groundY + apexPxY) / 2,
               'H',
-              '#FBBF24',
-              '#F59E0B',
+              '#F472B6',
+              '#EC4899',
               'left'
             );
           }
@@ -1595,8 +1595,8 @@ export function ProjectileLabCanvas({ initialPreset }: { initialPreset?: 'defaul
             ctx.lineTo(landingPxX, groundY - 28);
             ctx.stroke();
 
-            // Fluttering Red-White Checkered Target Flag
-            ctx.fillStyle = '#EF4444';
+            // Fluttering Silver-White Checkered Target Flag
+            ctx.fillStyle = '#CBD5E1';
             ctx.beginPath();
             ctx.moveTo(landingPxX, groundY - 28);
             ctx.lineTo(landingPxX + 14, groundY - 21);
@@ -1661,7 +1661,7 @@ export function ProjectileLabCanvas({ initialPreset }: { initialPreset?: 'defaul
           ctx.save();
           ctx.translate(cannonOriginX, cannonOriginY);
 
-          // Cannon Wheel (Dark Gunmetal Rim + Gold Center)
+          // Cannon Wheel (Dark Gunmetal Rim + Purple Center)
           ctx.fillStyle = '#1E293B';
           ctx.beginPath();
           ctx.arc(-2, -4, 10, 0, Math.PI * 2);
@@ -1669,7 +1669,7 @@ export function ProjectileLabCanvas({ initialPreset }: { initialPreset?: 'defaul
           ctx.strokeStyle = '#64748B';
           ctx.lineWidth = 2;
           ctx.stroke();
-          ctx.fillStyle = '#F59E0B';
+          ctx.fillStyle = '#C084FC';
           ctx.beginPath();
           ctx.arc(-2, -4, 3, 0, Math.PI * 2);
           ctx.fill();
@@ -1689,12 +1689,12 @@ export function ProjectileLabCanvas({ initialPreset }: { initialPreset?: 'defaul
           ctx.stroke();
 
           // Muzzle Ring
-          ctx.fillStyle = '#F59E0B';
+          ctx.fillStyle = '#EC4899';
           ctx.fillRect(barrelLen - 2, -barrelW / 2 - 1, 3, barrelW + 2);
 
           // Firing muzzle smoke / spark puff when near start
           if (t < 0.12 && running) {
-            ctx.fillStyle = 'rgba(245, 158, 11, 0.7)';
+            ctx.fillStyle = 'rgba(236, 72, 153, 0.7)';
             ctx.beginPath();
             ctx.arc(barrelLen + 6, 0, 7, 0, Math.PI * 2);
             ctx.fill();
@@ -1755,8 +1755,8 @@ export function ProjectileLabCanvas({ initialPreset }: { initialPreset?: 'defaul
             ctx.fill();
 
             // Initial Velocity Vector Arrow: v0
-            ctx.strokeStyle = '#F59E0B';
-            ctx.fillStyle = '#F59E0B';
+            ctx.strokeStyle = '#F472B6';
+            ctx.fillStyle = '#F472B6';
             ctx.lineWidth = 2.8;
             ctx.beginPath();
             ctx.moveTo(cannonOriginX, cannonOriginY);
@@ -1773,12 +1773,12 @@ export function ProjectileLabCanvas({ initialPreset }: { initialPreset?: 'defaul
 
             // Launch Angle θ0 Arc & Badge
             const arcR = 38;
-            ctx.strokeStyle = '#FBBF24';
+            ctx.strokeStyle = '#C084FC';
             ctx.lineWidth = 1.6;
             ctx.beginPath();
             ctx.arc(cannonOriginX, cannonOriginY, arcR, -radAngle, 0);
             ctx.stroke();
-            ctx.fillStyle = 'rgba(245, 158, 11, 0.12)';
+            ctx.fillStyle = 'rgba(192, 132, 252, 0.14)';
             ctx.beginPath();
             ctx.moveTo(cannonOriginX, cannonOriginY);
             ctx.arc(cannonOriginX, cannonOriginY, arcR, -radAngle, 0);
@@ -1790,14 +1790,14 @@ export function ProjectileLabCanvas({ initialPreset }: { initialPreset?: 'defaul
             const bisectAng = -radAngle / 2;
             const thetaBx = cannonOriginX + (arcR + 18) * Math.cos(bisectAng);
             const thetaBy = cannonOriginY + (arcR + 18) * Math.sin(bisectAng);
-            drawBadge(thetaBx, thetaBy, 'θ₀', '#FBBF24', '#F59E0B');
+            drawBadge(thetaBx, thetaBy, 'θ₀', '#C084FC', '#A855F7');
 
             // 2. u (initial velocity) badge placed past arrow tip
             drawBadge(
               v0TipX + 14 * Math.cos(v0Ang),
               v0TipY + 14 * Math.sin(v0Ang),
               'u',
-              '#F59E0B'
+              '#F472B6'
             );
 
             // 3. ux badge cleanly below ground line
@@ -1813,8 +1813,8 @@ export function ProjectileLabCanvas({ initialPreset }: { initialPreset?: 'defaul
               cannonOriginX - 10,
               cannonOriginY - (v0Scale * Math.sin(radAngle)) / 2,
               'uᵧ',
-              '#34D399',
-              '#10B981',
+              '#4ADE80',
+              '#22C55E',
               'right'
             );
           }
@@ -1831,7 +1831,7 @@ export function ProjectileLabCanvas({ initialPreset }: { initialPreset?: 'defaul
               vx: -metrics.vx * 0.1 + (Math.random() - 0.5) * 2,
               vy: (Math.random() - 0.5) * 2,
               life: 0.8,
-              color: Math.random() > 0.5 ? '#F59E0B' : '#38BDF8',
+              color: Math.random() > 0.5 ? '#F472B6' : '#38BDF8',
             });
             if (sparkParticlesRef.current.length > 25) sparkParticlesRef.current.shift();
           }
@@ -1867,7 +1867,7 @@ export function ProjectileLabCanvas({ initialPreset }: { initialPreset?: 'defaul
             ctx.stroke();
 
             // Instantaneous vy (vertical)
-            const vyColor = currentVy >= 0 ? 'rgba(16, 185, 129, 0.85)' : 'rgba(239, 68, 68, 0.85)';
+            const vyColor = currentVy >= 0 ? 'rgba(74, 222, 128, 0.85)' : 'rgba(244, 63, 94, 0.85)';
             ctx.strokeStyle = vyColor;
             ctx.lineWidth = 1.8;
             ctx.beginPath();
@@ -1876,7 +1876,7 @@ export function ProjectileLabCanvas({ initialPreset }: { initialPreset?: 'defaul
             ctx.stroke();
 
             // Tangent velocity vector v
-            ctx.strokeStyle = '#F59E0B';
+            ctx.strokeStyle = '#F472B6';
             ctx.lineWidth = 2.2;
             ctx.beginPath();
             ctx.moveTo(ballPxX, ballPxY);
@@ -1890,25 +1890,25 @@ export function ProjectileLabCanvas({ initialPreset }: { initialPreset?: 'defaul
             ctx.fillText('vₓ', ballPxX + instVxLen + 4, ballPxY + 3);
 
             if (Math.abs(instVyLen) > 6) {
-              ctx.fillStyle = currentVy >= 0 ? '#34D399' : '#F87171';
+              ctx.fillStyle = currentVy >= 0 ? '#4ADE80' : '#CBD5E1';
               ctx.fillText('vᵧ', ballPxX - 16, ballPxY - instVyLen + (currentVy >= 0 ? -3 : 10));
             }
 
-            ctx.fillStyle = '#FBBF24';
+            ctx.fillStyle = '#F472B6';
             ctx.fillText('v', ballPxX + instVxLen + 5, ballPxY - instVyLen - 4);
           }
 
           // Projectile Metallic Sphere with 3D Radial Glow
           const ballGrad = ctx.createRadialGradient(ballPxX - 2, ballPxY - 2, 1, ballPxX, ballPxY, 7);
           ballGrad.addColorStop(0, '#FFFFFF');
-          ballGrad.addColorStop(0.3, '#FBBF24');
-          ballGrad.addColorStop(0.8, '#D97706');
-          ballGrad.addColorStop(1, '#78350F');
+          ballGrad.addColorStop(0.3, '#F472B6');
+          ballGrad.addColorStop(0.8, '#A855F7');
+          ballGrad.addColorStop(1, '#581C87');
           ctx.fillStyle = ballGrad;
           ctx.beginPath();
           ctx.arc(ballPxX, ballPxY, 7, 0, Math.PI * 2);
           ctx.fill();
-          ctx.strokeStyle = '#FDE68A';
+          ctx.strokeStyle = '#FBCFE8';
           ctx.lineWidth = 1.4;
           ctx.stroke();
 
@@ -1938,9 +1938,9 @@ export function ProjectileLabCanvas({ initialPreset }: { initialPreset?: 'defaul
       canvas={<canvas ref={canvasRef} className="w-full h-full block" aria-label="প্রাসের গতিপথ ও উপাংশ সিমুলেশন" />}
       metrics={[
         { label: 'অনুভূমিক পাল্লা (R)', value: `${metrics.range.toFixed(2)} m`, accentClass: 'text-sky-300' },
-        { label: 'সর্বোচ্চ উচ্চতা (H)', value: `${metrics.maxHeight.toFixed(2)} m`, accentClass: 'text-amber-300' },
-        { label: 'বিচরণকাল (T)', value: `${metrics.timeOfFlight.toFixed(2)} s`, accentClass: 'text-white' },
-        { label: 'তাৎক্ষণিক বেগ |v|', value: `${instantReadout.speed.toFixed(2)} m/s`, accentClass: 'text-emerald-300' },
+        { label: 'সর্বোচ্চ উচ্চতা (H)', value: `${metrics.maxHeight.toFixed(2)} m`, accentClass: 'text-pink-300' },
+        { label: 'বিচরণকাল (T)', value: `${metrics.timeOfFlight.toFixed(2)} s`, accentClass: 'text-purple-300' },
+        { label: 'তাৎক্ষণিক বেগ |v|', value: `${instantReadout.speed.toFixed(2)} m/s`, accentClass: 'text-green-300' },
       ]}
       controls={
         <>
@@ -1957,8 +1957,8 @@ export function ProjectileLabCanvas({ initialPreset }: { initialPreset?: 'defaul
                 }}
                 className={`px-2.5 py-1.5 text-xs rounded border transition-colors cursor-pointer text-left ${
                   angleDeg === 45 && velocity === 32
-                    ? 'bg-amber-500/20 border-amber-400 text-amber-200 font-semibold'
-                    : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'
+                    ? 'bg-purple-500/20 border-purple-400 text-purple-200 font-semibold'
+                    : 'bg-[#0C0E13] border-[#2E3442] text-slate-300 hover:bg-slate-800'
                 }`}
               >
                 সর্বোচ্চ পাল্লা (θ₀=৪৫°)
@@ -1972,8 +1972,8 @@ export function ProjectileLabCanvas({ initialPreset }: { initialPreset?: 'defaul
                 }}
                 className={`px-2.5 py-1.5 text-xs rounded border transition-colors cursor-pointer text-left ${
                   angleDeg === 30 && velocity === 35
-                    ? 'bg-amber-500/20 border-amber-400 text-amber-200 font-semibold'
-                    : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'
+                    ? 'bg-purple-500/20 border-purple-400 text-purple-200 font-semibold'
+                    : 'bg-[#0C0E13] border-[#2E3442] text-slate-300 hover:bg-slate-800'
                 }`}
               >
                 নেইমার শট (θ₀=৩০°)
@@ -1987,8 +1987,8 @@ export function ProjectileLabCanvas({ initialPreset }: { initialPreset?: 'defaul
                 }}
                 className={`px-2.5 py-1.5 text-xs rounded border transition-colors cursor-pointer text-left ${
                   angleDeg === 75
-                    ? 'bg-amber-500/20 border-amber-400 text-amber-200 font-semibold'
-                    : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'
+                    ? 'bg-purple-500/20 border-purple-400 text-purple-200 font-semibold'
+                    : 'bg-[#0C0E13] border-[#2E3442] text-slate-300 hover:bg-slate-800'
                 }`}
               >
                 উচ্চতা লব (θ₀=৭৫°)
@@ -2002,8 +2002,8 @@ export function ProjectileLabCanvas({ initialPreset }: { initialPreset?: 'defaul
                 }}
                 className={`px-2.5 py-1.5 text-xs rounded border transition-colors cursor-pointer text-left ${
                   angleDeg === 60
-                    ? 'bg-amber-500/20 border-amber-400 text-amber-200 font-semibold'
-                    : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'
+                    ? 'bg-purple-500/20 border-purple-400 text-purple-200 font-semibold'
+                    : 'bg-[#0C0E13] border-[#2E3442] text-slate-300 hover:bg-slate-800'
                 }`}
               >
                 পরিপূরক কোণ (θ₀=৬০°)
@@ -2027,7 +2027,7 @@ export function ProjectileLabCanvas({ initialPreset }: { initialPreset?: 'defaul
                   className={`px-2 py-1 text-xs rounded border transition-colors cursor-pointer text-center ${
                     Math.abs(gravity - cel.val) < 0.1
                       ? 'bg-sky-500/20 border-sky-400 text-sky-200 font-semibold'
-                      : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'
+                      : 'bg-[#0C0E13] border-[#2E3442] text-slate-300 hover:bg-slate-800'
                   }`}
                 >
                   {cel.name} ({cel.val})
@@ -2043,8 +2043,8 @@ export function ProjectileLabCanvas({ initialPreset }: { initialPreset?: 'defaul
               onClick={() => setShowComponents((c) => !c)}
               className={`flex-1 py-1.5 px-2 text-xs rounded border transition-colors cursor-pointer text-center ${
                 showComponents
-                  ? 'bg-emerald-500/20 border-emerald-400 text-emerald-200 font-semibold'
-                  : 'bg-slate-800/80 border-slate-700 text-slate-400'
+                  ? 'bg-green-500/20 border-green-400 text-green-200 font-semibold'
+                  : 'bg-[#0C0E13] border-[#2E3442] text-slate-400'
               }`}
             >
               {showComponents ? '✓ উপাংশ ভেক্টর চালু' : '✗ উপাংশ লুকানো'}
@@ -2055,7 +2055,7 @@ export function ProjectileLabCanvas({ initialPreset }: { initialPreset?: 'defaul
               className={`flex-1 py-1.5 px-2 text-xs rounded border transition-colors cursor-pointer text-center ${
                 showDimensions
                   ? 'bg-sky-500/20 border-sky-400 text-sky-200 font-semibold'
-                  : 'bg-slate-800/80 border-slate-700 text-slate-400'
+                  : 'bg-[#0C0E13] border-[#2E3442] text-slate-400'
               }`}
             >
               {showDimensions ? '✓ পাল্লা R ও H রেখা' : '✗ পরিমাপ লুকানো'}
@@ -2173,11 +2173,11 @@ export function CircularMotionLab() {
           ctx.stroke();
 
           // Center Pylon / Axis
-          ctx.fillStyle = '#F59E0B';
+          ctx.fillStyle = '#EC4899';
           ctx.beginPath();
           ctx.arc(cx, cy, 6, 0, Math.PI * 2);
           ctx.fill();
-          ctx.strokeStyle = '#FBBF24';
+          ctx.strokeStyle = '#FBCFE8';
           ctx.lineWidth = 2;
           ctx.stroke();
 
@@ -2195,15 +2195,15 @@ export function CircularMotionLab() {
           for (let i = 0; i < trailRef.current.length; i++) {
             const pt = trailRef.current[i];
             pt.alpha -= 0.025;
-            ctx.fillStyle = `rgba(245, 158, 11, ${Math.max(0, pt.alpha * 0.5)})`;
+            ctx.fillStyle = `rgba(244, 114, 182, ${Math.max(0, pt.alpha * 0.5)})`;
             ctx.beginPath();
             ctx.arc(pt.x, pt.y, 4 * Math.max(0, pt.alpha), 0, Math.PI * 2);
             ctx.fill();
           }
 
           // Centripetal Acceleration Vector Arrow (towards center)
-          ctx.strokeStyle = '#F59E0B';
-          ctx.fillStyle = '#F59E0B';
+          ctx.strokeStyle = '#F472B6';
+          ctx.fillStyle = '#F472B6';
           ctx.lineWidth = 2.5;
           ctx.beginPath();
           ctx.moveTo(px, py);
@@ -2237,7 +2237,7 @@ export function CircularMotionLab() {
 
           // Headlight Beam Casting on Track Ahead
           const beamGrad = ctx.createRadialGradient(28, 0, 4, 65, 0, 50);
-          beamGrad.addColorStop(0, 'rgba(254, 240, 138, 0.6)');
+          beamGrad.addColorStop(0, 'rgba(224, 242, 254, 0.55)');
           beamGrad.addColorStop(0.7, 'rgba(56, 189, 248, 0.2)');
           beamGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
           ctx.fillStyle = beamGrad;
@@ -2249,12 +2249,12 @@ export function CircularMotionLab() {
           ctx.closePath();
           ctx.fill();
 
-          // 3D Sports Car Chassis
+          // 3D Sports Car Chassis (Studio Purple-Pink)
           const carGrad = ctx.createLinearGradient(-15, 0, 15, 0);
-          carGrad.addColorStop(0, '#B45309');
-          carGrad.addColorStop(0.4, '#FDE68A');
-          carGrad.addColorStop(0.8, '#F59E0B');
-          carGrad.addColorStop(1, '#78350F');
+          carGrad.addColorStop(0, '#9D174D');
+          carGrad.addColorStop(0.4, '#FBCFE8');
+          carGrad.addColorStop(0.8, '#EC4899');
+          carGrad.addColorStop(1, '#581C87');
           ctx.fillStyle = carGrad;
           ctx.beginPath();
           ctx.roundRect(-16, -9, 32, 18, 4);
@@ -2276,8 +2276,8 @@ export function CircularMotionLab() {
           ctx.fillRect(-12, 9, 7, 3);
           ctx.fillRect(5, 9, 7, 3);
 
-          // Dual Red Taillights
-          ctx.fillStyle = '#EF4444';
+          // Dual Silver Taillights
+          ctx.fillStyle = '#CBD5E1';
           ctx.fillRect(-16, -7, 2, 4);
           ctx.fillRect(-16, 3, 2, 4);
 
@@ -2314,10 +2314,10 @@ export function CircularMotionLab() {
       }}
       canvas={<canvas ref={canvasRef} className="w-full h-full block" aria-label="3D বৃত্তাকার গতি সিমুলেশন" />}
       metrics={[
-        { label: 'কেন্দ্রমুখী ত্বরণ (a_c)', value: `${ac.toFixed(2)} m/s²`, accentClass: 'text-amber-300' },
+        { label: 'কেন্দ্রমুখী ত্বরণ (a_c)', value: `${ac.toFixed(2)} m/s²`, accentClass: 'text-pink-300' },
         { label: 'পর্যায়কাল (T)', value: `${period.toFixed(2)} s`, accentClass: 'text-sky-300' },
-        { label: 'রৈখিক দ্রুতি (v)', value: `${speed} m/s`, accentClass: 'text-emerald-300' },
-        { label: 'কৌণিক দ্রুতি (ω)', value: `${(speed / radius).toFixed(2)} rad/s`, accentClass: 'text-slate-100' },
+        { label: 'রৈখিক দ্রুতি (v)', value: `${speed} m/s`, accentClass: 'text-green-300' },
+        { label: 'কৌণিক দ্রুতি (ω)', value: `${(speed / radius).toFixed(2)} rad/s`, accentClass: 'text-purple-300' },
       ]}
       controls={
         <>
@@ -2637,7 +2637,7 @@ export function RoadBankingLab() {
             ctx.fillText('R', cx + rx * 0.48, cy - 6);
 
             // Center Pivot Pole
-            ctx.fillStyle = '#F59E0B';
+            ctx.fillStyle = '#EC4899';
             ctx.beginPath();
             ctx.arc(cx, cy, 5, 0, Math.PI * 2);
             ctx.fill();
@@ -2693,10 +2693,10 @@ export function RoadBankingLab() {
               ctx.closePath();
               ctx.fill();
 
-              // Red & White Rumble Curbs (Inner & Outer)
-              const isRed = i % 2 === 0;
+              // Slate & White Rumble Curbs (Inner & Outer)
+              const isDark = i % 2 === 0;
               // Inner curb
-              ctx.fillStyle = isRed ? '#EF4444' : '#F8FAFC';
+              ctx.fillStyle = isDark ? '#475569' : '#F8FAFC';
               ctx.beginPath();
               ctx.moveTo(xin1, yin1);
               ctx.lineTo(xin1 + (xout1 - xin1) * 0.08, yin1 + (yout1 - yin1) * 0.08);
@@ -2804,7 +2804,7 @@ export function RoadBankingLab() {
               if (spark.life <= 0) {
                 sparksRef.current.splice(sp, 1);
               } else {
-                ctx.fillStyle = '#FBBF24';
+                ctx.fillStyle = '#F472B6';
                 ctx.beginPath();
                 ctx.arc(carX + spark.x, carY + spark.y, 1.8 * spark.life, 0, Math.PI * 2);
                 ctx.fill();
@@ -2825,7 +2825,7 @@ export function RoadBankingLab() {
 
             // Headlight beams illuminating the track ahead
             const beamGrad = ctx.createRadialGradient(28, 0, 4, 75, 0, 55);
-            beamGrad.addColorStop(0, 'rgba(254, 240, 138, 0.65)');
+            beamGrad.addColorStop(0, 'rgba(224, 242, 254, 0.6)');
             beamGrad.addColorStop(0.6, 'rgba(56, 189, 248, 0.25)');
             beamGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
             ctx.fillStyle = beamGrad;
@@ -2865,15 +2865,15 @@ export function RoadBankingLab() {
             // 3D Car Chassis
             const carGrad = ctx.createLinearGradient(-18, 0, 18, 0);
             if (metrics.isSafe) {
-              carGrad.addColorStop(0, '#B45309');
-              carGrad.addColorStop(0.3, '#FDE68A');
-              carGrad.addColorStop(0.7, '#F59E0B');
-              carGrad.addColorStop(1, '#78350F');
+              carGrad.addColorStop(0, '#9D174D');
+              carGrad.addColorStop(0.3, '#FBCFE8');
+              carGrad.addColorStop(0.7, '#EC4899');
+              carGrad.addColorStop(1, '#581C87');
             } else {
-              carGrad.addColorStop(0, '#7F1D1D');
-              carGrad.addColorStop(0.3, '#FCA5A5');
-              carGrad.addColorStop(0.7, '#EF4444');
-              carGrad.addColorStop(1, '#991B1B');
+              carGrad.addColorStop(0, '#64748B');
+              carGrad.addColorStop(0.3, '#FFFFFF');
+              carGrad.addColorStop(0.7, '#E2E8F0');
+              carGrad.addColorStop(1, '#475569');
             }
             ctx.fillStyle = carGrad;
             ctx.beginPath();
@@ -2895,12 +2895,12 @@ export function RoadBankingLab() {
             // GT Racing Wing Spoiler
             ctx.fillStyle = '#1E293B';
             ctx.fillRect(-18, -9, 3, 18);
-            ctx.strokeStyle = '#FBBF24';
+            ctx.strokeStyle = '#C084FC';
             ctx.lineWidth = 1;
             ctx.strokeRect(-18, -9, 3, 18);
 
-            // Glowing Red LED Taillights
-            ctx.fillStyle = '#EF4444';
+            // Silver LED Taillights
+            ctx.fillStyle = '#CBD5E1';
             ctx.fillRect(-19, -8, 2, 4);
             ctx.fillRect(-19, 4, 2, 4);
 
@@ -2947,27 +2947,27 @@ export function RoadBankingLab() {
             const dirY = (cy - carY) / dirToCenterDist;
             const fcLen = Math.min(50, metrics.centripetalAcc * 3.5);
 
-            ctx.strokeStyle = '#10B981';
+            ctx.strokeStyle = '#4ADE80';
             ctx.beginPath();
             ctx.moveTo(carX, carY);
             ctx.lineTo(carX + dirX * fcLen, carY + dirY * fcLen);
             ctx.stroke();
-            ctx.fillStyle = '#10B981';
+            ctx.fillStyle = '#4ADE80';
             ctx.fillText('N sin θ', carX + dirX * (fcLen + 10) - 16, carY + dirY * (fcLen + 10) + 4);
 
             // Friction Vector fs if overspeeding (inward down slope) or underspeeding (outward)
             if (metrics.isOverSpeed) {
-              ctx.strokeStyle = '#F59E0B';
+              ctx.strokeStyle = '#CBD5E1';
               ctx.beginPath();
               ctx.moveTo(carX, carY);
               ctx.lineTo(carX + dirX * 35, carY + dirY * 35 + 12);
               ctx.stroke();
-              ctx.fillStyle = '#F59E0B';
+              ctx.fillStyle = '#CBD5E1';
               ctx.fillText('f_s (ঘর্ষণ)', carX + dirX * 38, carY + dirY * 38 + 14);
             }
 
             // Road Status Banner in Top Left
-            ctx.fillStyle = metrics.isSafe ? '#34D399' : '#F87171';
+            ctx.fillStyle = metrics.isSafe ? '#4ADE80' : '#CBD5E1';
             ctx.font = 'bold 12px "Noto Sans Bengali", sans-serif';
             ctx.fillText(
               metrics.isSafe ? '● গাড়ি নিরাপদে ঘুরছে' : '▲ টায়ার স্কিড! গতি কমান',
@@ -3021,8 +3021,8 @@ export function RoadBankingLab() {
             const numStrips = 16;
             for (let s = 0; s < numStrips; s++) {
               const sy = -roadH / 2 + ((s * 25 + chaseScroll) % (roadH + 25)) - 10;
-              const isRed = s % 2 === 0;
-              ctx.fillStyle = isRed ? '#EF4444' : '#F8FAFC';
+              const isDark = s % 2 === 0;
+              ctx.fillStyle = isDark ? '#475569' : '#F8FAFC';
               ctx.fillRect(-roadW / 2, sy, 16, 12);
               ctx.fillRect(roadW / 2 - 16, sy, 16, 12);
             }
@@ -3058,15 +3058,15 @@ export function RoadBankingLab() {
             const carH = 42;
             const chassisGrad = ctx.createLinearGradient(carX - carW / 2, 0, carX + carW / 2, 0);
             if (metrics.isSafe) {
-              chassisGrad.addColorStop(0, '#B45309');
-              chassisGrad.addColorStop(0.4, '#FDE68A');
-              chassisGrad.addColorStop(0.7, '#F59E0B');
-              chassisGrad.addColorStop(1, '#78350F');
+              chassisGrad.addColorStop(0, '#9D174D');
+              chassisGrad.addColorStop(0.4, '#FBCFE8');
+              chassisGrad.addColorStop(0.7, '#EC4899');
+              chassisGrad.addColorStop(1, '#581C87');
             } else {
-              chassisGrad.addColorStop(0, '#7F1D1D');
-              chassisGrad.addColorStop(0.4, '#FCA5A5');
-              chassisGrad.addColorStop(0.7, '#EF4444');
-              chassisGrad.addColorStop(1, '#991B1B');
+              chassisGrad.addColorStop(0, '#64748B');
+              chassisGrad.addColorStop(0.4, '#FFFFFF');
+              chassisGrad.addColorStop(0.7, '#E2E8F0');
+              chassisGrad.addColorStop(1, '#475569');
             }
 
             // Shadow
@@ -3101,11 +3101,11 @@ export function RoadBankingLab() {
             // GT Spoiler
             ctx.fillStyle = '#1E293B';
             ctx.fillRect(carX - carW / 2 + 6, carY + 15, carW - 12, 6);
-            ctx.strokeStyle = '#FBBF24';
+            ctx.strokeStyle = '#C084FC';
             ctx.strokeRect(carX - carW / 2 + 6, carY + 15, carW - 12, 6);
 
             // Taillights
-            ctx.fillStyle = '#EF4444';
+            ctx.fillStyle = '#CBD5E1';
             ctx.fillRect(carX - carW / 2 + 6, carY + 4, 14, 7);
             ctx.fillRect(carX + carW / 2 - 20, carY + 4, 14, 7);
 
@@ -3155,13 +3155,13 @@ export function RoadBankingLab() {
             ctx.stroke();
 
             // Height h Dimension Line
-            ctx.strokeStyle = '#F59E0B';
+            ctx.strokeStyle = '#F472B6';
             ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.moveTo(endX + 16, baseY);
             ctx.lineTo(endX + 16, topY);
             ctx.stroke();
-            ctx.fillStyle = '#F59E0B';
+            ctx.fillStyle = '#F472B6';
             ctx.font = 'bold 11px "IBM Plex Mono", monospace';
             ctx.fillText('h', endX + 24, (baseY + topY) / 2);
 
@@ -3188,7 +3188,7 @@ export function RoadBankingLab() {
             ctx.rotate(-bankRad);
 
             // Car chassis
-            ctx.fillStyle = '#D97706';
+            ctx.fillStyle = '#EC4899';
             ctx.beginPath();
             ctx.roundRect(-24, -20, 48, 20, 4);
             ctx.fill();
@@ -3236,13 +3236,13 @@ export function RoadBankingLab() {
             ctx.fillText('N cos θ', carMidX + 8, ny);
 
             // 4. N sin theta horizontal (centripetal force)
-            ctx.strokeStyle = '#10B981';
+            ctx.strokeStyle = '#4ADE80';
             ctx.setLineDash([]);
             ctx.beginPath();
             ctx.moveTo(carMidX, carMidY - 10);
             ctx.lineTo(nx, carMidY - 10);
             ctx.stroke();
-            ctx.fillStyle = '#10B981';
+            ctx.fillStyle = '#4ADE80';
             ctx.fillText('N sin θ', nx - 46, carMidY - 16);
           }
 
@@ -3251,7 +3251,7 @@ export function RoadBankingLab() {
           // ------------------------------------------------------------------
           const hudX = width - 155;
           const hudY = 56;
-          ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+          ctx.fillStyle = 'rgba(10, 13, 22, 0.92)';
           ctx.strokeStyle = '#334155';
           ctx.lineWidth = 1.5;
           ctx.beginPath();
@@ -3267,7 +3267,7 @@ export function RoadBankingLab() {
           ctx.stroke();
 
           const speedFrac = Math.min(1, speed / 45);
-          ctx.strokeStyle = metrics.isSafe ? '#10B981' : '#EF4444';
+          ctx.strokeStyle = metrics.isSafe ? '#4ADE80' : '#CBD5E1';
           ctx.beginPath();
           ctx.arc(hudX + 64, hudY + 12, 28, Math.PI * 0.8, Math.PI * (0.8 + 1.4 * speedFrac));
           ctx.stroke();
@@ -3307,34 +3307,34 @@ export function RoadBankingLab() {
       canvas={<canvas ref={canvasRef} className="w-full h-full block" aria-label="রাস্তার ব্যাংকিং সিমুলেশন" />}
       metrics={[
         { label: 'প্রয়োজনীয় ব্যাংকিং (θ₀)', value: `${metrics.idealDeg.toFixed(1)}°`, accentClass: 'text-sky-300' },
-        { label: 'সর্বোচ্চ নিরাপদ বেগ', value: `${metrics.safeMaxSpeed.toFixed(1)} m/s`, accentClass: 'text-amber-300' },
-        { label: 'রাস্তার উচ্চতা (h)', value: `${metrics.elevationHeightM.toFixed(2)} m`, accentClass: 'text-slate-100' },
-        { label: 'অবস্থা', value: metrics.isSafe ? '● নিরাপদ গ্রিপ' : '▲ টায়ার স্কিড!', accentClass: metrics.isSafe ? 'text-emerald-300' : 'text-red-400' },
+        { label: 'সর্বোচ্চ নিরাপদ বেগ', value: `${metrics.safeMaxSpeed.toFixed(1)} m/s`, accentClass: 'text-pink-300' },
+        { label: 'রাস্তার উচ্চতা (h)', value: `${metrics.elevationHeightM.toFixed(2)} m`, accentClass: 'text-purple-300' },
+        { label: 'অবস্থা', value: metrics.isSafe ? '● নিরাপদ গ্রিপ' : '▲ টায়ার স্কিড!', accentClass: metrics.isSafe ? 'text-green-300' : 'text-[#CBD5E1]' },
       ]}
       controls={
         <>
           {/* Camera View Switcher */}
           <div>
             <span className="block text-xs text-slate-400 uppercase tracking-wider mb-2 font-mono">ক্যামেরা ভিউ</span>
-            <div className="grid grid-cols-3 gap-1.5 p-1 bg-slate-900/80 rounded-xl border border-slate-800">
+            <div className="grid grid-cols-3 gap-1.5 p-1 bg-[#0C0E13] rounded-xl border border-[#262B36]">
               <button
                 type="button"
                 onClick={() => setCameraMode('curve')}
-                className={`py-1.5 text-xs font-medium rounded-lg transition-all ${cameraMode === 'curve' ? 'bg-[#F59E0B] text-slate-950 font-bold shadow-md' : 'text-slate-300 hover:text-white'}`}
+                className={`py-1.5 text-xs font-medium rounded-lg transition-all cursor-pointer ${cameraMode === 'curve' ? 'bg-sky-400 text-[#0C0E13] font-bold shadow-md' : 'text-slate-300 hover:text-white'}`}
               >
                 🏎️ ৩ডি ট্র্যাক
               </button>
               <button
                 type="button"
                 onClick={() => setCameraMode('chase')}
-                className={`py-1.5 text-xs font-medium rounded-lg transition-all ${cameraMode === 'chase' ? 'bg-[#F59E0B] text-slate-950 font-bold shadow-md' : 'text-slate-300 hover:text-white'}`}
+                className={`py-1.5 text-xs font-medium rounded-lg transition-all cursor-pointer ${cameraMode === 'chase' ? 'bg-sky-400 text-[#0C0E13] font-bold shadow-md' : 'text-slate-300 hover:text-white'}`}
               >
                 🏁 চেজ ক্যাম
               </button>
               <button
                 type="button"
                 onClick={() => setCameraMode('fbd')}
-                className={`py-1.5 text-xs font-medium rounded-lg transition-all ${cameraMode === 'fbd' ? 'bg-[#F59E0B] text-slate-950 font-bold shadow-md' : 'text-slate-300 hover:text-white'}`}
+                className={`py-1.5 text-xs font-medium rounded-lg transition-all cursor-pointer ${cameraMode === 'fbd' ? 'bg-sky-400 text-[#0C0E13] font-bold shadow-md' : 'text-slate-300 hover:text-white'}`}
               >
                 📐 FBD কোণ
               </button>
@@ -3345,7 +3345,7 @@ export function RoadBankingLab() {
           <button
             type="button"
             onClick={toggleSound}
-            className={`w-full py-2 px-3 text-xs font-medium rounded-xl border flex items-center justify-center gap-2 transition-all ${soundEnabled ? 'bg-emerald-950/60 border-emerald-500/50 text-emerald-300' : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'}`}
+            className={`w-full py-2 px-3 text-xs font-medium rounded-xl border flex items-center justify-center gap-2 transition-all cursor-pointer ${soundEnabled ? 'bg-green-950/60 border-green-500/50 text-green-300' : 'bg-[#0C0E13] border-[#262B36] text-slate-400 hover:text-slate-200'}`}
           >
             <span>{soundEnabled ? '🔊 ইঞ্জিন ও টায়ার সাউন্ড: চালু' : '🔇 ইঞ্জিন সাউন্ড চালু করুন'}</span>
           </button>
@@ -3512,7 +3512,7 @@ export function WellPumpLab() {
           const pumpX = wellX + wellW * 0.58;
           const pumpY = wellTopY - 34;
           ctx.fillStyle = '#1E293B';
-          ctx.strokeStyle = '#F59E0B';
+          ctx.strokeStyle = '#C084FC';
           ctx.lineWidth = 2;
           ctx.beginPath();
           ctx.roundRect(pumpX - 10, pumpY, 44, 28, 4);
@@ -3523,7 +3523,7 @@ export function WellPumpLab() {
           ctx.save();
           ctx.translate(pumpX + 12, pumpY + 14);
           ctx.rotate(rotorAngle);
-          ctx.strokeStyle = '#FBBF24';
+          ctx.strokeStyle = '#F472B6';
           ctx.lineWidth = 2.5;
           ctx.beginPath();
           ctx.moveTo(-8, 0);
@@ -3567,10 +3567,10 @@ export function WellPumpLab() {
       }}
       canvas={<canvas ref={canvasRef} className="w-full h-full block" aria-label="কুয়া ও পাম্প সিমুলেশন" />}
       metrics={[
-        { label: 'গড় সরণ (h_avg)', value: `${metrics.hAvg.toFixed(2)} m`, accentClass: 'text-amber-300' },
+        { label: 'গড় সরণ (h_avg)', value: `${metrics.hAvg.toFixed(2)} m`, accentClass: 'text-pink-300' },
         { label: 'কৃতকাজ (W)', value: `${metrics.workKJ.toFixed(1)} kJ`, accentClass: 'text-sky-300' },
-        { label: 'কার্যকর ক্ষমতা', value: `${metrics.pOutKw.toFixed(2)} kW`, accentClass: 'text-emerald-300' },
-        { label: 'প্রদত্ত ক্ষমতা (P_in)', value: `${metrics.pInKw.toFixed(2)} kW`, accentClass: 'text-slate-100' },
+        { label: 'কার্যকর ক্ষমতা', value: `${metrics.pOutKw.toFixed(2)} kW`, accentClass: 'text-green-300' },
+        { label: 'প্রদত্ত ক্ষমতা (P_in)', value: `${metrics.pInKw.toFixed(2)} kW`, accentClass: 'text-purple-300' },
       ]}
       controls={
         <>

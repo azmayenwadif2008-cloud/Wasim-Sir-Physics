@@ -14,15 +14,15 @@
     />
     <meta name="author" content="Wasim Sir Physics" />
     <meta name="robots" content="index, follow" />
-    <meta name="theme-color" content="#0B1118" />
+    <meta name="theme-color" content="#111318" />
 
     <!-- Google Search Console Verification -->
     <meta name="google-site-verification" content="google70ebdc5df737a579" />
 
     <!-- Official Brand Favicons for Browsers & Google Search Snippets -->
-    <link rel="icon" href="/favicon.ico" sizes="32x32" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="icon" type="image/png" sizes="48x48" href="/favicon.png" />
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
     <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
@@ -31,10 +31,12 @@
     <meta name="application-name" content="Wasim Sir Physics" />
     <meta name="apple-mobile-web-app-title" content="Wasim Sir Physics" />
 
-    <!-- OpenGraph Social Cards -->
+    <!-- Canonical & OpenGraph Social Cards -->
+    <link rel="canonical" href="https://wasimsirphysics.vercel.app/" />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="bn_BD" />
     <meta property="og:site_name" content="Wasim Sir Physics" />
+    <meta property="og:url" content="https://wasimsirphysics.vercel.app/" />
     <meta property="og:title" content="Wasim Sir Physics — ওয়াসিম স্যার ফিজিক্স | HSC '২৮" />
     <meta
       property="og:description"
@@ -43,7 +45,7 @@
     <meta property="og:image" content="https://wasimsirphysics.vercel.app/assets/aistudio/FB_IMG_1795659603663_7edf188f.jpg" />
     <meta
       property="og:image:alt"
-      content="Sigma Physics by Wasim Sir — Chittagong's Premier HSC Physics Platform"
+      content="Wasim Sir Physics — Chittagong's Premier HSC Physics Platform"
     />
 
     <!-- Twitter / X Cards -->
@@ -55,18 +57,16 @@
     />
     <meta name="twitter:image" content="https://wasimsirphysics.vercel.app/assets/aistudio/FB_IMG_1795659603663_7edf188f.jpg" />
 
-    <!-- Dynamic Canonical & OG URL -->
+    <!-- Dynamic Canonical & OG URL override for preview environments -->
     <script>
       (function () {
-        var canonicalUrl = window.location.origin + window.location.pathname;
-        var canonicalEl = document.createElement('link');
-        canonicalEl.setAttribute('rel', 'canonical');
-        canonicalEl.setAttribute('href', canonicalUrl);
-        document.head.appendChild(canonicalEl);
-        var ogUrl = document.createElement('meta');
-        ogUrl.setAttribute('property', 'og:url');
-        ogUrl.setAttribute('content', canonicalUrl);
-        document.head.appendChild(ogUrl);
+        if (window.location.hostname !== 'wasimsirphysics.vercel.app') {
+          var canonicalUrl = window.location.origin + window.location.pathname;
+          var canonicalEl = document.querySelector('link[rel="canonical"]');
+          if (canonicalEl) canonicalEl.setAttribute('href', canonicalUrl);
+          var ogUrl = document.querySelector('meta[property="og:url"]');
+          if (ogUrl) ogUrl.setAttribute('content', canonicalUrl);
+        }
       })();
     </script>
 
@@ -96,6 +96,8 @@
             "@id": "https://wasimsirphysics.vercel.app/#organization",
             "name": "Wasim Sir Physics",
             "url": "https://wasimsirphysics.vercel.app/",
+            "logo": "https://wasimsirphysics.vercel.app/logo.png",
+            "image": "https://wasimsirphysics.vercel.app/logo.png",
             "alternateName": ["ওয়াসিম স্যার ফিজিক্স", "Sigma Physics by Wasim Sir"],
             "founder": {
               "@type": "Person",
@@ -137,7 +139,7 @@
       rel="stylesheet"
     />
   </head>
-  <body class="bg-[#0B1118] text-[#F1F5F9] antialiased selection:bg-[#F59E0B]/25 selection:text-[#FDE68A]">
+  <body class="bg-[#111318] text-[#F3F4F6] antialiased selection:bg-white/20 selection:text-white">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

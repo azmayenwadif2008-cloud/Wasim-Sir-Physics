@@ -120,7 +120,7 @@ export function GravityOrbitLab() {
             if (trailRef.current.length > 24) trailRef.current.shift();
           }
 
-          ctx.strokeStyle = '#FBBF24';
+          ctx.strokeStyle = '#F472B6';
           ctx.lineWidth = 1.8;
           ctx.beginPath();
           for (let i = 0; i < trailRef.current.length; i++) {
@@ -144,7 +144,7 @@ export function GravityOrbitLab() {
           ctx.fillStyle = '#F8FAFC';
           ctx.fillRect(-5, -6, 10, 12);
           // Blinking beacon
-          ctx.fillStyle = '#EF4444';
+          ctx.fillStyle = '#CBD5E1';
           ctx.beginPath();
           ctx.arc(0, 0, 2.5, 0, Math.PI * 2);
           ctx.fill();
@@ -179,9 +179,9 @@ export function GravityOrbitLab() {
       canvas={<canvas ref={canvasRef} className="w-full h-full block" aria-label="3D উপগ্রহ কক্ষপথ সিমুলেশন" />}
       metrics={[
         { label: 'অভিকর্ষজ ত্বরণ (g′)', value: `${metrics.gPrime.toFixed(2)} m/s²`, accentClass: 'text-sky-300' },
-        { label: 'কক্ষীয় বেগ (v_c)', value: `${metrics.vOrbital.toFixed(2)} km/s`, accentClass: 'text-amber-300' },
-        { label: 'মুক্তিবেগ (v_e)', value: `${metrics.vEscape.toFixed(2)} km/s`, accentClass: 'text-emerald-300' },
-        { label: 'আবর্তনকাল (T)', value: `${(metrics.periodMin / 60).toFixed(2)} hr`, accentClass: 'text-slate-100' },
+        { label: 'কক্ষীয় বেগ (v_c)', value: `${metrics.vOrbital.toFixed(2)} km/s`, accentClass: 'text-pink-300' },
+        { label: 'মুক্তিবেগ (v_e)', value: `${metrics.vEscape.toFixed(2)} km/s`, accentClass: 'text-green-300' },
+        { label: 'আবর্তনকাল (T)', value: `${(metrics.periodMin / 60).toFixed(2)} hr`, accentClass: 'text-purple-300' },
       ]}
       controls={
         <>
@@ -227,8 +227,8 @@ export function YoungModulusLab() {
 
   const materials = {
     steel: { label: 'ইস্পাত (Steel)', y: 20e10, limitMPa: 250, color: '#38BDF8' },
-    copper: { label: 'তামা (Copper)', y: 12e10, limitMPa: 140, color: '#F59E0B' },
-    aluminum: { label: 'অ্যালুমিনিয়াম', y: 7e10, limitMPa: 110, color: '#CBD5E1' },
+    copper: { label: 'তামা (Copper)', y: 12e10, limitMPa: 140, color: '#F472B6' },
+    aluminum: { label: 'অ্যালুমিনিয়াম', y: 7e10, limitMPa: 110, color: '#C084FC' },
   } as const;
 
   const metrics = useMemo(() => {
@@ -279,7 +279,7 @@ export function YoungModulusLab() {
       grad.addColorStop(1, '#0F172A');
       ctx.fillStyle = grad;
       ctx.fillRect(rigX - 26, wy, 52, 10);
-      ctx.strokeStyle = '#F59E0B';
+      ctx.strokeStyle = '#C084FC';
       ctx.lineWidth = 1;
       ctx.strokeRect(rigX - 26, wy, 52, 10);
     }
@@ -289,7 +289,7 @@ export function YoungModulusLab() {
     const loupeY = height * 0.48;
     const loupeR = 55;
 
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+    ctx.fillStyle = 'rgba(10, 13, 22, 0.92)';
     ctx.strokeStyle = '#38BDF8';
     ctx.lineWidth = 3;
     ctx.beginPath();
@@ -308,14 +308,14 @@ export function YoungModulusLab() {
       ctx.stroke();
     }
     // Pointer indicating extension
-    ctx.strokeStyle = '#F59E0B';
+    ctx.strokeStyle = '#EC4899';
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(loupeX + 30, loupeY + (metrics.deltaLMm % 1) * 20);
     ctx.lineTo(loupeX + 5, loupeY + (metrics.deltaLMm % 1) * 20);
     ctx.stroke();
 
-    ctx.fillStyle = '#FBBF24';
+    ctx.fillStyle = '#F472B6';
     ctx.font = 'bold 11px "IBM Plex Mono", monospace';
     ctx.fillText('ΔL', loupeX - 8, loupeY + loupeR + 20);
 
@@ -334,9 +334,9 @@ export function YoungModulusLab() {
       canvas={<canvas ref={canvasRef} className="w-full h-full block" aria-label="ইয়ং গুণাঙ্ক সিমুলেশন" />}
       metrics={[
         { label: 'পীড়ন (Stress)', value: `${metrics.stressMPa.toFixed(1)} MPa`, accentClass: 'text-sky-300' },
-        { label: 'বিকৃতি (Strain)', value: metrics.strain.toExponential(2), accentClass: 'text-slate-100' },
-        { label: 'দৈর্ঘ্য বৃদ্ধি (ΔL)', value: `${metrics.deltaLMm.toFixed(2)} mm`, accentClass: 'text-amber-300' },
-        { label: 'উপাদান', value: materials[material].label, accentClass: 'text-emerald-300' },
+        { label: 'বিকৃতি (Strain)', value: metrics.strain.toExponential(2), accentClass: 'text-purple-300' },
+        { label: 'দৈর্ঘ্য বৃদ্ধি (ΔL)', value: `${metrics.deltaLMm.toFixed(2)} mm`, accentClass: 'text-pink-300' },
+        { label: 'উপাদান', value: materials[material].label, accentClass: 'text-green-300' },
       ]}
       controls={
         <>
@@ -349,7 +349,7 @@ export function YoungModulusLab() {
                   type="button"
                   onClick={() => setMaterial(key)}
                   className={`px-2 py-2 text-xs rounded-lg border cursor-pointer ${
-                    material === key ? 'bg-amber-500/20 border-amber-400 text-amber-200 font-semibold' : 'bg-[#0B1118] border-slate-700 text-slate-300'
+                    material === key ? 'bg-purple-500/20 border-purple-400 text-purple-200 font-semibold' : 'bg-[#0C0E13] border-[#2E3442] text-slate-300'
                   }`}
                 >
                   {materials[key].label}
@@ -471,14 +471,14 @@ export function CapillaryRiseLab() {
           ctx.fillRect(tubeX - tubeW / 2 + 1, colTopY, tubeW - 2, waterBaseY - colTopY);
 
           // Concave Meniscus at Top
-          ctx.strokeStyle = '#FBBF24';
+          ctx.strokeStyle = '#F472B6';
           ctx.lineWidth = 2.5;
           ctx.beginPath();
           ctx.arc(tubeX, colTopY, tubeW / 2, 0, Math.PI);
           ctx.stroke();
 
           // Surface Tension Vectors T pulling up at angle theta
-          ctx.strokeStyle = '#F59E0B';
+          ctx.strokeStyle = '#C084FC';
           ctx.lineWidth = 2;
           ctx.beginPath();
           ctx.moveTo(tubeX - tubeW / 2, colTopY);
@@ -488,7 +488,7 @@ export function CapillaryRiseLab() {
           ctx.stroke();
 
           // Height annotation bracket
-          ctx.strokeStyle = '#FBBF24';
+          ctx.strokeStyle = '#F472B6';
           ctx.lineWidth = 1.2;
           ctx.beginPath();
           ctx.moveTo(tubeX + tubeW / 2 + 14, waterBaseY);
@@ -499,7 +499,7 @@ export function CapillaryRiseLab() {
           ctx.lineTo(tubeX + tubeW / 2 + 19, colTopY);
           ctx.stroke();
 
-          ctx.fillStyle = '#FBBF24';
+          ctx.fillStyle = '#F472B6';
           ctx.font = 'bold 11px "IBM Plex Mono", monospace';
           ctx.fillText('h', tubeX + tubeW / 2 + 28, (waterBaseY + colTopY) / 2 + 4);
 
@@ -523,10 +523,10 @@ export function CapillaryRiseLab() {
       }}
       canvas={<canvas ref={canvasRef} className="w-full h-full block" aria-label="কৈশিক নল উত্থান সিমুলেশন" />}
       metrics={[
-        { label: 'উচ্চতা (h)', value: `${hMm.toFixed(1)} mm`, accentClass: 'text-amber-300' },
+        { label: 'উচ্চতা (h)', value: `${hMm.toFixed(1)} mm`, accentClass: 'text-pink-300' },
         { label: 'নলের ব্যাসার্ধ (r)', value: `${radiusMm} mm`, accentClass: 'text-sky-300' },
-        { label: 'পৃষ্ঠটান (T)', value: `${surfaceTension} N/m`, accentClass: 'text-emerald-300' },
-        { label: 'স্পর্শ কোণ (θ)', value: `${contactAngleDeg}°`, accentClass: 'text-slate-100' },
+        { label: 'পৃষ্ঠটান (T)', value: `${surfaceTension} N/m`, accentClass: 'text-green-300' },
+        { label: 'স্পর্শ কোণ (θ)', value: `${contactAngleDeg}°`, accentClass: 'text-purple-300' },
       ]}
       controls={
         <>
@@ -634,17 +634,17 @@ export function PendulumShmLab() {
           ctx.lineTo(bobX, bobY);
           ctx.stroke();
 
-          // 3D Shaded Brass Bob Sphere
+          // 3D Shaded Studio Sphere Bob
           const bobGrad = ctx.createRadialGradient(bobX - 4, bobY - 4, 3, bobX, bobY, 14);
-          bobGrad.addColorStop(0, '#FFFBEB');
-          bobGrad.addColorStop(0.3, '#FDE68A');
-          bobGrad.addColorStop(0.7, '#D97706');
-          bobGrad.addColorStop(1, '#78350F');
+          bobGrad.addColorStop(0, '#FDF2F8');
+          bobGrad.addColorStop(0.3, '#F472B6');
+          bobGrad.addColorStop(0.7, '#A855F7');
+          bobGrad.addColorStop(1, '#581C87');
           ctx.fillStyle = bobGrad;
           ctx.beginPath();
           ctx.arc(bobX, bobY, 14, 0, Math.PI * 2);
           ctx.fill();
-          ctx.strokeStyle = '#F59E0B';
+          ctx.strokeStyle = '#F472B6';
           ctx.lineWidth = 1.5;
           ctx.stroke();
 
@@ -657,11 +657,11 @@ export function PendulumShmLab() {
           ctx.fillRect(bx, barBaseY - maxH, 26, maxH);
           ctx.fillRect(bx + 40, barBaseY - maxH, 26, maxH);
 
-          // Kinetic Energy Ek (Green)
-          ctx.fillStyle = '#10B981';
+          // Kinetic Energy Ek (Light Green)
+          ctx.fillStyle = '#4ADE80';
           ctx.fillRect(bx, barBaseY - maxH * ekFraction, 26, maxH * ekFraction);
 
-          // Potential Energy Ep (Blue)
+          // Potential Energy Ep (Sky Blue)
           ctx.fillStyle = '#38BDF8';
           ctx.fillRect(bx + 40, barBaseY - maxH * epFraction, 26, maxH * epFraction);
 
@@ -692,10 +692,10 @@ export function PendulumShmLab() {
       }}
       canvas={<canvas ref={canvasRef} className="w-full h-full block" aria-label="3D সরল দোলক সিমুলেশন" />}
       metrics={[
-        { label: 'দোলনকাল (T)', value: `${metrics.period.toFixed(2)} s`, accentClass: 'text-amber-300' },
+        { label: 'দোলনকাল (T)', value: `${metrics.period.toFixed(2)} s`, accentClass: 'text-pink-300' },
         { label: 'কম্পাঙ্ক (f)', value: `${metrics.freq.toFixed(2)} Hz`, accentClass: 'text-sky-300' },
-        { label: 'কার্যকর দৈর্ঘ্য (L)', value: `${lengthM} m`, accentClass: 'text-emerald-300' },
-        { label: 'ত্বরণ (g)', value: `${gravity} m/s²`, accentClass: 'text-slate-100' },
+        { label: 'কার্যকর দৈর্ঘ্য (L)', value: `${lengthM} m`, accentClass: 'text-green-300' },
+        { label: 'ত্বরণ (g)', value: `${gravity} m/s²`, accentClass: 'text-purple-300' },
       ]}
       controls={
         <>
@@ -794,7 +794,7 @@ export function WaveBeatsLab() {
 
           // Envelope Modulation Curves
           ctx.setLineDash([4, 3]);
-          ctx.strokeStyle = '#F59E0B';
+          ctx.strokeStyle = '#F472B6';
           ctx.lineWidth = 1.5;
           for (const sign of [1, -1]) {
             ctx.beginPath();
@@ -836,9 +836,9 @@ export function WaveBeatsLab() {
       canvas={<canvas ref={canvasRef} className="w-full h-full block" aria-label="শব্দের বিট সিমুলেশন" />}
       metrics={[
         { label: 'কম্পাঙ্ক ১ (f₁)', value: `${f1} Hz`, accentClass: 'text-sky-300' },
-        { label: 'কম্পাঙ্ক ২ (f₂)', value: `${f2} Hz`, accentClass: 'text-sky-300' },
-        { label: 'বিট সংখ্যা (N)', value: `${beatFreq} /sec`, accentClass: 'text-amber-300' },
-        { label: 'শ্রবণযোগ্যতা', value: beatFreq <= 10 ? 'সহজে শোনা যাবে' : 'অস্পষ্ট (>10)', accentClass: 'text-emerald-300' },
+        { label: 'কম্পাঙ্ক ২ (f₂)', value: `${f2} Hz`, accentClass: 'text-purple-300' },
+        { label: 'বিট সংখ্যা (N)', value: `${beatFreq} /sec`, accentClass: 'text-pink-300' },
+        { label: 'শ্রবণযোগ্যতা', value: beatFreq <= 10 ? 'সহজে শোনা যাবে' : 'অস্পষ্ট (>10)', accentClass: 'text-green-300' },
       ]}
       controls={
         <>
@@ -1015,8 +1015,8 @@ export function DopplerEffectLab() {
           ctx.fillStyle = '#0F172A';
           ctx.fillRect(4, -8, 8, 16);
 
-          // Rooftop Dual Emergency Light Bar (Red & Blue)
-          ctx.fillStyle = isRedFlash ? '#EF4444' : '#1E293B';
+          // Rooftop Dual Emergency Light Bar (Silver & Sky Blue)
+          ctx.fillStyle = isRedFlash ? '#CBD5E1' : '#1E293B';
           ctx.fillRect(-4, -5, 4, 10);
           ctx.fillStyle = !isRedFlash ? '#38BDF8' : '#1E293B';
           ctx.fillRect(0, -5, 4, 10);
@@ -1025,11 +1025,11 @@ export function DopplerEffectLab() {
 
           // Stationary Listeners (Ahead & Behind)
           // Listener 1 (Behind - Hearing low pitch)
-          ctx.fillStyle = '#EF4444';
+          ctx.fillStyle = '#CBD5E1';
           ctx.beginPath();
           ctx.arc(36, midY, 9, 0, Math.PI * 2);
           ctx.fill();
-          ctx.strokeStyle = '#FCA5A5';
+          ctx.strokeStyle = '#E2E8F0';
           ctx.lineWidth = 2;
           ctx.stroke();
 
@@ -1044,7 +1044,7 @@ export function DopplerEffectLab() {
           ctx.fillStyle = '#F8FAFC';
           ctx.font = 'bold 11px "IBM Plex Mono", monospace';
           ctx.fillText('শ্রোতা ১ (পিছনে)', 14, midY - 22);
-          ctx.fillStyle = '#F87171';
+          ctx.fillStyle = '#CBD5E1';
           ctx.fillText('f′ (কম কম্পাঙ্ক)', 14, midY + 28);
 
           ctx.fillStyle = '#F8FAFC';
@@ -1075,9 +1075,9 @@ export function DopplerEffectLab() {
       canvas={<canvas ref={canvasRef} className="w-full h-full block" aria-label="ডপলার ক্রিয়া সিমুলেশন" />}
       metrics={[
         { label: 'মূল কম্পাঙ্ক (f)', value: `${originalFreq} Hz`, accentClass: 'text-sky-300' },
-        { label: 'সামনে আসন্ন কম্পাঙ্ক', value: `${fApproaching.toFixed(1)} Hz`, accentClass: 'text-emerald-300' },
-        { label: 'পেছনে অপসৃত কম্পাঙ্ক', value: `${fReceding.toFixed(1)} Hz`, accentClass: 'text-amber-300' },
-        { label: 'উৎসের দ্রুতি (v_s)', value: `${sourceSpeed} m/s`, accentClass: 'text-slate-100' },
+        { label: 'সামনে আসন্ন কম্পাঙ্ক', value: `${fApproaching.toFixed(1)} Hz`, accentClass: 'text-green-300' },
+        { label: 'পেছনে অপসৃত কম্পাঙ্ক', value: `${fReceding.toFixed(1)} Hz`, accentClass: 'text-pink-300' },
+        { label: 'উৎসের দ্রুতি (v_s)', value: `${sourceSpeed} m/s`, accentClass: 'text-purple-300' },
       ]}
       controls={
         <>
@@ -1175,7 +1175,7 @@ export function IdealGasLab() {
           // Piston Head
           ctx.fillStyle = '#334155';
           ctx.fillRect(chamberX + 2, pistonY - 14, chamberW - 4, 14);
-          ctx.strokeStyle = '#F59E0B';
+          ctx.strokeStyle = '#C084FC';
           ctx.lineWidth = 2;
           ctx.strokeRect(chamberX + 2, pistonY - 14, chamberW - 4, 14);
 
@@ -1193,7 +1193,7 @@ export function IdealGasLab() {
             const px = chamberX + 6 + p.x * (chamberW - 12);
             const py = pistonY + 4 + p.y * Math.max(16, chamberH - 8);
 
-            ctx.fillStyle = tempK > 400 ? '#F59E0B' : '#38BDF8';
+            ctx.fillStyle = tempK > 400 ? '#CBD5E1' : '#38BDF8';
             ctx.beginPath();
             ctx.arc(px, py, 4, 0, Math.PI * 2);
             ctx.fill();
@@ -1201,7 +1201,7 @@ export function IdealGasLab() {
 
           // Animated Burner Flame underneath cylinder
           if (tempK > 250) {
-            ctx.fillStyle = '#F59E0B';
+            ctx.fillStyle = '#F472B6';
             for (let f = 0; f < 6; f++) {
               const fx = chamberX + 30 + f * 38;
               const flameH = 10 + Math.sin(flamePhase + f) * 6;
@@ -1238,9 +1238,9 @@ export function IdealGasLab() {
       canvas={<canvas ref={canvasRef} className="w-full h-full block" aria-label="আদর্শ গ্যাস ও গতিতত্ত্ব 3D সিমুলেশন" />}
       metrics={[
         { label: 'গ্যাসের চাপ (P)', value: `${pressureKPa.toFixed(1)} kPa`, accentClass: 'text-sky-300' },
-        { label: 'মূল গড় বর্গবেগ (c_rms)', value: `${cRms.toFixed(0)} m/s`, accentClass: 'text-amber-300' },
-        { label: 'পরম তাপমাত্রা (T)', value: `${tempK} K`, accentClass: 'text-emerald-300' },
-        { label: 'আয়তন (V)', value: `${volumeL} L`, accentClass: 'text-slate-100' },
+        { label: 'মূল গড় বর্গবেগ (c_rms)', value: `${cRms.toFixed(0)} m/s`, accentClass: 'text-pink-300' },
+        { label: 'পরম তাপমাত্রা (T)', value: `${tempK} K`, accentClass: 'text-[#CBD5E1]' },
+        { label: 'আয়তন (V)', value: `${volumeL} L`, accentClass: 'text-green-300' },
       ]}
       controls={
         <>

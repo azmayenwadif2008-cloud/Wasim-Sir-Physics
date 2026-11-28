@@ -28,7 +28,7 @@ export function NoticeMediaViewer({
   return (
     <div className={`mt-4 space-y-3 ${compact ? 'max-w-md' : 'max-w-2xl'}`}>
       {safeImage && (
-        <div className="relative group inline-block max-w-full rounded-xl overflow-hidden border border-slate-700/80 bg-[#0B1118]">
+        <div className="relative group inline-block max-w-full rounded-xl overflow-hidden border border-[#2D3340] bg-[#111318]">
           <button
             type="button"
             onClick={() => setLightboxOpen(true)}
@@ -41,11 +41,11 @@ export function NoticeMediaViewer({
               loading="lazy"
               className={`w-full ${
                 compact ? 'max-h-48' : 'max-h-[420px]'
-              } object-contain bg-[#080D14]`}
+              } object-contain bg-[#0C0E13]`}
             />
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-medium text-slate-200 bg-slate-950/85 border-t border-slate-800 w-full justify-between">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-medium text-slate-200 bg-[#0C0E13]/95 border-t border-[#262B36] w-full justify-between">
               <span>নোটিশের সংযুক্ত ছবি</span>
-              <span className="inline-flex items-center gap-1 text-[#FBBF24]">
+              <span className="inline-flex items-center gap-1 text-pink-300">
                 <Maximize2 className="w-3 h-3" />
                 <span>বড় করে দেখো</span>
               </span>
@@ -55,7 +55,7 @@ export function NoticeMediaViewer({
       )}
 
       {parsedVideo && parsedVideo.src && (
-        <div className="rounded-xl overflow-hidden border border-slate-700/80 bg-[#0B1118]">
+        <div className="rounded-xl overflow-hidden border border-[#2D3340] bg-[#111318]">
           {parsedVideo.kind === 'iframe' ? (
             <div className="aspect-video w-full bg-black">
               <iframe
@@ -81,7 +81,7 @@ export function NoticeMediaViewer({
               href={parsedVideo.src}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-between gap-3 p-4 hover:bg-[#162130] transition-colors"
+              className="flex items-center justify-between gap-3 p-4 hover:bg-[#1F2430] transition-colors"
             >
               <div className="flex items-center gap-3 min-w-0">
                 <span className="w-9 h-9 rounded-lg bg-sky-950/70 border border-sky-800/80 text-sky-300 flex items-center justify-center shrink-0">

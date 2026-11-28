@@ -573,27 +573,27 @@ export function AdminStudio() {
   });
 
   const inputClass =
-    'w-full px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]';
+    'w-full px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 bg-[#0C0E13] border border-[#2E3442] rounded-lg focus:outline-none focus:border-sky-400';
 
   return (
     <div className="space-y-8">
       {/* Quick Summary Metrics */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 border border-slate-800 rounded-xl bg-[#131C28] overflow-hidden">
-        <div className="p-5 border-r border-b lg:border-b-0 border-slate-800">
+      <div className="grid grid-cols-2 lg:grid-cols-4 border border-[#262B36] rounded-xl bg-[#181C24] overflow-hidden">
+        <div className="p-5 border-r border-b lg:border-b-0 border-[#262B36]">
           <div className="text-xs text-slate-400 mb-1">Recorded Lectures</div>
-          <div className="font-mono text-2xl font-semibold tabular-nums text-slate-50">
+          <div className="font-mono text-2xl font-semibold tabular-nums text-purple-300">
             {classes.length}
           </div>
         </div>
-        <div className="p-5 lg:border-r border-b lg:border-b-0 border-slate-800">
+        <div className="p-5 lg:border-r border-b lg:border-b-0 border-[#262B36]">
           <div className="text-xs text-slate-400 mb-1">Active Batch Students</div>
-          <div className="font-mono text-2xl font-semibold tabular-nums text-emerald-400">
+          <div className="font-mono text-2xl font-semibold tabular-nums text-green-400">
             {activeCount}
           </div>
         </div>
-        <div className="p-5 border-r border-slate-800">
+        <div className="p-5 border-r border-[#262B36]">
           <div className="text-xs text-slate-400 mb-1">Pending Approvals</div>
-          <div className="font-mono text-2xl font-semibold tabular-nums text-[#FBBF24]">
+          <div className="font-mono text-2xl font-semibold tabular-nums text-pink-300">
             {pendingRequests.length}
           </div>
         </div>
@@ -606,14 +606,14 @@ export function AdminStudio() {
       </div>
 
       {/* Studio Sub-navigation & Actions */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-6 border-b border-slate-800">
-        <div className="inline-flex items-center gap-1 p-1 bg-[#131C28] border border-slate-800 rounded-lg self-start overflow-x-auto max-w-full">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-6 border-b border-[#262B36]">
+        <div className="inline-flex items-center gap-1 p-1 bg-[#181C24] border border-[#262B36] rounded-lg self-start overflow-x-auto max-w-full">
           <button
             type="button"
             onClick={() => setTab('classes')}
             className={`px-3.5 py-2 text-xs font-semibold rounded-md transition-colors cursor-pointer whitespace-nowrap ${
               tab === 'classes'
-                ? 'bg-[#F59E0B] text-slate-950'
+                ? 'bg-sky-400 text-slate-950'
                 : 'text-slate-300 hover:text-white'
             }`}
           >
@@ -624,7 +624,7 @@ export function AdminStudio() {
             onClick={() => setTab('students')}
             className={`px-3.5 py-2 text-xs font-semibold rounded-md transition-colors cursor-pointer whitespace-nowrap ${
               tab === 'students'
-                ? 'bg-[#F59E0B] text-slate-950'
+                ? 'bg-sky-400 text-slate-950'
                 : 'text-slate-300 hover:text-white'
             }`}
           >
@@ -636,7 +636,7 @@ export function AdminStudio() {
             onClick={() => setTab('results')}
             className={`px-3.5 py-2 text-xs font-semibold rounded-md transition-colors cursor-pointer whitespace-nowrap ${
               tab === 'results'
-                ? 'bg-[#F59E0B] text-slate-950'
+                ? 'bg-sky-400 text-slate-950'
                 : 'text-slate-300 hover:text-white'
             }`}
           >
@@ -647,7 +647,7 @@ export function AdminStudio() {
             onClick={() => setTab('notices')}
             className={`px-3.5 py-2 text-xs font-semibold rounded-md transition-colors cursor-pointer whitespace-nowrap ${
               tab === 'notices'
-                ? 'bg-[#F59E0B] text-slate-950'
+                ? 'bg-sky-400 text-slate-950'
                 : 'text-slate-300 hover:text-white'
             }`}
           >
@@ -670,9 +670,9 @@ export function AdminStudio() {
             type="button"
             disabled={busy}
             onClick={handleSeedDemo}
-            className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-slate-200 bg-[#131C28] border border-slate-700 rounded-lg hover:border-slate-500 disabled:opacity-50 transition-colors cursor-pointer whitespace-nowrap"
+            className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-slate-200 bg-[#181C24] border border-[#2E3442] rounded-lg hover:border-purple-400/60 disabled:opacity-50 transition-colors cursor-pointer whitespace-nowrap"
           >
-            <Database className="w-3.5 h-3.5 text-sky-300" />
+            <Database className="w-3.5 h-3.5 text-purple-300" />
             <span>Load Demo HSC &apos;28 Content</span>
           </button>
         </div>
@@ -681,7 +681,7 @@ export function AdminStudio() {
       {showPasswordCard && (
         <form
           onSubmit={handleLinkPassword}
-          className="bg-[#131C28] border border-sky-800 rounded-xl p-5 flex flex-col sm:flex-row sm:items-end gap-4"
+          className="bg-[#181C24] border border-sky-800 rounded-xl p-5 flex flex-col sm:flex-row sm:items-end gap-4"
         >
           <div className="flex-1">
             <div className="text-sm font-semibold text-slate-100 mb-1">
@@ -698,7 +698,7 @@ export function AdminStudio() {
                 placeholder="Choose a strong password (min 6 chars)"
                 value={newAdminPassword}
                 onChange={(e) => setNewAdminPassword(e.target.value)}
-                className="w-full pl-3 pr-10 py-2 text-sm text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#38BDF8]"
+                className="w-full pl-3 pr-10 py-2 text-sm text-slate-100 placeholder:text-slate-500 bg-[#0C0E13] border border-[#2E3442] rounded-lg focus:outline-none focus:border-sky-400"
               />
               <button
                 type="button"
@@ -718,7 +718,7 @@ export function AdminStudio() {
             <button
               type="submit"
               disabled={busy}
-              className="px-4 py-2 text-xs font-semibold text-slate-950 bg-[#38BDF8] hover:bg-sky-300 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
+              className="px-4 py-2 text-xs font-semibold text-slate-950 bg-sky-400 hover:bg-sky-300 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
             >
               Save Admin Password
             </button>
@@ -734,15 +734,15 @@ export function AdminStudio() {
       )}
 
       {statusMessage && (
-        <div className="flex items-center gap-2.5 p-3.5 rounded-lg bg-emerald-950/60 border border-emerald-800 text-emerald-200 text-xs font-medium">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+        <div className="flex items-center gap-2.5 p-3.5 rounded-lg bg-green-950/60 border border-green-700 text-green-200 text-xs font-medium">
+          <CheckCircle2 className="w-4 h-4 text-green-400 shrink-0" />
           <span>{statusMessage}</span>
         </div>
       )}
 
       {errorMsg && (
-        <div className="flex items-center gap-2.5 p-3.5 rounded-lg bg-red-950/60 border border-red-800 text-red-200 text-xs font-medium">
-          <XCircle className="w-4 h-4 text-red-400 shrink-0" />
+        <div className="flex items-center gap-2.5 p-3.5 rounded-lg bg-[#CBD5E1]/10 border border-[#CBD5E1]/30 text-[#E2E8F0] text-xs font-medium">
+          <XCircle className="w-4 h-4 text-[#CBD5E1] shrink-0" />
           <span>{errorMsg}</span>
         </div>
       )}
@@ -752,7 +752,7 @@ export function AdminStudio() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           <form
             onSubmit={handleSaveClass}
-            className="lg:col-span-5 bg-[#131C28] border border-slate-800 rounded-xl p-6 space-y-4"
+            className="lg:col-span-5 bg-[#181C24] border border-[#262B36] rounded-xl p-6 space-y-4"
           >
             <div className="flex items-center justify-between">
               <h3 className="font-display text-lg font-bold text-slate-50">
@@ -781,7 +781,7 @@ export function AdminStudio() {
                 <select
                   value={chapterNum}
                   onChange={(e) => setChapterNum(Number(e.target.value))}
-                  className="w-full px-3 py-2 text-xs text-slate-100 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                  className="w-full px-3 py-2 text-xs text-slate-100 bg-[#0C0E13] border border-[#2E3442] rounded-lg focus:outline-none focus:border-sky-400"
                 >
                   {HSC28_PHYSICS_CHAPTERS.map((ch) => (
                     <option key={ch.number} value={ch.number}>
@@ -800,7 +800,7 @@ export function AdminStudio() {
                   max={200}
                   value={lectureNum}
                   onChange={(e) => setLectureNum(Number(e.target.value))}
-                  className="w-full px-3 py-2 text-xs font-mono text-slate-100 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                  className="w-full px-3 py-2 text-xs font-mono text-slate-100 bg-[#0C0E13] border border-[#2E3442] rounded-lg focus:outline-none focus:border-sky-400"
                 />
               </div>
             </div>
@@ -840,7 +840,7 @@ export function AdminStudio() {
                     type="checkbox"
                     checked={isFreePreview}
                     onChange={(e) => setIsFreePreview(e.target.checked)}
-                    className="rounded border-slate-600 accent-[#F59E0B]"
+                    className="rounded border-slate-600 accent-[#A855F7]"
                   />
                   <span>Allow Free Preview</span>
                 </label>
@@ -858,13 +858,13 @@ export function AdminStudio() {
                 placeholder="https://www.youtube.com/watch?v=..."
                 value={videoUrl}
                 onChange={(e) => setVideoUrl(e.target.value)}
-                className="w-full px-3 py-2 text-xs font-mono text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                className="w-full px-3 py-2 text-xs font-mono text-slate-100 placeholder:text-slate-500 bg-[#0C0E13] border border-[#2E3442] rounded-lg focus:outline-none focus:border-sky-400"
               />
             </div>
 
             {liveVideoPreview && (
-              <div className="rounded-lg overflow-hidden border border-slate-800 bg-black">
-                <div className="px-3 py-1.5 text-[11px] font-mono text-slate-300 border-b border-slate-800">
+              <div className="rounded-lg overflow-hidden border border-[#262B36] bg-black">
+                <div className="px-3 py-1.5 text-[11px] font-mono text-slate-300 border-b border-[#262B36]">
                   Live Preview · {liveVideoPreview.providerLabel}
                 </div>
                 <div className="aspect-video">
@@ -891,7 +891,7 @@ export function AdminStudio() {
                 placeholder="https://drive.google.com/file/d/..."
                 value={noteUrl}
                 onChange={(e) => setNoteUrl(e.target.value)}
-                className="w-full px-3 py-2 text-xs font-mono text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                className="w-full px-3 py-2 text-xs font-mono text-slate-100 placeholder:text-slate-500 bg-[#0C0E13] border border-[#2E3442] rounded-lg focus:outline-none focus:border-sky-400"
               />
             </div>
 
@@ -912,19 +912,19 @@ export function AdminStudio() {
             <button
               type="submit"
               disabled={busy}
-              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] disabled:opacity-50 rounded-lg transition-colors cursor-pointer"
+              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-purple-600 hover:bg-purple-500 disabled:opacity-50 rounded-lg transition-colors cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span>{editingClassId ? 'Save Lecture Changes' : 'Publish Recorded Class'}</span>
             </button>
           </form>
 
-          <div className="lg:col-span-7 bg-[#131C28] border border-slate-800 rounded-xl divide-y divide-slate-800">
+          <div className="lg:col-span-7 bg-[#181C24] border border-[#262B36] rounded-xl divide-y divide-[#262B36]">
             <div className="p-5 flex items-center justify-between">
               <h3 className="font-display text-lg font-bold text-slate-50">
                 Published Lecture Library
               </h3>
-              <span className="text-xs font-mono text-slate-400 tabular-nums">
+              <span className="text-xs font-mono text-purple-300 tabular-nums">
                 {classes.length} items
               </span>
             </div>
@@ -943,7 +943,9 @@ export function AdminStudio() {
                       <span aria-hidden="true">·</span>
                       <span className="font-mono tabular-nums">{lec.duration}</span>
                       <span aria-hidden="true">·</span>
-                      <span>{lec.isFreePreview ? 'Free Preview' : 'Batch Vault'}</span>
+                      <span className={lec.isFreePreview ? 'text-green-300' : 'text-pink-300'}>
+                        {lec.isFreePreview ? 'Free Preview' : 'Batch Vault'}
+                      </span>
                     </div>
                     <div className="font-semibold text-sm text-slate-100">{lec.title}</div>
                     {lec.description && (
@@ -962,7 +964,7 @@ export function AdminStudio() {
                     <button
                       type="button"
                       onClick={() => void removeRecordedClass(lec.id)}
-                      className="p-2 text-slate-400 hover:text-red-400 rounded-lg hover:bg-red-950/60 transition-colors cursor-pointer"
+                      className="p-2 text-slate-400 hover:text-[#E2E8F0] rounded-lg hover:bg-[#CBD5E1]/15 transition-colors cursor-pointer"
                       title="Delete lecture"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -980,7 +982,7 @@ export function AdminStudio() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           <form
             onSubmit={handleSaveNotice}
-            className="lg:col-span-5 bg-[#131C28] border border-slate-800 rounded-xl p-6 space-y-4"
+            className="lg:col-span-5 bg-[#181C24] border border-[#262B36] rounded-xl p-6 space-y-4"
           >
             <div className="flex items-center justify-between">
               <h3 className="font-display text-lg font-bold text-slate-50">
@@ -1022,7 +1024,7 @@ export function AdminStudio() {
                 <select
                   value={noticeCategory}
                   onChange={(e) => setNoticeCategory(e.target.value as NoticeCategory)}
-                  className="w-full px-3 py-2 text-xs text-slate-100 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                  className="w-full px-3 py-2 text-xs text-slate-100 bg-[#0C0E13] border border-[#2E3442] rounded-lg focus:outline-none focus:border-sky-400"
                 >
                   <option value="Routine">Routine</option>
                   <option value="Exam">Exam</option>
@@ -1035,7 +1037,7 @@ export function AdminStudio() {
                 <select
                   value={noticeAudience}
                   onChange={(e) => setNoticeAudience(e.target.value as NoticeAudience)}
-                  className="w-full px-3 py-2 text-xs text-slate-100 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                  className="w-full px-3 py-2 text-xs text-slate-100 bg-[#0C0E13] border border-[#2E3442] rounded-lg focus:outline-none focus:border-sky-400"
                 >
                   <option value="paid">Batch Students Only</option>
                   <option value="public">Public (Landing + Portal)</option>
@@ -1048,7 +1050,7 @@ export function AdminStudio() {
                 type="checkbox"
                 checked={noticePinned}
                 onChange={(e) => setNoticePinned(e.target.checked)}
-                className="rounded border-slate-600 accent-[#F59E0B]"
+                className="rounded border-slate-600 accent-[#EC4899]"
               />
               <span>Pin notice to top of board</span>
             </label>
@@ -1068,23 +1070,23 @@ export function AdminStudio() {
             </div>
 
             {/* Photo Attachment (Gallery Upload or URL) */}
-            <div className="p-3.5 rounded-lg border border-slate-800 bg-[#0B1118] space-y-2.5">
+            <div className="p-3.5 rounded-lg border border-[#262B36] bg-[#0C0E13] space-y-2.5">
               <div className="flex items-center justify-between gap-2">
                 <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-200">
-                  <ImagePlus className="w-3.5 h-3.5 text-[#FBBF24]" />
+                  <ImagePlus className="w-3.5 h-3.5 text-pink-300" />
                   <span>নোটিশের ছবি (Photo)</span>
                 </span>
                 {noticeImageUrl && (
                   <button
                     type="button"
                     onClick={() => setNoticeImageUrl('')}
-                    className="text-[11px] text-red-400 hover:text-red-300 cursor-pointer"
+                    className="text-[11px] text-[#CBD5E1] hover:text-[#E2E8F0] cursor-pointer"
                   >
                     ছবি সরাও
                   </button>
                 )}
               </div>
-              <label className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-amber-200 bg-amber-950/40 hover:bg-amber-900/50 border border-amber-700/70 rounded-lg cursor-pointer transition-colors">
+              <label className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-purple-200 bg-purple-950/50 hover:bg-purple-900/50 border border-purple-700/70 rounded-lg cursor-pointer transition-colors">
                 <ImagePlus className="w-3.5 h-3.5" />
                 <span>
                   {uploadingNoticeImage
@@ -1109,7 +1111,7 @@ export function AdminStudio() {
             </div>
 
             {/* Video Attachment (YouTube / Shorts / Google Drive / MP4 / Facebook) */}
-            <div className="p-3.5 rounded-lg border border-slate-800 bg-[#0B1118] space-y-2">
+            <div className="p-3.5 rounded-lg border border-[#262B36] bg-[#0C0E13] space-y-2">
               <div className="flex items-center justify-between gap-2">
                 <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-200">
                   <Video className="w-3.5 h-3.5 text-sky-400" />
@@ -1119,7 +1121,7 @@ export function AdminStudio() {
                   <button
                     type="button"
                     onClick={() => setNoticeVideoUrl('')}
-                    className="text-[11px] text-red-400 hover:text-red-300 cursor-pointer"
+                    className="text-[11px] text-[#CBD5E1] hover:text-[#E2E8F0] cursor-pointer"
                   >
                     ভিডিও সরাও
                   </button>
@@ -1139,7 +1141,7 @@ export function AdminStudio() {
             </div>
 
             {(sanitizeNoticeImageUrl(noticeImageUrl) || sanitizeNoticeVideoUrl(noticeVideoUrl)) && (
-              <div className="p-3 rounded-lg border border-slate-800 bg-[#080D14]">
+              <div className="p-3 rounded-lg border border-[#262B36] bg-[#0A0C10]">
                 <div className="text-[11px] font-mono text-slate-400 mb-1">
                   মিডিয়া প্রিভিউ
                 </div>
@@ -1155,19 +1157,19 @@ export function AdminStudio() {
             <button
               type="submit"
               disabled={busy || uploadingNoticeImage}
-              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] disabled:opacity-50 rounded-lg transition-colors cursor-pointer"
+              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-purple-600 hover:bg-purple-500 disabled:opacity-50 rounded-lg transition-colors cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span>{editingNoticeId ? 'Save Notice Changes' : 'Publish Notice'}</span>
             </button>
           </form>
 
-          <div className="lg:col-span-7 bg-[#131C28] border border-slate-800 rounded-xl divide-y divide-slate-800">
+          <div className="lg:col-span-7 bg-[#181C24] border border-[#262B36] rounded-xl divide-y divide-[#262B36]">
             <div className="p-5 flex items-center justify-between">
               <h3 className="font-display text-lg font-bold text-slate-50">
                 Active Notices
               </h3>
-              <span className="text-xs font-mono text-slate-400 tabular-nums">
+              <span className="text-xs font-mono text-sky-300 tabular-nums">
                 {notices.length} notices
               </span>
             </div>
@@ -1186,13 +1188,13 @@ export function AdminStudio() {
                       {n.pinned && (
                         <>
                           <span aria-hidden="true">·</span>
-                          <span className="text-[#FBBF24] font-medium">Pinned</span>
+                          <span className="text-[#CBD5E1] font-semibold">Pinned</span>
                         </>
                       )}
                       {n.imageUrl && (
                         <>
                           <span aria-hidden="true">·</span>
-                          <span className="text-amber-300 font-medium">Photo</span>
+                          <span className="text-pink-300 font-medium">Photo</span>
                         </>
                       )}
                       {n.videoUrl && (
@@ -1223,7 +1225,7 @@ export function AdminStudio() {
                     <button
                       type="button"
                       onClick={() => void removeNotice(n.id)}
-                      className="p-2 text-slate-400 hover:text-red-400 rounded-lg hover:bg-red-950/60 transition-colors cursor-pointer"
+                      className="p-2 text-slate-400 hover:text-[#E2E8F0] rounded-lg hover:bg-[#CBD5E1]/15 transition-colors cursor-pointer"
                       title="Delete notice"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -1240,19 +1242,19 @@ export function AdminStudio() {
       {tab === 'students' && (
         <div className="space-y-8">
           {pendingRequests.length > 0 && (
-            <div className="bg-[#131C28] border border-amber-700/60 rounded-xl overflow-hidden">
-              <div className="px-6 py-4 bg-amber-950/30 border-b border-amber-800/50 flex flex-wrap items-center justify-between gap-2">
+            <div className="bg-[#181C24] border border-pink-700/60 rounded-xl overflow-hidden">
+              <div className="px-6 py-4 bg-pink-950/25 border-b border-pink-800/50 flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-[#FBBF24]" />
+                  <ShieldCheck className="w-4 h-4 text-pink-300" />
                   <h3 className="font-display text-base font-bold text-slate-50">
                     Pending Student Registrations ({pendingRequests.length})
                   </h3>
                 </div>
-                <span className="text-xs text-[#FBBF24]">
+                <span className="text-xs text-pink-300">
                   Approve করলে শিক্ষার্থী সাথে সাথেই Phone + Password দিয়ে ঢুকতে পারবে
                 </span>
               </div>
-              <div className="divide-y divide-slate-800">
+              <div className="divide-y divide-[#262B36]">
                 {pendingRequests.map((req) => (
                   <div
                     key={req.uid}
@@ -1270,7 +1272,7 @@ export function AdminStudio() {
                         {req.transactionId && (
                           <>
                             <span aria-hidden="true">·</span>
-                            <span className="font-semibold text-sky-300">
+                            <span className="font-semibold text-purple-300">
                               {req.paymentMethod || 'Reference'}: {req.transactionId}
                             </span>
                           </>
@@ -1281,7 +1283,7 @@ export function AdminStudio() {
                       <button
                         type="button"
                         onClick={() => void resolveEnrollmentRequest(req, 'approved')}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-950 bg-emerald-400 hover:bg-emerald-300 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-950 bg-green-400 hover:bg-green-300 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
                       >
                         <UserCheck className="w-3.5 h-3.5" />
                         <span>Approve Student</span>
@@ -1289,7 +1291,7 @@ export function AdminStudio() {
                       <button
                         type="button"
                         onClick={() => void resolveEnrollmentRequest(req, 'rejected')}
-                        className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-red-300 bg-red-950/60 border border-red-800/70 hover:bg-red-900/60 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
+                        className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-[#D8DEE9] bg-[#CBD5E1]/10 border border-[#CBD5E1]/30 hover:bg-[#CBD5E1]/20 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
                       >
                         <UserX className="w-3.5 h-3.5" />
                         <span>Reject</span>
@@ -1303,18 +1305,18 @@ export function AdminStudio() {
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             {/* Pre-Approve Student (Single or Bulk) */}
-            <div className="lg:col-span-5 bg-[#131C28] border border-slate-800 rounded-xl p-6 space-y-4">
+            <div className="lg:col-span-5 bg-[#181C24] border border-[#262B36] rounded-xl p-6 space-y-4">
               <div className="flex items-center justify-between gap-2">
                 <h3 className="font-display text-lg font-bold text-slate-50">
                   Pre-Approve Student
                 </h3>
-                <div className="inline-flex items-center gap-1 p-0.5 bg-[#0B1118] border border-slate-800 rounded-md">
+                <div className="inline-flex items-center gap-1 p-0.5 bg-[#0C0E13] border border-[#262B36] rounded-md">
                   <button
                     type="button"
                     onClick={() => setStudentAddMode('single')}
                     className={`px-2.5 py-1 text-[11px] font-semibold rounded transition-colors cursor-pointer ${
                       studentAddMode === 'single'
-                        ? 'bg-[#F59E0B] text-slate-950'
+                        ? 'bg-sky-400 text-slate-950'
                         : 'text-slate-400 hover:text-slate-100'
                     }`}
                   >
@@ -1325,7 +1327,7 @@ export function AdminStudio() {
                     onClick={() => setStudentAddMode('bulk')}
                     className={`px-2.5 py-1 text-[11px] font-semibold rounded transition-colors cursor-pointer ${
                       studentAddMode === 'bulk'
-                        ? 'bg-[#F59E0B] text-slate-950'
+                        ? 'bg-sky-400 text-slate-950'
                         : 'text-slate-400 hover:text-slate-100'
                     }`}
                   >
@@ -1381,7 +1383,7 @@ export function AdminStudio() {
                         placeholder="HSC28-042"
                         value={studentRoll}
                         onChange={(e) => setStudentRoll(e.target.value)}
-                        className="w-full px-3 py-2 text-xs font-mono text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                        className="w-full px-3 py-2 text-xs font-mono text-slate-100 placeholder:text-slate-500 bg-[#0C0E13] border border-[#2E3442] rounded-lg focus:outline-none focus:border-sky-400"
                       />
                     </div>
                     <div>
@@ -1394,7 +1396,7 @@ export function AdminStudio() {
                         placeholder="Chattogram College"
                         value={studentCollege}
                         onChange={(e) => setStudentCollege(e.target.value)}
-                        className="w-full px-3 py-2 text-xs text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                        className="w-full px-3 py-2 text-xs text-slate-100 placeholder:text-slate-500 bg-[#0C0E13] border border-[#2E3442] rounded-lg focus:outline-none focus:border-sky-400"
                       />
                     </div>
                   </div>
@@ -1410,7 +1412,7 @@ export function AdminStudio() {
                         placeholder="Sat-Mon-Wed 4:00 PM"
                         value={studentSectionTime}
                         onChange={(e) => setStudentSectionTime(e.target.value)}
-                        className="w-full px-3 py-2 text-xs text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                        className="w-full px-3 py-2 text-xs text-slate-100 placeholder:text-slate-500 bg-[#0C0E13] border border-[#2E3442] rounded-lg focus:outline-none focus:border-sky-400"
                       />
                     </div>
                     <div>
@@ -1423,7 +1425,7 @@ export function AdminStudio() {
                         placeholder="01XXXXXXXXX"
                         value={studentGuardianPhone}
                         onChange={(e) => setStudentGuardianPhone(e.target.value)}
-                        className="w-full px-3 py-2 text-xs font-mono text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                        className="w-full px-3 py-2 text-xs font-mono text-slate-100 placeholder:text-slate-500 bg-[#0C0E13] border border-[#2E3442] rounded-lg focus:outline-none focus:border-sky-400"
                       />
                     </div>
                   </div>
@@ -1431,7 +1433,7 @@ export function AdminStudio() {
                   <button
                     type="submit"
                     disabled={busy}
-                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] disabled:opacity-50 rounded-lg transition-colors cursor-pointer"
+                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-slate-950 bg-green-400 hover:bg-green-300 disabled:opacity-50 rounded-lg transition-colors cursor-pointer"
                   >
                     <UserCheck className="w-4 h-4" />
                     <span>Approve &amp; Grant Access</span>
@@ -1452,13 +1454,13 @@ export function AdminStudio() {
                       placeholder={'01712345678\n01812345678\nstudent@gmail.com'}
                       value={bulkIdentifiersText}
                       onChange={(e) => setBulkIdentifiersText(e.target.value)}
-                      className="w-full px-3 py-2 text-xs font-mono text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                      className="w-full px-3 py-2 text-xs font-mono text-slate-100 placeholder:text-slate-500 bg-[#0C0E13] border border-[#2E3442] rounded-lg focus:outline-none focus:border-sky-400"
                     />
                   </div>
                   <button
                     type="submit"
                     disabled={busy}
-                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] disabled:opacity-50 rounded-lg transition-colors cursor-pointer"
+                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-slate-950 bg-green-400 hover:bg-green-300 disabled:opacity-50 rounded-lg transition-colors cursor-pointer"
                   >
                     <Users className="w-4 h-4" />
                     <span>Approve All Students</span>
@@ -1468,8 +1470,8 @@ export function AdminStudio() {
             </div>
 
             {/* Enrolled Students Roster */}
-            <div className="lg:col-span-7 bg-[#131C28] border border-slate-800 rounded-xl overflow-hidden">
-              <div className="p-5 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="lg:col-span-7 bg-[#181C24] border border-[#262B36] rounded-xl overflow-hidden">
+              <div className="p-5 border-b border-[#262B36] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <h3 className="font-display text-lg font-bold text-slate-50">
                   Approved Batch Students ({filteredEnrollments.length})
                 </h3>
@@ -1480,12 +1482,12 @@ export function AdminStudio() {
                     placeholder="Search phone, roll, college or name..."
                     value={rosterSearch}
                     onChange={(e) => setRosterSearch(e.target.value)}
-                    className="pl-8 pr-3 py-1.5 text-xs text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                    className="pl-8 pr-3 py-1.5 text-xs text-slate-100 placeholder:text-slate-500 bg-[#0C0E13] border border-[#2E3442] rounded-lg focus:outline-none focus:border-sky-400"
                   />
                 </div>
               </div>
 
-              <div className="divide-y divide-slate-800">
+              <div className="divide-y divide-[#262B36]">
                 {filteredEnrollments.length === 0 ? (
                   <div className="p-10 text-center text-sm text-slate-400">
                     No approved students found.
@@ -1501,7 +1503,7 @@ export function AdminStudio() {
                             <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400 mb-1">
                               <span
                                 className={`inline-flex items-center gap-1 font-semibold ${
-                                  en.status === 'active' ? 'text-emerald-400' : 'text-[#FBBF24]'
+                                  en.status === 'active' ? 'text-green-400' : 'text-[#CBD5E1]'
                                 }`}
                               >
                                 {en.status === 'active' ? (
@@ -1514,7 +1516,7 @@ export function AdminStudio() {
                               {en.rollNumber && (
                                 <>
                                   <span aria-hidden="true">·</span>
-                                  <span className="font-mono text-amber-300">{en.rollNumber}</span>
+                                  <span className="font-mono text-purple-300">{en.rollNumber}</span>
                                 </>
                               )}
                               {en.college && (
@@ -1537,7 +1539,7 @@ export function AdminStudio() {
                               <span>{displayHandle}</span>
                               <span aria-hidden="true">·</span>
                               {isStudentPhoneEmail(en.email) ? (
-                                <span className="inline-flex items-center gap-1 text-[11px] font-sans text-amber-400 font-medium">
+                                <span className="inline-flex items-center gap-1 text-[11px] font-sans text-pink-300 font-medium">
                                   <Mail className="w-3 h-3 shrink-0" />
                                   <span>Gmail যুক্ত নেই (Edit Profile চাপুন)</span>
                                 </span>
@@ -1556,7 +1558,7 @@ export function AdminStudio() {
                             <button
                               type="button"
                               onClick={() => handleOpenGiveResultForStudent(en)}
-                              className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] rounded-lg transition-colors cursor-pointer whitespace-nowrap"
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-white bg-pink-500 hover:bg-pink-400 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
                               title="Publish individual exam result"
                             >
                               <Award className="w-3.5 h-3.5" />
@@ -1569,7 +1571,7 @@ export function AdminStudio() {
                                   ? setEditingStudentEmail(null)
                                   : openStudentProfileEditor(en)
                               }
-                              className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium border border-slate-700 rounded-lg hover:border-sky-500 text-sky-300 bg-[#0B1118] transition-colors cursor-pointer whitespace-nowrap"
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium border border-[#2E3442] rounded-lg hover:border-sky-400 text-sky-300 bg-[#0C0E13] transition-colors cursor-pointer whitespace-nowrap"
                             >
                               <Pencil className="w-3 h-3" />
                               <span>{isEditingThis ? 'Close' : 'Edit Profile'}</span>
@@ -1586,14 +1588,14 @@ export function AdminStudio() {
                                   status: en.status === 'active' ? 'suspended' : 'active',
                                 })
                               }
-                              className="px-2.5 py-1.5 text-xs font-medium border border-slate-700 rounded-lg hover:border-slate-500 text-slate-200 bg-[#0B1118] transition-colors cursor-pointer whitespace-nowrap"
+                              className="px-2.5 py-1.5 text-xs font-medium border border-[#2E3442] rounded-lg hover:border-purple-400/60 text-slate-200 bg-[#0C0E13] transition-colors cursor-pointer whitespace-nowrap"
                             >
                               {en.status === 'active' ? 'Suspend' : 'Activate'}
                             </button>
                             <button
                               type="button"
                               onClick={() => void removeEnrollment(en.email)}
-                              className="p-1.5 text-slate-400 hover:text-red-400 rounded-lg hover:bg-red-950/60 transition-colors cursor-pointer"
+                              className="p-1.5 text-slate-400 hover:text-[#E2E8F0] rounded-lg hover:bg-[#CBD5E1]/15 transition-colors cursor-pointer"
                               title="Remove student"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -1604,15 +1606,15 @@ export function AdminStudio() {
                         {isEditingThis && (
                           <form
                             onSubmit={(e) => void handleSaveStudentProfileEdit(e, en)}
-                            className="p-4 rounded-xl border border-slate-700 bg-[#0B1118] space-y-3"
+                            className="p-4 rounded-xl border border-[#2E3442] bg-[#0C0E13] space-y-3"
                           >
                             <div className="text-xs font-semibold text-sky-300">
                               Edit Complete Student Profile ({displayHandle})
                             </div>
 
-                            <div className="p-3 bg-amber-950/25 border border-amber-800/60 rounded-xl space-y-1.5">
-                              <label className="block text-[11px] font-semibold text-amber-300 flex items-center gap-1.5">
-                                <Mail className="w-3.5 h-3.5 text-amber-400" />
+                            <div className="p-3 bg-sky-950/25 border border-sky-800/60 rounded-xl space-y-1.5">
+                              <label className="block text-[11px] font-semibold text-sky-300 flex items-center gap-1.5">
+                                <Mail className="w-3.5 h-3.5 text-sky-400" />
                                 <span>Student Gmail (শিক্ষার্থীর আসল Gmail)</span>
                               </label>
                               <input
@@ -1622,7 +1624,7 @@ export function AdminStudio() {
                                 onChange={(e) => setEditStudentGmail(e.target.value)}
                                 className={`${inputClass} font-mono`}
                               />
-                              <p className="text-[10px] text-amber-200/90 leading-relaxed">
+                              <p className="text-[10px] text-sky-200/90 leading-relaxed">
                                 যেসব শিক্ষার্থী ভেরিফিকেশন ইমেইল পাচ্ছে না, অ্যাডমিন হিসেবে এখানে তাদের আসল Gmail বসিয়ে সেভ করুন। শিক্ষার্থী কোনো ভেরিফিকেশন বাধা ছাড়াই সরাসরি ক্লাসরুমে প্রবেশ করতে পারবে।
                               </p>
                             </div>
@@ -1740,7 +1742,7 @@ export function AdminStudio() {
                               <button
                                 type="submit"
                                 disabled={busy}
-                                className="px-4 py-1.5 text-xs font-semibold text-slate-950 bg-[#38BDF8] hover:bg-sky-300 disabled:opacity-50 rounded-lg cursor-pointer"
+                                className="px-4 py-1.5 text-xs font-semibold text-slate-950 bg-sky-400 hover:bg-sky-300 disabled:opacity-50 rounded-lg cursor-pointer"
                               >
                                 Save Profile
                               </button>
@@ -1762,7 +1764,7 @@ export function AdminStudio() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           <form
             onSubmit={handleSaveResult}
-            className="lg:col-span-5 bg-[#131C28] border border-slate-800 rounded-xl p-6 space-y-4"
+            className="lg:col-span-5 bg-[#181C24] border border-[#262B36] rounded-xl p-6 space-y-4"
           >
             <div className="flex items-center justify-between">
               <h3 className="font-display text-lg font-bold text-slate-50">
@@ -1792,7 +1794,7 @@ export function AdminStudio() {
                 disabled={Boolean(editingResultId)}
                 value={resultStudentEmail}
                 onChange={(e) => setResultStudentEmail(e.target.value)}
-                className="w-full px-3 py-2 text-xs text-slate-100 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B] disabled:opacity-60"
+                className="w-full px-3 py-2 text-xs text-slate-100 bg-[#0C0E13] border border-[#2E3442] rounded-lg focus:outline-none focus:border-sky-400 disabled:opacity-60"
               >
                 <option value="">-- Choose an enrolled student --</option>
                 {allEnrollments.map((en) => {
@@ -1830,7 +1832,7 @@ export function AdminStudio() {
                 <select
                   value={resultChapterNumber}
                   onChange={(e) => setResultChapterNumber(Number(e.target.value))}
-                  className="w-full px-3 py-2 text-xs text-slate-100 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                  className="w-full px-3 py-2 text-xs text-slate-100 bg-[#0C0E13] border border-[#2E3442] rounded-lg focus:outline-none focus:border-sky-400"
                 >
                   <option value={0}>Combined / Full Paper</option>
                   {HSC28_PHYSICS_CHAPTERS.map((ch) => (
@@ -1849,7 +1851,7 @@ export function AdminStudio() {
                   required
                   value={resultExamDate}
                   onChange={(e) => setResultExamDate(e.target.value)}
-                  className="w-full px-3 py-2 text-xs font-mono text-slate-100 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                  className="w-full px-3 py-2 text-xs font-mono text-slate-100 bg-[#0C0E13] border border-[#2E3442] rounded-lg focus:outline-none focus:border-sky-400"
                 />
               </div>
             </div>
@@ -1968,15 +1970,15 @@ export function AdminStudio() {
             <button
               type="submit"
               disabled={busy || allEnrollments.length === 0}
-              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] disabled:opacity-50 rounded-lg transition-colors cursor-pointer"
+              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-purple-600 hover:bg-purple-500 disabled:opacity-50 rounded-lg transition-colors cursor-pointer"
             >
               <Award className="w-4 h-4" />
               <span>{editingResultId ? 'Save Result Changes' : 'Publish Individual Result'}</span>
             </button>
           </form>
 
-          <div className="lg:col-span-7 bg-[#131C28] border border-slate-800 rounded-xl overflow-hidden">
-            <div className="p-5 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="lg:col-span-7 bg-[#181C24] border border-[#262B36] rounded-xl overflow-hidden">
+            <div className="p-5 border-b border-[#262B36] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <h3 className="font-display text-lg font-bold text-slate-50">
                 Published Student Results ({filteredResults.length})
               </h3>
@@ -1987,7 +1989,7 @@ export function AdminStudio() {
                   placeholder="Search student, roll or exam..."
                   value={resultSearch}
                   onChange={(e) => setResultSearch(e.target.value)}
-                  className="pl-8 pr-3 py-1.5 text-xs text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                  className="pl-8 pr-3 py-1.5 text-xs text-slate-100 placeholder:text-slate-500 bg-[#0C0E13] border border-[#2E3442] rounded-lg focus:outline-none focus:border-sky-400"
                 />
               </div>
             </div>
@@ -1997,7 +1999,7 @@ export function AdminStudio() {
                 No individual exam results published yet.
               </div>
             ) : (
-              <div className="divide-y divide-slate-800">
+              <div className="divide-y divide-[#262B36]">
                 {filteredResults.map((res) => {
                   const pct =
                     res.totalMarks > 0
@@ -2016,25 +2018,25 @@ export function AdminStudio() {
                           {res.rollNumber && (
                             <>
                               <span aria-hidden="true">·</span>
-                              <span className="font-mono text-amber-300">{res.rollNumber}</span>
+                              <span className="font-mono text-purple-300">{res.rollNumber}</span>
                             </>
                           )}
                           {res.meritRank && (
                             <>
                               <span aria-hidden="true">·</span>
-                              <span className="text-emerald-300 font-medium">{res.meritRank}</span>
+                              <span className="text-green-300 font-medium">{res.meritRank}</span>
                             </>
                           )}
                         </div>
                         <div className="font-semibold text-sm text-slate-100">{res.examTitle}</div>
                         <div className="flex flex-wrap items-center gap-3 text-xs text-slate-300 font-mono">
-                          <span className="text-[#FBBF24] font-semibold">
+                          <span className="text-pink-300 font-semibold">
                             Score: {res.obtainedMarks}/{res.totalMarks} ({pct}%)
                           </span>
                           {res.cqMarks !== undefined && <span>CQ: {res.cqMarks}</span>}
                           {res.mcqMarks !== undefined && <span>MCQ: {res.mcqMarks}</span>}
                           {res.highestMarks !== undefined && (
-                            <span className="text-emerald-300">Highest: {res.highestMarks}</span>
+                            <span className="text-green-300">Highest: {res.highestMarks}</span>
                           )}
                         </div>
                         {res.remarks && (
@@ -2053,7 +2055,7 @@ export function AdminStudio() {
                         <button
                           type="button"
                           onClick={() => void removeStudentResult(res.id)}
-                          className="p-2 text-slate-400 hover:text-red-400 rounded-lg hover:bg-red-950/60 transition-colors cursor-pointer"
+                          className="p-2 text-slate-400 hover:text-[#E2E8F0] rounded-lg hover:bg-[#CBD5E1]/15 transition-colors cursor-pointer"
                           title="Delete result"
                         >
                           <Trash2 className="w-4 h-4" />

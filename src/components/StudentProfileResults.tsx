@@ -20,13 +20,13 @@ import { extractPhoneFromAuthEmail } from '../lib/phoneAuth';
 import { compressNoticeImage, sanitizeProfilePhotoUrl } from '../lib/videoUtils';
 
 function getBanglaGrade(percent: number): { label: string; colorClass: string } {
-  if (percent >= 80) return { label: 'A+ (অসাধারণ)', colorClass: 'text-emerald-300 bg-emerald-950/60 border-emerald-800/80' };
+  if (percent >= 80) return { label: 'A+ (অসাধারণ)', colorClass: 'text-green-300 bg-green-950/60 border-green-700/80' };
   if (percent >= 70) return { label: 'A (খুব ভালো)', colorClass: 'text-sky-300 bg-sky-950/60 border-sky-800/80' };
-  if (percent >= 60) return { label: 'A- (ভালো)', colorClass: 'text-amber-300 bg-amber-950/50 border-amber-800/70' };
-  if (percent >= 50) return { label: 'B', colorClass: 'text-slate-200 bg-slate-800/80 border-slate-700' };
-  if (percent >= 40) return { label: 'C', colorClass: 'text-slate-300 bg-slate-800/70 border-slate-700' };
-  if (percent >= 33) return { label: 'D', colorClass: 'text-orange-300 bg-orange-950/50 border-orange-800/70' };
-  return { label: 'অকৃতকার্য', colorClass: 'text-red-300 bg-red-950/60 border-red-800/70' };
+  if (percent >= 60) return { label: 'A- (ভালো)', colorClass: 'text-purple-300 bg-purple-950/55 border-purple-700/70' };
+  if (percent >= 50) return { label: 'B', colorClass: 'text-slate-200 bg-slate-800/80 border-[#2E3442]' };
+  if (percent >= 40) return { label: 'C', colorClass: 'text-slate-300 bg-slate-800/70 border-[#2E3442]' };
+  if (percent >= 33) return { label: 'D', colorClass: 'text-pink-300 bg-pink-950/50 border-pink-800/70' };
+  return { label: 'অকৃতকার্য', colorClass: 'text-[#CBD5E1] bg-[#CBD5E1]/10 border-[#CBD5E1]/30' };
 }
 
 interface StudentProfileResultsProps {
@@ -138,7 +138,7 @@ export function StudentProfileResults({ isAdminPreview = false }: StudentProfile
   const completedCount = completedClassIds.size;
 
   const inputClass =
-    'w-full px-3 py-2 text-xs text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]';
+    'w-full px-3 py-2 text-xs text-slate-100 placeholder:text-slate-500 bg-[#0C0E13] border border-[#2E3442] rounded-lg focus:outline-none focus:border-pink-400';
 
   return (
     <div className="space-y-8">
@@ -155,8 +155,8 @@ export function StudentProfileResults({ isAdminPreview = false }: StudentProfile
         <div
           className={`p-3.5 rounded-xl border text-xs font-medium flex items-center justify-between gap-2 ${
             feedback.type === 'ok'
-              ? 'bg-emerald-950/60 border-emerald-800 text-emerald-200'
-              : 'bg-red-950/60 border-red-800 text-red-200'
+              ? 'bg-green-950/60 border-green-700 text-green-200'
+              : 'bg-[#CBD5E1]/10 border-[#CBD5E1]/30 text-[#E2E8F0]'
           }`}
         >
           <span>{feedback.text}</span>
@@ -171,10 +171,10 @@ export function StudentProfileResults({ isAdminPreview = false }: StudentProfile
       )}
 
       {/* 1. Student Academic ID & Profile Card */}
-      <div className="bg-[#131C28] border border-slate-800 rounded-xl overflow-hidden">
-        <div className="p-6 sm:p-8 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+      <div className="bg-[#181C24] border border-[#262B36] rounded-xl overflow-hidden">
+        <div className="p-6 sm:p-8 border-b border-[#262B36] flex flex-col sm:flex-row sm:items-center justify-between gap-5">
           <div className="flex items-center gap-4 min-w-0">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl border border-slate-700 bg-[#0B1118] overflow-hidden flex items-center justify-center shrink-0">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl border border-[#2E3442] bg-[#0C0E13] overflow-hidden flex items-center justify-center shrink-0">
               {safeAvatar ? (
                 <img
                   src={safeAvatar}
@@ -182,16 +182,16 @@ export function StudentProfileResults({ isAdminPreview = false }: StudentProfile
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <UserIcon className="w-8 h-8 text-[#FBBF24]" />
+                <UserIcon className="w-8 h-8 text-pink-300" />
               )}
             </div>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400 mb-1">
-                <span className="font-mono font-semibold text-[#FBBF24]">
+                <span className="font-mono font-semibold text-purple-300">
                   {myEnrollment?.rollNumber || 'HSC-28'}
                 </span>
                 <span aria-hidden="true">·</span>
-                <span className="inline-flex items-center gap-1 text-emerald-400 font-medium">
+                <span className="inline-flex items-center gap-1 text-green-400 font-medium">
                   <CheckCircle2 className="w-3.5 h-3.5" />
                   <span>{myEnrollment ? 'ভেরিফায়েড ব্যাচ শিক্ষার্থী' : 'স্টুডেন্ট প্রোফাইল'}</span>
                 </span>
@@ -211,7 +211,7 @@ export function StudentProfileResults({ isAdminPreview = false }: StudentProfile
             <button
               type="button"
               onClick={startEditing}
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] rounded-lg transition-colors cursor-pointer self-start sm:self-auto whitespace-nowrap"
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-pink-500 hover:bg-pink-400 rounded-lg transition-colors cursor-pointer self-start sm:self-auto whitespace-nowrap"
             >
               <Pencil className="w-3.5 h-3.5" />
               <span>প্রোফাইল এডিট করো</span>
@@ -220,7 +220,7 @@ export function StudentProfileResults({ isAdminPreview = false }: StudentProfile
         </div>
 
         {editingProfile ? (
-          <form onSubmit={handleSaveProfile} className="p-6 sm:p-8 space-y-5 bg-[#0E1621]">
+          <form onSubmit={handleSaveProfile} className="p-6 sm:p-8 space-y-5 bg-[#14171D]">
             <div className="flex items-center justify-between">
               <h3 className="font-display text-base font-bold text-slate-100">
                 নিজের প্রোফাইল তথ্য আপডেট করো
@@ -235,8 +235,8 @@ export function StudentProfileResults({ isAdminPreview = false }: StudentProfile
               </button>
             </div>
 
-            <div className="flex flex-wrap items-center gap-4 p-4 rounded-xl border border-slate-800 bg-[#0B1118]">
-              <div className="w-14 h-14 rounded-xl border border-slate-700 bg-[#131C28] overflow-hidden flex items-center justify-center shrink-0">
+            <div className="flex flex-wrap items-center gap-4 p-4 rounded-xl border border-[#262B36] bg-[#0C0E13]">
+              <div className="w-14 h-14 rounded-xl border border-[#2E3442] bg-[#181C24] overflow-hidden flex items-center justify-center shrink-0">
                 {sanitizeProfilePhotoUrl(photoInput) ? (
                   <img
                     src={sanitizeProfilePhotoUrl(photoInput)}
@@ -248,7 +248,7 @@ export function StudentProfileResults({ isAdminPreview = false }: StudentProfile
                 )}
               </div>
               <div className="flex flex-wrap items-center gap-2.5">
-                <label className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-amber-200 bg-amber-950/40 hover:bg-amber-900/50 border border-amber-700/70 rounded-lg cursor-pointer transition-colors">
+                <label className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-purple-200 bg-purple-950/50 hover:bg-purple-900/50 border border-purple-700/70 rounded-lg cursor-pointer transition-colors">
                   <Camera className="w-3.5 h-3.5" />
                   <span>{uploadingPhoto ? 'প্রস্তুত হচ্ছে...' : 'প্রোফাইল ছবি আপলোড'}</span>
                   <input
@@ -263,7 +263,7 @@ export function StudentProfileResults({ isAdminPreview = false }: StudentProfile
                   <button
                     type="button"
                     onClick={() => setPhotoInput('')}
-                    className="text-xs text-red-400 hover:text-red-300 cursor-pointer"
+                    className="text-xs text-[#CBD5E1] hover:text-[#E2E8F0] cursor-pointer"
                   >
                     ছবি সরাও
                   </button>
@@ -356,7 +356,7 @@ export function StudentProfileResults({ isAdminPreview = false }: StudentProfile
               <button
                 type="submit"
                 disabled={savingProfile || uploadingPhoto}
-                className="px-5 py-2.5 text-xs font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] disabled:opacity-50 rounded-lg transition-colors cursor-pointer"
+                className="px-5 py-2.5 text-xs font-semibold text-slate-950 bg-green-400 hover:bg-green-300 disabled:opacity-50 rounded-lg transition-colors cursor-pointer"
               >
                 {savingProfile ? 'সেভ হচ্ছে...' : 'তথ্য সেভ করো'}
               </button>
@@ -364,7 +364,7 @@ export function StudentProfileResults({ isAdminPreview = false }: StudentProfile
           </form>
         ) : (
           <div className="p-6 sm:p-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
-            <div className="p-3.5 rounded-lg bg-[#0B1118] border border-slate-800 space-y-1">
+            <div className="p-3.5 rounded-lg bg-[#0C0E13] border border-[#262B36] space-y-1">
               <div className="text-slate-400 flex items-center gap-1.5">
                 <Building2 className="w-3.5 h-3.5 text-sky-400" />
                 <span>কলেজ</span>
@@ -374,9 +374,9 @@ export function StudentProfileResults({ isAdminPreview = false }: StudentProfile
               </div>
             </div>
 
-            <div className="p-3.5 rounded-lg bg-[#0B1118] border border-slate-800 space-y-1">
+            <div className="p-3.5 rounded-lg bg-[#0C0E13] border border-[#262B36] space-y-1">
               <div className="text-slate-400 flex items-center gap-1.5">
-                <Phone className="w-3.5 h-3.5 text-emerald-400" />
+                <Phone className="w-3.5 h-3.5 text-green-400" />
                 <span>শিক্ষার্থীর মোবাইল / অ্যাকাউন্ট</span>
               </div>
               <div className="text-sm font-mono text-slate-100">
@@ -384,9 +384,9 @@ export function StudentProfileResults({ isAdminPreview = false }: StudentProfile
               </div>
             </div>
 
-            <div className="p-3.5 rounded-lg bg-[#0B1118] border border-slate-800 space-y-1">
+            <div className="p-3.5 rounded-lg bg-[#0C0E13] border border-[#262B36] space-y-1">
               <div className="text-slate-400 flex items-center gap-1.5">
-                <Phone className="w-3.5 h-3.5 text-[#FBBF24]" />
+                <Phone className="w-3.5 h-3.5 text-[#CBD5E1]" />
                 <span>অভিভাবকের মোবাইল</span>
               </div>
               <div className="text-sm font-mono text-slate-100">
@@ -394,9 +394,9 @@ export function StudentProfileResults({ isAdminPreview = false }: StudentProfile
               </div>
             </div>
 
-            <div className="p-3.5 rounded-lg bg-[#0B1118] border border-slate-800 space-y-1">
+            <div className="p-3.5 rounded-lg bg-[#0C0E13] border border-[#262B36] space-y-1">
               <div className="text-slate-400 flex items-center gap-1.5">
-                <GraduationCap className="w-3.5 h-3.5 text-sky-400" />
+                <GraduationCap className="w-3.5 h-3.5 text-purple-400" />
                 <span>এসএসসি জিপিএ / স্কোর</span>
               </div>
               <div className="text-sm font-medium text-slate-100">
@@ -404,9 +404,9 @@ export function StudentProfileResults({ isAdminPreview = false }: StudentProfile
               </div>
             </div>
 
-            <div className="p-3.5 rounded-lg bg-[#0B1118] border border-slate-800 space-y-1 sm:col-span-2">
+            <div className="p-3.5 rounded-lg bg-[#0C0E13] border border-[#262B36] space-y-1 sm:col-span-2">
               <div className="text-slate-400 flex items-center gap-1.5">
-                <MapPin className="w-3.5 h-3.5 text-amber-400" />
+                <MapPin className="w-3.5 h-3.5 text-pink-400" />
                 <span>ঠিকানা</span>
               </div>
               <div className="text-sm font-medium text-slate-100">
@@ -419,9 +419,9 @@ export function StudentProfileResults({ isAdminPreview = false }: StudentProfile
 
       {/* 2. Performance & Progress Summary */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-4 rounded-xl bg-[#131C28] border border-slate-800">
+        <div className="p-4 rounded-xl bg-[#181C24] border border-[#262B36]">
           <div className="text-xs text-slate-400 flex items-center gap-1.5 mb-1">
-            <Award className="w-3.5 h-3.5 text-[#FBBF24]" />
+            <Award className="w-3.5 h-3.5 text-pink-400" />
             <span>মোট পরীক্ষা দিয়েছ</span>
           </div>
           <div className="font-display text-2xl font-bold text-slate-100 tabular-nums">
@@ -429,7 +429,7 @@ export function StudentProfileResults({ isAdminPreview = false }: StudentProfile
           </div>
         </div>
 
-        <div className="p-4 rounded-xl bg-[#131C28] border border-slate-800">
+        <div className="p-4 rounded-xl bg-[#181C24] border border-[#262B36]">
           <div className="text-xs text-slate-400 flex items-center gap-1.5 mb-1">
             <TrendingUp className="w-3.5 h-3.5 text-sky-400" />
             <span>গড় স্কোর</span>
@@ -439,30 +439,30 @@ export function StudentProfileResults({ isAdminPreview = false }: StudentProfile
           </div>
         </div>
 
-        <div className="p-4 rounded-xl bg-[#131C28] border border-slate-800">
+        <div className="p-4 rounded-xl bg-[#181C24] border border-[#262B36]">
           <div className="text-xs text-slate-400 flex items-center gap-1.5 mb-1">
-            <Award className="w-3.5 h-3.5 text-emerald-400" />
+            <Award className="w-3.5 h-3.5 text-green-400" />
             <span>সর্বোচ্চ স্কোর</span>
           </div>
-          <div className="font-display text-2xl font-bold text-emerald-300 tabular-nums">
+          <div className="font-display text-2xl font-bold text-green-300 tabular-nums">
             {stats.bestPercent}%
           </div>
         </div>
 
-        <div className="p-4 rounded-xl bg-[#131C28] border border-slate-800">
+        <div className="p-4 rounded-xl bg-[#181C24] border border-[#262B36]">
           <div className="text-xs text-slate-400 flex items-center gap-1.5 mb-1">
-            <BookCheck className="w-3.5 h-3.5 text-amber-400" />
+            <BookCheck className="w-3.5 h-3.5 text-purple-400" />
             <span>সম্পন্ন ক্লাস</span>
           </div>
-          <div className="font-display text-2xl font-bold text-slate-100 tabular-nums">
+          <div className="font-display text-2xl font-bold text-purple-300 tabular-nums">
             {completedCount} / {classes.length}
           </div>
         </div>
       </div>
 
       {/* 3. Individual Exam Results */}
-      <div className="bg-[#131C28] border border-slate-800 rounded-xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between gap-3">
+      <div className="bg-[#181C24] border border-[#262B36] rounded-xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-[#262B36] flex items-center justify-between gap-3">
           <div>
             <h3 className="font-display text-lg font-bold text-slate-50">
               ব্যক্তিগত পরীক্ষার ফলাফল (Individual Results)
@@ -487,7 +487,7 @@ export function StudentProfileResults({ isAdminPreview = false }: StudentProfile
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-slate-800">
+          <div className="divide-y divide-[#262B36]">
             {myResults.map((res) => {
               const pct =
                 res.totalMarks > 0
@@ -507,7 +507,7 @@ export function StudentProfileResults({ isAdminPreview = false }: StudentProfile
                         {chapterMeta && (
                           <>
                             <span aria-hidden="true">·</span>
-                            <span className="text-[#FBBF24] font-medium">
+                            <span className="text-purple-300 font-medium">
                               {chapterMeta.titleBn}
                             </span>
                           </>
@@ -539,9 +539,9 @@ export function StudentProfileResults({ isAdminPreview = false }: StudentProfile
                   </div>
 
                   {/* Progress Bar */}
-                  <div className="w-full h-1.5 bg-[#0B1118] rounded-full overflow-hidden">
+                  <div className="w-full h-1.5 bg-[#0C0E13] rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-[#F59E0B] to-[#38BDF8] rounded-full transition-all"
+                      className="h-full bg-gradient-to-r from-pink-400 via-purple-400 to-sky-400 rounded-full transition-all"
                       style={{ width: `${Math.min(100, Math.max(0, pct))}%` }}
                     />
                   </div>
@@ -560,19 +560,19 @@ export function StudentProfileResults({ isAdminPreview = false }: StudentProfile
                     )}
                     {res.highestMarks !== undefined && (
                       <span>
-                        ব্যাচ সর্বোচ্চ: <strong className="font-mono text-emerald-300">{res.highestMarks}</strong>
+                        ব্যাচ সর্বোচ্চ: <strong className="font-mono text-green-300">{res.highestMarks}</strong>
                       </span>
                     )}
                     {res.meritRank && (
                       <span>
-                        মেধাস্থান: <strong className="font-mono text-[#FBBF24]">{res.meritRank}</strong>
+                        মেধাস্থান: <strong className="font-mono text-pink-300">{res.meritRank}</strong>
                       </span>
                     )}
                   </div>
 
                   {res.remarks && (
-                    <div className="p-3 rounded-lg bg-[#0B1118] border border-slate-800/90 text-xs text-slate-300">
-                      <span className="font-semibold text-[#FBBF24]">ওয়াসিম স্যারের মন্তব্য: </span>
+                    <div className="p-3 rounded-lg bg-[#0C0E13] border border-[#262B36]/90 text-xs text-slate-300">
+                      <span className="font-semibold text-purple-300">ওয়াসিম স্যারের মন্তব্য: </span>
                       <span>{res.remarks}</span>
                     </div>
                   )}

@@ -147,13 +147,13 @@ export function ProjectileLab() {
   const current = LAB_CHAPTERS.find((c) => c.number === activeChapter) ?? LAB_CHAPTERS[2];
 
   return (
-    <section id="physics-lab" className="py-14 sm:py-20 border-t border-slate-800/80 bg-[#0B1118]">
+    <section id="physics-lab" className="py-14 sm:py-20 border-t border-[#262B36] bg-[#111318]">
       <div className="max-w-[1200px] mx-auto px-6">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-7 sm:mb-8">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-[#FBBF24] text-xs font-semibold mb-2">
-              <span>ওয়াসিম স্যার ফিজিক্স অবজারভেটরি ল্যাব</span>
-            </div>
+            <p className="text-xs font-medium text-pink-300 tracking-wide mb-2">
+              ওয়াসিম স্যার ফিজিক্স অবজারভেটরি ল্যাব
+            </p>
             <h2 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-slate-100 text-balance">
               {current.title}
             </h2>
@@ -184,11 +184,11 @@ export function ProjectileLab() {
                 }}
                 className={`flex items-center gap-2 px-3 py-2.5 text-left text-xs rounded-lg border transition-colors cursor-pointer whitespace-nowrap shrink-0 lg:shrink ${
                   isActive
-                    ? 'bg-[#F59E0B] border-[#F59E0B] text-slate-950 font-semibold'
-                    : 'bg-[#131C28] border-slate-800 text-slate-300 hover:border-slate-600 hover:text-white'
+                    ? 'bg-purple-500 border-purple-400 text-white font-semibold'
+                    : 'bg-[#181C24] border-[#262B36] text-slate-300 hover:border-purple-400/60 hover:text-white'
                 }`}
               >
-                <span className={`font-mono tabular-nums ${isActive ? 'text-slate-950 font-bold' : 'text-[#FBBF24]'}`}>
+                <span className={`font-mono tabular-nums ${isActive ? 'text-pink-100 font-bold' : 'text-pink-300'}`}>
                   {chap.code}
                 </span>
                 <span className="truncate">{chap.shortLabel}</span>
@@ -199,7 +199,7 @@ export function ProjectileLab() {
 
         {/* Sub-Lab Concept Tabs if applicable */}
         {current.subLabs && current.subLabs.length > 1 && (
-          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-4 bg-[#131C28] p-1.5 rounded-lg border border-slate-800">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-4 bg-[#181C24] p-1.5 rounded-lg border border-[#262B36]">
             <span className="text-xs text-slate-400 px-2 font-medium shrink-0">কনসেপ্ট সিলেক্টর:</span>
             <div className="flex items-center gap-1.5 flex-wrap">
               {current.subLabs.map((sub) => (
@@ -209,8 +209,8 @@ export function ProjectileLab() {
                   onClick={() => setActiveSubLab(sub.id)}
                   className={`px-3 py-1.5 text-xs rounded-md transition-colors cursor-pointer whitespace-nowrap ${
                     activeSubLab === sub.id
-                      ? 'bg-[#38BDF8] text-slate-950 font-semibold shadow-sm'
-                      : 'text-slate-300 hover:text-white bg-slate-900/60'
+                      ? 'bg-sky-400 text-[#0C0E13] font-semibold shadow-sm'
+                      : 'text-slate-300 hover:text-white bg-[#111318]'
                   }`}
                 >
                   {sub.label}
@@ -268,12 +268,12 @@ export function ChapterEmbeddedLab({ chapterNumber }: { chapterNumber: number })
   }, [chapterNumber]);
 
   return (
-    <div className="bg-[#131C28]/70 border border-slate-800 rounded-xl p-5 sm:p-6 space-y-4">
+    <div className="bg-[#181C24] border border-[#262B36] rounded-xl p-5 sm:p-6 space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/30 text-[#FBBF24] text-[11px] font-semibold mb-1.5">
-            <span>অধ্যায় {spec.code} · এই ক্লাসের ফিজিক্স ল্যাব</span>
-          </div>
+          <p className="text-xs font-medium text-purple-300 mb-1">
+            অধ্যায় {spec.code} · এই ক্লাসের ফিজিক্স ল্যাব
+          </p>
           <h3 className="font-display text-lg sm:text-xl font-bold text-slate-100">
             {spec.title}
           </h3>
@@ -283,7 +283,7 @@ export function ChapterEmbeddedLab({ chapterNumber }: { chapterNumber: number })
         <button
           type="button"
           onClick={() => setIsOpen((v) => !v)}
-          className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-700 bg-[#0B1118] text-slate-200 hover:border-[#F59E0B] transition-colors cursor-pointer self-start sm:self-auto whitespace-nowrap shrink-0"
+          className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-[#2E3442] bg-[#111318] text-slate-200 hover:border-white/50 hover:text-white transition-colors cursor-pointer self-start sm:self-auto whitespace-nowrap shrink-0"
         >
           {isOpen ? 'ল্যাব সংক্ষিপ্ত করো' : 'ফিজিক্স ল্যাব খোলো'}
         </button>
@@ -292,7 +292,7 @@ export function ChapterEmbeddedLab({ chapterNumber }: { chapterNumber: number })
       {isOpen && (
         <div className="space-y-3">
           {spec.subLabs && spec.subLabs.length > 1 && (
-            <div className="flex flex-wrap items-center gap-1.5 bg-[#0B1118] p-1.5 rounded-lg border border-slate-800">
+            <div className="flex flex-wrap items-center gap-1.5 bg-[#111318] p-1.5 rounded-lg border border-[#262B36]">
               <span className="text-xs text-slate-400 px-2 font-medium shrink-0">কনসেপ্ট সিলেক্টর:</span>
               <div className="flex items-center gap-1.5 flex-wrap">
                 {spec.subLabs.map((sub) => (
@@ -302,8 +302,8 @@ export function ChapterEmbeddedLab({ chapterNumber }: { chapterNumber: number })
                     onClick={() => setActiveSubLab(sub.id)}
                     className={`px-3 py-1 text-xs rounded-md transition-colors cursor-pointer whitespace-nowrap ${
                       activeSubLab === sub.id
-                        ? 'bg-[#38BDF8] text-slate-950 font-semibold'
-                        : 'text-slate-300 hover:text-white bg-slate-900/60'
+                        ? 'bg-sky-400 text-[#0C0E13] font-semibold'
+                        : 'text-slate-300 hover:text-white bg-[#181C24]'
                     }`}
                   >
                     {sub.label}

@@ -32,10 +32,10 @@ export function LabShell({
   extraHeaderAction,
 }: LabShellProps) {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 border border-slate-800 rounded-xl overflow-hidden bg-[#131C28] text-slate-100">
+    <div className="grid grid-cols-1 lg:grid-cols-12 border border-[#262B36] rounded-xl overflow-hidden bg-[#181C24] text-slate-100">
       {/* Left Zone: Interactive Canvas + Real-Time Metrics */}
-      <div className="lg:col-span-7 flex flex-col border-b lg:border-b-0 lg:border-r border-slate-800">
-        <div className="px-3 sm:px-5 py-2.5 sm:py-3 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-[#101824]">
+      <div className="lg:col-span-7 flex flex-col border-b lg:border-b-0 lg:border-r border-[#262B36]">
+        <div className="px-3 sm:px-5 py-2.5 sm:py-3 border-b border-[#262B36] flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-[#14171D]">
           <div className="min-w-0 flex-1">
             <span className="text-[11px] sm:text-xs font-sans text-sky-300 font-medium tracking-tight break-words leading-relaxed block">
               {symbolGuide ?? 'ইন্টারঅ্যাক্টিভ ফিজিক্স সিমুলেশন'}
@@ -47,7 +47,7 @@ export function LabShell({
               <button
                 type="button"
                 onClick={onToggleRun}
-                className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-white rounded-md transition-colors cursor-pointer whitespace-nowrap"
+                className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-medium bg-purple-600 hover:bg-purple-500 text-white rounded-md transition-colors cursor-pointer whitespace-nowrap"
               >
                 {running ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
                 <span>{running ? 'থামান' : 'চালু করুন'}</span>
@@ -56,7 +56,7 @@ export function LabShell({
             <button
               type="button"
               onClick={onReset}
-              className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-medium bg-[#0B1118] border border-slate-700 hover:bg-slate-800 text-slate-200 rounded-md transition-colors cursor-pointer whitespace-nowrap"
+              className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-medium bg-[#111318] border border-[#2E3442] hover:border-white/50 hover:bg-[#1F2430] text-slate-200 rounded-md transition-colors cursor-pointer whitespace-nowrap"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>রিসেট</span>
@@ -64,16 +64,16 @@ export function LabShell({
           </div>
         </div>
 
-        <div className="relative h-[300px] sm:h-[360px] w-full bg-[#090F17]">
+        <div className="relative h-[300px] sm:h-[360px] w-full bg-[#0C0E13]">
           {canvas}
         </div>
 
         {/* Real-time Tabular Metrics */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 border-t border-slate-800 bg-[#101824]">
+        <div className="grid grid-cols-2 sm:grid-cols-4 border-t border-[#262B36] bg-[#14171D]">
           {metrics.map((m, idx) => (
             <div
               key={m.label}
-              className={`p-3.5 sm:p-4 border-slate-800 ${
+              className={`p-3.5 sm:p-4 border-[#262B36] ${
                 idx < 2 ? 'border-b sm:border-b-0' : ''
               } ${idx % 2 === 0 ? 'border-r' : ''} ${
                 idx < 3 ? 'sm:border-r' : 'sm:border-r-0'
@@ -93,11 +93,11 @@ export function LabShell({
       </div>
 
       {/* Right Zone: Parameter Controls + Board Exam Tip */}
-      <div className="lg:col-span-5 p-5 sm:p-8 flex flex-col justify-between bg-[#131C28]">
+      <div className="lg:col-span-5 p-5 sm:p-8 flex flex-col justify-between bg-[#181C24]">
         <div className="space-y-5">{controls}</div>
 
-        <div className="mt-6 pt-5 border-t border-slate-800 text-xs text-slate-300 leading-relaxed">
-          <span className="text-amber-300 font-semibold">বোর্ড পরীক্ষার টিপস: </span>
+        <div className="mt-6 pt-5 border-t border-[#262B36] text-xs text-slate-300 leading-relaxed">
+          <span className="text-pink-300 font-semibold">বোর্ড পরীক্ষার টিপস: </span>
           {boardTip}
         </div>
       </div>
@@ -158,9 +158,9 @@ export function LabParamControl({
     setDraft(String(clamped));
   };
 
-  const accentText = accent === 'sky' ? 'text-sky-300' : 'text-amber-300';
-  const sliderAccent = accent === 'sky' ? 'accent-[#38BDF8]' : 'accent-[#F59E0B]';
-  const borderFocus = accent === 'sky' ? 'focus:border-[#38BDF8]' : 'focus:border-[#F59E0B]';
+  const accentText = accent === 'sky' ? 'text-sky-300' : 'text-pink-300';
+  const sliderAccent = accent === 'sky' ? 'accent-[#38BDF8]' : 'accent-[#EC4899]';
+  const borderFocus = accent === 'sky' ? 'focus:border-sky-400' : 'focus:border-pink-400';
 
   return (
     <div>
@@ -202,7 +202,7 @@ export function LabParamControl({
                 }
               }
             }}
-            className={`w-20 px-2 py-1 text-right text-xs font-mono font-semibold tabular-nums bg-[#0B1118] border border-slate-700 rounded-md ${accentText} ${borderFocus} focus:outline-none`}
+            className={`w-20 px-2 py-1 text-right text-xs font-mono font-semibold tabular-nums bg-[#0C0E13] border border-[#2E3442] rounded-md ${accentText} ${borderFocus} focus:outline-none`}
           />
           {unit && (
             <span className="text-[11px] font-mono text-slate-400 min-w-[24px]">{unit}</span>

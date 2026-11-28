@@ -383,9 +383,9 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
     return (
       <section className="observatory-grid-bg min-h-[calc(100vh-140px)] flex items-center">
         <div className="max-w-[1200px] w-full mx-auto px-6 py-12 lg:py-16">
-          <div className="max-w-lg mx-auto bg-[#131C28] border border-slate-800 rounded-xl overflow-hidden">
+          <div className="max-w-lg mx-auto bg-[#181C24] border border-[#262B36] rounded-xl overflow-hidden">
             {/* Role Selector Header */}
-            <div className="grid grid-cols-2 border-b border-slate-800 bg-[#0E1621]">
+            <div className="grid grid-cols-2 border-b border-[#262B36] bg-[#14171D]">
               <button
                 type="button"
                 onClick={() => {
@@ -395,7 +395,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                 }}
                 className={`py-4 text-xs font-semibold transition-colors cursor-pointer ${
                   activeRole === 'student'
-                    ? 'bg-[#131C28] text-[#FBBF24] border-b-2 border-[#F59E0B]'
+                    ? 'bg-[#181C24] text-purple-300 border-b-2 border-purple-400'
                     : 'text-slate-400 hover:text-slate-100'
                 }`}
               >
@@ -410,7 +410,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                 }}
                 className={`py-4 text-xs font-semibold transition-colors cursor-pointer ${
                   activeRole === 'admin'
-                    ? 'bg-[#131C28] text-[#38BDF8] border-b-2 border-[#38BDF8]'
+                    ? 'bg-[#181C24] text-sky-300 border-b-2 border-sky-400'
                     : 'text-slate-400 hover:text-slate-100'
                 }`}
               >
@@ -420,11 +420,11 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
 
             <div className="p-7 sm:p-9">
               {activeError && (
-                <div className="mb-5 p-3.5 rounded-lg bg-red-950/60 border border-red-800/80 text-xs text-red-200 space-y-2.5">
+                <div className="mb-5 p-3.5 rounded-lg bg-[#CBD5E1]/10 border border-[#CBD5E1]/30 text-xs text-[#E2E8F0] space-y-2.5">
                   <div className="font-medium">{activeError}</div>
                   {activeNeedsEnable && (
-                    <div className="pt-2.5 border-t border-red-800/60 text-[11px] text-red-200/90 space-y-2">
-                      <div className="font-semibold text-amber-300">
+                    <div className="pt-2.5 border-t border-[#CBD5E1]/20 text-[11px] text-slate-200 space-y-2">
+                      <div className="font-semibold text-pink-300">
                         কোনো অ্যাপ ডাউনলোড করতে হবে না — ব্রাউজারে ১৫ সেকেন্ডে চালু করুন:
                       </div>
                       <p>1. নিচের বাটনে ক্লিক করে Firebase Authentication → Sign-in method পেজ খুলুন।</p>
@@ -436,7 +436,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                         href="https://console.firebase.google.com/project/cybernetic-sound-xv0ns/authentication/providers"
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] rounded-md transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold text-white bg-purple-600 hover:bg-purple-500 rounded-md transition-colors"
                       >
                         <span>Firebase Console-এ Email/Password চালু করুন</span>
                         <ExternalLink className="w-3 h-3" />
@@ -477,7 +477,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                             placeholder="••••••••"
                             value={urlResetNewPass}
                             onChange={(e) => setUrlResetNewPass(e.target.value)}
-                            className="w-full pl-10 pr-10 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                            className="w-full pl-10 pr-10 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 bg-[#0C0E13] border border-[#2E3442] rounded-lg focus:outline-none focus:border-purple-400"
                           />
                           <button
                             type="button"
@@ -492,7 +492,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                       <button
                         type="submit"
                         disabled={authBusy}
-                        className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] disabled:opacity-50 rounded-lg transition-colors cursor-pointer"
+                        className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold text-white bg-purple-600 hover:bg-purple-500 disabled:opacity-50 rounded-lg transition-colors cursor-pointer"
                       >
                         <span>{authBusy ? 'সেভ হচ্ছে...' : 'নতুন পাসওয়ার্ড সেভ করো'}</span>
                       </button>
@@ -501,13 +501,13 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                 ) : (
                 <div className="space-y-6">
                   {urlResetDone && (
-                    <div className="p-3.5 rounded-lg bg-emerald-950/60 border border-emerald-800 text-xs text-emerald-200">
+                    <div className="p-3.5 rounded-lg bg-green-950/60 border border-green-700 text-xs text-green-200">
                       নতুন পাসওয়ার্ড সেভ হয়েছে। এখন তোমার Gmail ও নতুন পাসওয়ার্ড দিয়ে লগইন করো।
                     </div>
                   )}
 
                   <div>
-                    <p className="text-[11px] font-medium text-sky-300 mb-1.5">
+                    <p className="text-[11px] font-medium text-pink-300 mb-1.5">
                       চট্টগ্রামের পদার্থবিজ্ঞানের বৃহত্তম কম্পিটিটিভ প্ল্যাটফর্ম · HSC &apos;28
                     </p>
                     <h1 className="font-display text-2xl font-bold text-slate-50 mb-1.5">
@@ -527,14 +527,14 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                   </div>
 
                   {studentAuthMode === 'login' && !activeError && (
-                    <div className="p-3.5 rounded-lg bg-sky-950/40 border border-sky-800/70 text-[11px] text-sky-200 leading-relaxed">
+                    <div className="p-3.5 rounded-lg bg-purple-950/40 border border-purple-700/60 text-[11px] text-purple-200 leading-relaxed">
                       পাসওয়ার্ড ভুলে গেলে রিসেট করার সুবিধার জন্য সবার একাউন্টে আসল <strong className="text-white">Gmail</strong> থাকা জরুরি। আগে শুধু মোবাইল নাম্বার দিয়ে খোলা থাকলে এখন লগইন করেই তোমার Gmail যুক্ত করে নাও।
                     </div>
                   )}
 
                   {/* Login vs 1st Time Registration Switch */}
                   {studentAuthMode !== 'forgot' && (
-                    <div className="grid grid-cols-2 gap-1 p-1 bg-[#0B1118] border border-slate-800 rounded-lg">
+                    <div className="grid grid-cols-2 gap-1 p-1 bg-[#0C0E13] border border-[#262B36] rounded-lg">
                       <button
                         type="button"
                         onClick={() => {
@@ -544,7 +544,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                         }}
                         className={`py-2 text-xs font-semibold rounded-md transition-colors cursor-pointer ${
                           studentAuthMode === 'login'
-                            ? 'bg-[#F59E0B] text-slate-950'
+                            ? 'bg-purple-500 text-white'
                             : 'text-slate-400 hover:text-slate-100'
                         }`}
                       >
@@ -559,7 +559,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                         }}
                         className={`py-2 text-xs font-semibold rounded-md transition-colors cursor-pointer ${
                           studentAuthMode === 'register'
-                            ? 'bg-[#F59E0B] text-slate-950'
+                            ? 'bg-purple-500 text-white'
                             : 'text-slate-400 hover:text-slate-100'
                         }`}
                       >
@@ -571,8 +571,8 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                   {studentAuthMode === 'forgot' ? (
                     <form onSubmit={handleStudentSubmit} className="space-y-4">
                       {resetSentEmail && (
-                        <div className="p-4 rounded-lg bg-emerald-950/60 border border-emerald-800 text-xs text-emerald-200 space-y-1.5 leading-relaxed">
-                          <div className="font-semibold text-emerald-300">
+                        <div className="p-4 rounded-lg bg-green-950/60 border border-green-700 text-xs text-green-200 space-y-1.5 leading-relaxed">
+                          <div className="font-semibold text-green-300">
                             রিসেট লিংক পাঠানো হয়েছে!
                           </div>
                           <p>
@@ -593,7 +593,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                             placeholder="yourname@gmail.com"
                             value={resetEmailInput}
                             onChange={(e) => setResetEmailInput(e.target.value)}
-                            className="w-full pl-10 pr-3.5 py-2.5 text-sm font-mono text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                            className="w-full pl-10 pr-3.5 py-2.5 text-sm font-mono text-slate-100 placeholder:text-slate-500 bg-[#0C0E13] border border-[#2E3442] rounded-lg focus:outline-none focus:border-purple-400"
                           />
                         </div>
                       </div>
@@ -601,7 +601,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                       <button
                         type="submit"
                         disabled={authBusy}
-                        className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] disabled:opacity-50 rounded-lg transition-colors cursor-pointer"
+                        className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold text-white bg-purple-600 hover:bg-purple-500 disabled:opacity-50 rounded-lg transition-colors cursor-pointer"
                       >
                         <Mail className="w-4 h-4" />
                         <span>{authBusy ? 'পাঠানো হচ্ছে...' : 'Gmail-এ রিসেট লিংক পাঠাও'}</span>
@@ -640,7 +640,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                               placeholder="যেমন: নাফিস রহমান"
                               value={studentRegName}
                               onChange={(e) => setStudentRegName(e.target.value)}
-                              className="w-full px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                              className="w-full px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 bg-[#0C0E13] border border-[#2E3442] rounded-lg focus:outline-none focus:border-purple-400"
                             />
                           </div>
 
@@ -656,10 +656,10 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                                 placeholder="01XXXXXXXXX"
                                 value={studentPhone}
                                 onChange={(e) => setStudentPhone(e.target.value)}
-                                className="w-full pl-10 pr-3.5 py-2.5 text-sm font-mono text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                                className="w-full pl-10 pr-3.5 py-2.5 text-sm font-mono text-slate-100 placeholder:text-slate-500 bg-[#0C0E13] border border-[#2E3442] rounded-lg focus:outline-none focus:border-purple-400"
                               />
                             </div>
-                            <p className="text-[11px] text-amber-300/90 mt-1">
+                            <p className="text-[11px] text-pink-300/90 mt-1">
                               অফিসে ভর্তির সময় যে মোবাইল নাম্বার দিয়েছো ঠিক সেটিই দাও।
                             </p>
                           </div>
@@ -676,7 +676,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                                 placeholder="yourname@gmail.com"
                                 value={studentEmail}
                                 onChange={(e) => setStudentEmail(e.target.value)}
-                                className="w-full pl-10 pr-3.5 py-2.5 text-sm font-mono text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                                className="w-full pl-10 pr-3.5 py-2.5 text-sm font-mono text-slate-100 placeholder:text-slate-500 bg-[#0C0E13] border border-[#2E3442] rounded-lg focus:outline-none focus:border-purple-400"
                               />
                             </div>
                             <p className="text-[11px] text-slate-400 mt-1">
@@ -698,7 +698,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                               placeholder="01XXXXXXXXX অথবা yourname@gmail.com"
                               value={studentIdentifier}
                               onChange={(e) => setStudentIdentifier(e.target.value)}
-                              className="w-full pl-10 pr-3.5 py-2.5 text-sm font-mono text-slate-100 placeholder:text-slate-500 placeholder:font-sans bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                              className="w-full pl-10 pr-3.5 py-2.5 text-sm font-mono text-slate-100 placeholder:text-slate-500 placeholder:font-sans bg-[#0C0E13] border border-[#2E3442] rounded-lg focus:outline-none focus:border-purple-400"
                             />
                           </div>
                         </div>
@@ -720,7 +720,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                                 setResetSentEmail(null);
                                 clearAuthFeedback();
                               }}
-                              className="text-[11px] font-semibold text-[#FBBF24] hover:text-amber-300 transition-colors cursor-pointer"
+                              className="text-[11px] font-semibold text-pink-300 hover:text-pink-200 transition-colors cursor-pointer"
                             >
                               পাসওয়ার্ড ভুলে গেছো? Gmail রিসেট
                             </button>
@@ -735,7 +735,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                             placeholder="••••••••"
                             value={studentPass}
                             onChange={(e) => setStudentPass(e.target.value)}
-                            className="w-full pl-10 pr-10 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                            className="w-full pl-10 pr-10 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 bg-[#0C0E13] border border-[#2E3442] rounded-lg focus:outline-none focus:border-purple-400"
                           />
                           <button
                             type="button"
@@ -755,7 +755,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                       <button
                         type="submit"
                         disabled={authBusy}
-                        className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] disabled:opacity-50 rounded-lg transition-colors cursor-pointer"
+                        className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold text-white bg-purple-600 hover:bg-purple-500 disabled:opacity-50 rounded-lg transition-colors cursor-pointer"
                       >
                         {studentAuthMode === 'register' ? (
                           <>
@@ -773,17 +773,17 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                   )}
 
                   <div className="relative flex py-1 items-center">
-                    <div className="flex-grow border-t border-slate-800" />
+                    <div className="flex-grow border-t border-[#262B36]" />
                     <span className="flex-shrink mx-3 text-[11px] text-slate-400">
                       অথবা ইনস্ট্যান্ট লগইন (এখনই চালু)
                     </span>
-                    <div className="flex-grow border-t border-slate-800" />
+                    <div className="flex-grow border-t border-[#262B36]" />
                   </div>
 
                   <button
                     type="button"
                     onClick={() => void signInWithGoogle()}
-                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-semibold text-slate-100 bg-[#0B1118] border border-slate-700 hover:border-[#F59E0B]/70 rounded-lg transition-colors cursor-pointer"
+                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-semibold text-slate-100 bg-[#0C0E13] border border-[#2E3442] hover:border-pink-400/70 rounded-lg transition-colors cursor-pointer"
                   >
                     <span>Google দিয়ে স্টুডেন্ট লগইন / রেজিস্ট্রেশন</span>
                   </button>
@@ -800,7 +800,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-1 p-1 bg-[#0B1118] border border-slate-800 rounded-lg">
+                  <div className="grid grid-cols-2 gap-1 p-1 bg-[#0C0E13] border border-[#262B36] rounded-lg">
                     <button
                       type="button"
                       onClick={() => {
@@ -809,7 +809,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                       }}
                       className={`py-2 text-xs font-semibold rounded-md transition-colors cursor-pointer ${
                         adminAuthMode === 'login'
-                          ? 'bg-[#38BDF8] text-slate-950'
+                          ? 'bg-sky-400 text-slate-950'
                           : 'text-slate-400 hover:text-slate-100'
                       }`}
                     >
@@ -823,7 +823,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                       }}
                       className={`py-2 text-xs font-semibold rounded-md transition-colors cursor-pointer ${
                         adminAuthMode === 'setup'
-                          ? 'bg-[#38BDF8] text-slate-950'
+                          ? 'bg-sky-400 text-slate-950'
                           : 'text-slate-400 hover:text-slate-100'
                       }`}
                     >
@@ -842,7 +842,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                         placeholder="আপনার Admin Gmail লিখুন"
                         value={adminEmailInput}
                         onChange={(e) => setAdminEmailInput(e.target.value)}
-                        className="w-full px-3.5 py-2.5 text-sm font-mono text-slate-100 placeholder:text-slate-500 placeholder:font-sans bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#38BDF8]"
+                        className="w-full px-3.5 py-2.5 text-sm font-mono text-slate-100 placeholder:text-slate-500 placeholder:font-sans bg-[#0C0E13] border border-[#2E3442] rounded-lg focus:outline-none focus:border-sky-400"
                       />
                     </div>
 
@@ -858,7 +858,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                           placeholder="••••••••"
                           value={adminPassInput}
                           onChange={(e) => setAdminPassInput(e.target.value)}
-                          className="w-full pl-3.5 pr-10 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#38BDF8]"
+                          className="w-full pl-3.5 pr-10 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 bg-[#0C0E13] border border-[#2E3442] rounded-lg focus:outline-none focus:border-sky-400"
                         />
                         <button
                           type="button"
@@ -878,7 +878,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                     <button
                       type="submit"
                       disabled={authBusy}
-                      className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold text-slate-950 bg-[#38BDF8] hover:bg-sky-300 disabled:opacity-50 rounded-lg transition-colors cursor-pointer"
+                      className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold text-slate-950 bg-sky-400 hover:bg-sky-300 disabled:opacity-50 rounded-lg transition-colors cursor-pointer"
                     >
                       <ShieldCheck className="w-4 h-4" />
                       <span>
@@ -892,15 +892,15 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                   </form>
 
                   <div className="relative flex py-1 items-center">
-                    <div className="flex-grow border-t border-slate-800" />
+                    <div className="flex-grow border-t border-[#262B36]" />
                     <span className="flex-shrink mx-3 text-[11px] text-slate-500">or instant login</span>
-                    <div className="flex-grow border-t border-slate-800" />
+                    <div className="flex-grow border-t border-[#262B36]" />
                   </div>
 
                   <button
                     type="button"
                     onClick={() => void signInAdminWithGoogle()}
-                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-semibold text-slate-200 bg-[#0B1118] border border-slate-700 hover:border-slate-500 rounded-lg transition-colors cursor-pointer"
+                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-semibold text-slate-200 bg-[#0C0E13] border border-[#2E3442] hover:border-sky-400/70 rounded-lg transition-colors cursor-pointer"
                   >
                     <span>Continue with Google</span>
                   </button>
@@ -930,7 +930,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
     if (needsAdminEmailVerification) {
       return (
         <section className="max-w-[1200px] mx-auto px-6 py-16">
-          <div className="max-w-lg mx-auto bg-[#131C28] border border-slate-800 rounded-xl p-8 space-y-5">
+          <div className="max-w-lg mx-auto bg-[#181C24] border border-[#262B36] rounded-xl p-8 space-y-5">
             <h1 className="font-display text-2xl font-bold text-slate-50">
               Verify Admin Gmail Once
             </h1>
@@ -938,12 +938,12 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
               আপনার <span className="font-mono text-sky-300">{adminUser.email}</span> ইনবক্সে একটি ভেরিফিকেশন লিংক পাঠানো হয়েছে। লিংকে ক্লিক করে পেজটি রিলোড দিন অথবা নিচে <strong>Continue with Google</strong> চাপুন।
             </p>
             {verificationSentNote && (
-              <div className="p-3 rounded-lg bg-emerald-950/60 border border-emerald-800 text-xs text-emerald-200">
+              <div className="p-3 rounded-lg bg-green-950/60 border border-green-700 text-xs text-green-200">
                 Verification email sent again to {adminUser.email}.
               </div>
             )}
             {verificationCheckNote && (
-              <div className="p-3 rounded-lg bg-amber-950/60 border border-amber-800 text-xs text-amber-200">
+              <div className="p-3 rounded-lg bg-pink-950/60 border border-pink-800 text-xs text-pink-200">
                 {verificationCheckNote}
               </div>
             )}
@@ -959,7 +959,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                     );
                   }
                 }}
-                className="px-4 py-2.5 text-xs font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] rounded-lg cursor-pointer"
+                className="px-4 py-2.5 text-xs font-semibold text-slate-950 bg-sky-400 hover:bg-sky-300 rounded-lg cursor-pointer"
               >
                 I Verified My Email (Reload)
               </button>
@@ -969,7 +969,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                   await resendAdminVerification();
                   setVerificationSentNote(true);
                 }}
-                className="px-4 py-2.5 text-xs font-semibold text-slate-200 bg-[#0B1118] border border-slate-700 hover:border-slate-500 rounded-lg cursor-pointer"
+                className="px-4 py-2.5 text-xs font-semibold text-slate-200 bg-[#0C0E13] border border-[#2E3442] hover:border-slate-500 rounded-lg cursor-pointer"
               >
                 Resend Verification
               </button>
@@ -996,8 +996,8 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
     if (!isAdmin) {
       return (
         <section className="max-w-[1200px] mx-auto px-6 py-16">
-          <div className="max-w-lg mx-auto bg-[#131C28] border border-slate-800 rounded-xl p-8 space-y-5">
-            <div className="inline-flex items-center gap-2 text-xs font-semibold text-red-300">
+          <div className="max-w-lg mx-auto bg-[#181C24] border border-[#262B36] rounded-xl p-8 space-y-5">
+            <div className="inline-flex items-center gap-2 text-xs font-semibold text-[#CBD5E1]">
               <XCircle className="w-4 h-4 shrink-0" />
               <span>অ্যাডমিন অ্যাক্সেস নেই</span>
             </div>
@@ -1011,7 +1011,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
               <button
                 type="button"
                 onClick={() => void logoutAdmin()}
-                className="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-semibold text-slate-950 bg-[#38BDF8] hover:bg-sky-300 rounded-lg cursor-pointer"
+                className="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-semibold text-slate-950 bg-sky-400 hover:bg-sky-300 rounded-lg cursor-pointer"
               >
                 <LogOut className="w-3.5 h-3.5" />
                 <span>অ্যাডমিন সেশন লগআউট</span>
@@ -1019,7 +1019,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
               <button
                 type="button"
                 onClick={() => setPanelMode('student')}
-                className="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] rounded-lg cursor-pointer"
+                className="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-semibold text-white bg-purple-600 hover:bg-purple-500 rounded-lg cursor-pointer"
               >
                 <UserCheck className="w-3.5 h-3.5" />
                 <span>স্টুডেন্ট প্যানেলে যান</span>
@@ -1032,7 +1032,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
 
     return (
       <section className="max-w-[1200px] mx-auto px-6 py-8 sm:py-10">
-        <div className="pb-6 border-b border-slate-800 mb-8">
+        <div className="pb-6 border-b border-[#262B36] mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-1.5">
               <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
@@ -1051,7 +1051,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
             <button
               type="button"
               onClick={() => void logoutAdmin()}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-200 bg-[#131C28] border border-slate-700 rounded-xl hover:border-slate-500 transition-colors cursor-pointer whitespace-nowrap self-start sm:self-auto shrink-0"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-200 bg-[#181C24] border border-[#2E3442] rounded-xl hover:border-[#CBD5E1]/70 hover:text-[#E2E8F0] transition-colors cursor-pointer whitespace-nowrap self-start sm:self-auto shrink-0"
             >
               <LogOut className="w-4 h-4" />
               <span>অ্যাডমিন লগআউট</span>
@@ -1081,8 +1081,8 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
     const legacyPhone = extractPhoneFromAuthEmail(user.email);
     return (
       <section className="max-w-[1200px] mx-auto px-6 py-16">
-        <div className="max-w-lg mx-auto bg-[#131C28] border border-slate-800 rounded-xl p-8 space-y-5">
-          <div className="inline-flex items-center gap-2 text-xs font-semibold text-[#FBBF24]">
+        <div className="max-w-lg mx-auto bg-[#181C24] border border-[#262B36] rounded-xl p-8 space-y-5">
+          <div className="inline-flex items-center gap-2 text-xs font-semibold text-pink-300">
             <Mail className="w-4 h-4 shrink-0" />
             <span>পাসওয়ার্ড রিসেটের জন্য Gmail যুক্ত করো</span>
           </div>
@@ -1094,8 +1094,8 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
           </p>
 
           {(legacyLinkMessage || legacyMigrationClaimEmail) && (
-            <div className="p-4 rounded-lg bg-emerald-950/60 border border-emerald-800 text-xs text-emerald-200 space-y-2 leading-relaxed">
-              <div className="font-semibold text-emerald-300">
+            <div className="p-4 rounded-lg bg-green-950/60 border border-green-700 text-xs text-green-200 space-y-2 leading-relaxed">
+              <div className="font-semibold text-green-300">
                 ভেরিফিকেশন লিংক পাঠানো হয়েছে!
               </div>
               <p>
@@ -1120,14 +1120,14 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                       );
                     }
                   }}
-                  className="px-3.5 py-2 text-xs font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] rounded-lg cursor-pointer"
+                  className="px-3.5 py-2 text-xs font-semibold text-white bg-purple-600 hover:bg-purple-500 rounded-lg cursor-pointer"
                 >
                   আমি ভেরিফাই করেছি (এগিয়ে যাও)
                 </button>
                 <button
                   type="button"
                   onClick={() => void logout()}
-                  className="px-3.5 py-2 text-xs font-semibold text-slate-200 bg-[#0B1118] border border-slate-700 hover:border-slate-500 rounded-lg cursor-pointer"
+                  className="px-3.5 py-2 text-xs font-semibold text-slate-200 bg-[#0C0E13] border border-[#2E3442] hover:border-slate-500 rounded-lg cursor-pointer"
                 >
                   লগআউট করে Gmail দিয়ে লগইন করো
                 </button>
@@ -1136,13 +1136,13 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
           )}
 
           {studentVerifCheckNote && (
-            <div className="p-3 rounded-lg bg-amber-950/60 border border-amber-800 text-xs text-amber-200">
+            <div className="p-3 rounded-lg bg-pink-950/60 border border-pink-800 text-xs text-pink-200">
               {studentVerifCheckNote}
             </div>
           )}
 
           {authError && (
-            <div className="p-3 rounded-lg bg-red-950/60 border border-red-800 text-xs text-red-200">
+            <div className="p-3 rounded-lg bg-[#CBD5E1]/10 border border-[#CBD5E1]/30 text-xs text-[#E2E8F0]">
               {authError}
             </div>
           )}
@@ -1160,7 +1160,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                   placeholder="yourname@gmail.com"
                   value={legacyGmailInput}
                   onChange={(e) => setLegacyGmailInput(e.target.value)}
-                  className="w-full pl-10 pr-3.5 py-2.5 text-sm font-mono text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                  className="w-full pl-10 pr-3.5 py-2.5 text-sm font-mono text-slate-100 placeholder:text-slate-500 bg-[#0C0E13] border border-[#2E3442] rounded-lg focus:outline-none focus:border-purple-400"
                 />
               </div>
             </div>
@@ -1178,7 +1178,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                   placeholder="••••••••"
                   value={legacyCurrentPass}
                   onChange={(e) => setLegacyCurrentPass(e.target.value)}
-                  className="w-full pl-10 pr-10 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                  className="w-full pl-10 pr-10 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 bg-[#0C0E13] border border-[#2E3442] rounded-lg focus:outline-none focus:border-purple-400"
                 />
                 <button
                   type="button"
@@ -1195,7 +1195,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
               <button
                 type="submit"
                 disabled={authBusy}
-                className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 text-xs sm:text-sm font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] disabled:opacity-50 rounded-lg transition-colors cursor-pointer"
+                className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 text-xs sm:text-sm font-semibold text-white bg-purple-600 hover:bg-purple-500 disabled:opacity-50 rounded-lg transition-colors cursor-pointer"
               >
                 <Mail className="w-4 h-4" />
                 <span>
@@ -1223,8 +1223,8 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
   if (needsStudentEmailVerification) {
     return (
       <section className="max-w-[1200px] mx-auto px-6 py-16">
-        <div className="max-w-lg mx-auto bg-[#131C28] border border-slate-800 rounded-xl p-8 space-y-5">
-          <div className="inline-flex items-center gap-2 text-xs font-semibold text-[#FBBF24]">
+        <div className="max-w-lg mx-auto bg-[#181C24] border border-[#262B36] rounded-xl p-8 space-y-5">
+          <div className="inline-flex items-center gap-2 text-xs font-semibold text-pink-300">
             <Mail className="w-4 h-4 shrink-0" />
             <span>Gmail ভেরিফিকেশন প্রয়োজন</span>
           </div>
@@ -1235,17 +1235,17 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
             তোমার <span className="font-mono text-sky-300">{user.email}</span> ইনবক্সে (না পেলে Spam ফোল্ডারে) একটি ভেরিফিকেশন লিংক পাঠানো হয়েছে। লিংকে ক্লিক করে নিচের বাটনে চাপ দাও, তাহলেই স্যারের প্যানেলে তোমার রিকোয়েস্ট জমা হবে ও ক্লাসরুম চালু হবে।
           </p>
           {studentVerifSent && (
-            <div className="p-3 rounded-lg bg-emerald-950/60 border border-emerald-800 text-xs text-emerald-200">
+            <div className="p-3 rounded-lg bg-green-950/60 border border-green-700 text-xs text-green-200">
               ভেরিফিকেশন লিংক আবার {user.email}-এ পাঠানো হয়েছে।
             </div>
           )}
           {studentVerifCheckNote && (
-            <div className="p-3 rounded-lg bg-amber-950/60 border border-amber-800 text-xs text-amber-200">
+            <div className="p-3 rounded-lg bg-pink-950/60 border border-pink-800 text-xs text-pink-200">
               {studentVerifCheckNote}
             </div>
           )}
           {authError && (
-            <div className="p-3 rounded-lg bg-red-950/60 border border-red-800 text-xs text-red-200">
+            <div className="p-3 rounded-lg bg-[#CBD5E1]/10 border border-[#CBD5E1]/30 text-xs text-[#E2E8F0]">
               {authError}
             </div>
           )}
@@ -1261,7 +1261,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                   );
                 }
               }}
-              className="px-4 py-2.5 text-xs font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] rounded-lg cursor-pointer"
+              className="px-4 py-2.5 text-xs font-semibold text-white bg-purple-600 hover:bg-purple-500 rounded-lg cursor-pointer"
             >
               আমি ভেরিফাই করেছি (এগিয়ে যাও)
             </button>
@@ -1276,7 +1276,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                   // Error handled in authError
                 }
               }}
-              className="px-4 py-2.5 text-xs font-semibold text-slate-200 bg-[#0B1118] border border-slate-700 hover:border-slate-500 rounded-lg cursor-pointer"
+              className="px-4 py-2.5 text-xs font-semibold text-slate-200 bg-[#0C0E13] border border-[#2E3442] hover:border-slate-500 rounded-lg cursor-pointer"
             >
               লিংক আবার পাঠাও
             </button>
@@ -1310,14 +1310,14 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
   return (
     <section className="max-w-[1200px] mx-auto px-6 py-8 sm:py-10">
       {/* Student Portal Top Workspace Header */}
-      <div className="pb-6 border-b border-slate-800 mb-8 space-y-5">
+      <div className="pb-6 border-b border-[#262B36] mb-8 space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1.5">
             <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
               <span className="font-mono text-slate-200">{displayAccountHandle}</span>
               <span aria-hidden="true">·</span>
               {isPaidStudent ? (
-                <span className="inline-flex items-center gap-1 font-semibold text-emerald-400">
+                <span className="inline-flex items-center gap-1 font-semibold text-green-400">
                   <CheckCircle2 className="w-3.5 h-3.5" />
                   <span>
                     অনুমোদিত ব্যাচ শিক্ষার্থী
@@ -1325,7 +1325,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                   </span>
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 font-semibold text-[#FBBF24]">
+                <span className="inline-flex items-center gap-1 font-semibold text-pink-300">
                   <Lock className="w-3.5 h-3.5" />
                   <span>অনুমোদনের অপেক্ষায়</span>
                 </span>
@@ -1345,7 +1345,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
           <button
             type="button"
             onClick={() => void logout()}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-200 bg-[#131C28] border border-slate-700 rounded-xl hover:border-slate-500 transition-colors cursor-pointer whitespace-nowrap self-start sm:self-auto shrink-0"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-200 bg-[#181C24] border border-[#2E3442] rounded-xl hover:border-[#CBD5E1]/70 hover:text-[#E2E8F0] transition-colors cursor-pointer whitespace-nowrap self-start sm:self-auto shrink-0"
           >
             <LogOut className="w-4 h-4" />
             <span>স্টুডেন্ট লগআউট</span>
@@ -1355,15 +1355,15 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
         {hasVaultAccess && (
           <nav
             aria-label="স্টুডেন্ট পোর্টাল নেভিগেশন"
-            className="grid grid-cols-1 sm:grid-cols-3 lg:flex lg:flex-wrap items-stretch gap-2.5 p-1.5 bg-[#131C28] border border-slate-800 rounded-2xl"
+            className="grid grid-cols-1 sm:grid-cols-3 lg:flex lg:flex-wrap items-stretch gap-2.5 p-1.5 bg-[#181C24] border border-[#262B36] rounded-2xl"
           >
             <button
               type="button"
               onClick={() => setPortalTab('classroom')}
               className={`inline-flex items-center justify-center gap-2.5 px-5 py-3 text-sm sm:text-[15px] font-semibold rounded-xl transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
                 activeTab === 'classroom'
-                  ? 'bg-[#F59E0B] text-slate-950'
-                  : 'text-slate-200 hover:bg-slate-800/80 hover:text-white'
+                  ? 'bg-sky-400 text-slate-950'
+                  : 'text-slate-200 hover:bg-[#1F2430] hover:text-white'
               }`}
             >
               <Video className="w-4 h-4 shrink-0" />
@@ -1374,8 +1374,8 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
               onClick={() => setPortalTab('profile')}
               className={`inline-flex items-center justify-center gap-2.5 px-5 py-3 text-sm sm:text-[15px] font-semibold rounded-xl transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
                 activeTab === 'profile'
-                  ? 'bg-[#F59E0B] text-slate-950'
-                  : 'text-slate-200 hover:bg-slate-800/80 hover:text-white'
+                  ? 'bg-pink-500 text-white'
+                  : 'text-slate-200 hover:bg-[#1F2430] hover:text-white'
               }`}
             >
               <UserCheck className="w-4 h-4 shrink-0" />
@@ -1389,8 +1389,8 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
               onClick={() => setPortalTab('notices')}
               className={`inline-flex items-center justify-center gap-2.5 px-5 py-3 text-sm sm:text-[15px] font-semibold rounded-xl transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
                 activeTab === 'notices'
-                  ? 'bg-[#F59E0B] text-slate-950'
-                  : 'text-slate-200 hover:bg-slate-800/80 hover:text-white'
+                  ? 'bg-green-400 text-slate-950'
+                  : 'text-slate-200 hover:bg-[#1F2430] hover:text-white'
               }`}
             >
               <Bell className="w-4 h-4 shrink-0" />
@@ -1404,8 +1404,8 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
       {!hasVaultAccess && (
         <div className="space-y-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            <div className="lg:col-span-6 bg-[#131C28] border border-slate-800 rounded-xl p-6 sm:p-8 space-y-5">
-              <div className="flex items-center gap-2.5 text-[#FBBF24]">
+            <div className="lg:col-span-6 bg-[#181C24] border border-[#262B36] rounded-xl p-6 sm:p-8 space-y-5">
+              <div className="flex items-center gap-2.5 text-pink-300">
                 <Clock className="w-5 h-5 shrink-0" />
                 <h2 className="font-display text-xl font-bold text-slate-50">
                   {myRequest
@@ -1426,24 +1426,24 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
               </p>
 
               {myRequest && (
-                <div className="p-4 rounded-lg border border-slate-800 bg-[#0B1118] space-y-1.5">
+                <div className="p-4 rounded-lg border border-[#262B36] bg-[#0C0E13] space-y-1.5">
                   <div className="flex items-center gap-1.5 text-xs font-semibold">
                     {myRequest.status === 'pending' && (
                       <>
-                        <Clock className="w-4 h-4 text-[#FBBF24]" />
-                        <span className="text-[#FBBF24]">স্যারের রিভিউয়ের অপেক্ষায়</span>
+                        <Clock className="w-4 h-4 text-pink-300" />
+                        <span className="text-pink-300">স্যারের রিভিউয়ের অপেক্ষায়</span>
                       </>
                     )}
                     {myRequest.status === 'rejected' && (
                       <>
-                        <XCircle className="w-4 h-4 text-red-400" />
-                        <span className="text-red-300">আবেদন গৃহীত হয়নি — স্যারের সাথে যোগাযোগ করো</span>
+                        <XCircle className="w-4 h-4 text-[#CBD5E1]" />
+                        <span className="text-[#CBD5E1]">আবেদন গৃহীত হয়নি — স্যারের সাথে যোগাযোগ করো</span>
                       </>
                     )}
                     {myRequest.status === 'approved' && (
                       <>
-                        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                        <span className="text-emerald-300">অনুমোদিত — অ্যাক্সেস চালু হচ্ছে</span>
+                        <CheckCircle2 className="w-4 h-4 text-green-400" />
+                        <span className="text-green-300">অনুমোদিত — অ্যাক্সেস চালু হচ্ছে</span>
                       </>
                     )}
                   </div>
@@ -1454,14 +1454,14 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
               )}
 
               <div className="pt-2 space-y-2.5 text-xs">
-                <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 rounded-lg bg-[#0B1118] border border-slate-800">
+                <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 rounded-lg bg-[#0C0E13] border border-[#262B36]">
                   <span className="font-medium text-slate-200">
                     ওয়াসিম স্যার: <span className="font-mono text-slate-100">+880 1883-600827</span>
                   </span>
                   <div className="flex items-center gap-1.5">
                     <a
                       href="tel:+8801883600827"
-                      className="inline-flex items-center gap-1 px-2.5 py-1 font-medium text-amber-300 bg-amber-950/40 hover:bg-amber-900/50 border border-amber-800/70 rounded-md transition-colors"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 font-medium text-[#D8DEE9] bg-[#CBD5E1]/10 hover:bg-[#CBD5E1]/20 border border-[#CBD5E1]/30 rounded-md transition-colors"
                     >
                       <Phone className="w-3 h-3" />
                       <span>কল</span>
@@ -1470,21 +1470,21 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                       href="https://wa.me/8801883600827"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 px-2.5 py-1 font-medium text-emerald-300 bg-emerald-950/50 hover:bg-emerald-900/60 border border-emerald-800/70 rounded-md transition-colors"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 font-medium text-green-300 bg-green-950/50 hover:bg-green-900/60 border border-green-800/70 rounded-md transition-colors"
                     >
                       <MessageCircle className="w-3 h-3" />
                       <span>WhatsApp</span>
                     </a>
                   </div>
                 </div>
-                <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 rounded-lg bg-[#0B1118] border border-slate-800">
+                <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 rounded-lg bg-[#0C0E13] border border-[#262B36]">
                   <span className="font-medium text-slate-200">
                     হেল্পলাইন: <span className="font-mono text-slate-100">+880 1600-653568</span>
                   </span>
                   <div className="flex items-center gap-1.5">
                     <a
                       href="tel:+8801600653568"
-                      className="inline-flex items-center gap-1 px-2.5 py-1 font-medium text-amber-300 bg-amber-950/40 hover:bg-amber-900/50 border border-amber-800/70 rounded-md transition-colors"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 font-medium text-[#D8DEE9] bg-[#CBD5E1]/10 hover:bg-[#CBD5E1]/20 border border-[#CBD5E1]/30 rounded-md transition-colors"
                     >
                       <Phone className="w-3 h-3" />
                       <span>কল</span>
@@ -1493,7 +1493,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                       href="https://wa.me/8801600653568"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 px-2.5 py-1 font-medium text-emerald-300 bg-emerald-950/50 hover:bg-emerald-900/60 border border-emerald-800/70 rounded-md transition-colors"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 font-medium text-green-300 bg-green-950/50 hover:bg-green-900/60 border border-green-800/70 rounded-md transition-colors"
                     >
                       <MessageCircle className="w-3 h-3" />
                       <span>WhatsApp</span>
@@ -1517,7 +1517,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
             {/* Batch Verification & Approval Request Form */}
             <form
               onSubmit={handleReferenceSubmit}
-              className="lg:col-span-6 bg-[#131C28] border border-slate-800 rounded-xl p-6 sm:p-8 space-y-4"
+              className="lg:col-span-6 bg-[#181C24] border border-[#262B36] rounded-xl p-6 sm:p-8 space-y-4"
             >
               <h3 className="font-display text-lg font-bold text-slate-50">
                 {myRequest
@@ -1529,14 +1529,14 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
               </p>
 
               {reqError && (
-                <div className="p-3 rounded-lg bg-red-950/60 border border-red-800 text-xs font-medium text-red-200">
+                <div className="p-3 rounded-lg bg-[#CBD5E1]/10 border border-[#CBD5E1]/30 text-xs font-medium text-[#E2E8F0]">
                   {reqError}
                 </div>
               )}
 
               {reqSuccess && (
-                <div className="p-3 rounded-lg bg-emerald-950/60 border border-emerald-800 text-xs font-medium text-emerald-200 flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <div className="p-3 rounded-lg bg-green-950/60 border border-green-700 text-xs font-medium text-green-200 flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-green-400 shrink-0" />
                   <span>অ্যাপ্রুভাল রিকোয়েস্ট স্যারের প্যানেলে পাঠানো হয়েছে।</span>
                 </div>
               )}
@@ -1554,7 +1554,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                     value={reqName}
                     onChange={(e) => setReqName(e.target.value)}
                     placeholder="যেমন: নাফিস রহমান"
-                    className="w-full px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                    className="w-full px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 bg-[#0C0E13] border border-[#2E3442] rounded-lg focus:outline-none focus:border-purple-400"
                   />
                 </div>
                 <div>
@@ -1569,7 +1569,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                     value={reqPhone}
                     onChange={(e) => setReqPhone(e.target.value)}
                     placeholder="01XXXXXXXXX"
-                    className="w-full px-3 py-2 text-sm font-mono text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                    className="w-full px-3 py-2 text-sm font-mono text-slate-100 placeholder:text-slate-500 bg-[#0C0E13] border border-[#2E3442] rounded-lg focus:outline-none focus:border-purple-400"
                   />
                 </div>
               </div>
@@ -1584,7 +1584,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                   value={reqCollege}
                   onChange={(e) => setReqCollege(e.target.value)}
                   placeholder="যেমন: চট্টগ্রাম কলেজ"
-                  className="w-full px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                  className="w-full px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 bg-[#0C0E13] border border-[#2E3442] rounded-lg focus:outline-none focus:border-purple-400"
                 />
               </div>
 
@@ -1596,7 +1596,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                   <select
                     value={reqMethod}
                     onChange={(e) => setReqMethod(e.target.value as PaymentMethod)}
-                    className="w-full px-3 py-2 text-sm text-slate-100 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                    className="w-full px-3 py-2 text-sm text-slate-100 bg-[#0C0E13] border border-[#2E3442] rounded-lg focus:outline-none focus:border-purple-400"
                   >
                     <option value="bKash">bKash</option>
                     <option value="Nagad">Nagad</option>
@@ -1614,7 +1614,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                     value={reqTxId}
                     onChange={(e) => setReqTxId(e.target.value)}
                     placeholder="যেমন: BKA9842X1"
-                    className="w-full px-3 py-2 text-sm font-mono text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                    className="w-full px-3 py-2 text-sm font-mono text-slate-100 placeholder:text-slate-500 bg-[#0C0E13] border border-[#2E3442] rounded-lg focus:outline-none focus:border-purple-400"
                   />
                 </div>
               </div>
@@ -1626,7 +1626,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                   myRequest?.status === 'approved' ||
                   myRequest?.status === 'rejected'
                 }
-                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-xs font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] disabled:opacity-50 rounded-lg transition-colors cursor-pointer"
+                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-xs font-semibold text-white bg-purple-600 hover:bg-purple-500 disabled:opacity-50 rounded-lg transition-colors cursor-pointer"
               >
                 <span>
                   {reqSubmitting
@@ -1640,7 +1640,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
           </div>
 
           {classes.length > 0 && (
-            <div className="bg-[#131C28] border border-slate-800 rounded-xl p-6">
+            <div className="bg-[#181C24] border border-[#262B36] rounded-xl p-6">
               <h3 className="font-display text-lg font-bold text-slate-50 mb-4">
                 ফ্রি প্রিভিউ লেকচার
               </h3>
@@ -1648,7 +1648,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                 <div className="lg:col-span-8">
                   {selectedClass && activeStream && parsedEmbed ? (
                     <div className="space-y-3">
-                      <div className="aspect-video bg-black rounded-lg overflow-hidden border border-slate-800">
+                      <div className="aspect-video bg-black rounded-lg overflow-hidden border border-[#262B36]">
                         {parsedEmbed.kind === 'video' ? (
                           <video src={parsedEmbed.src} controls className="w-full h-full" />
                         ) : (
@@ -1666,7 +1666,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                       </div>
                     </div>
                   ) : (
-                    <div className="aspect-video bg-[#0B1118] border border-slate-800 rounded-lg flex items-center justify-center text-sm text-slate-400">
+                    <div className="aspect-video bg-[#0C0E13] border border-[#262B36] rounded-lg flex items-center justify-center text-sm text-slate-400">
                       দেখার জন্য ডানদিক থেকে একটি ফ্রি প্রিভিউ ক্লাস সিলেক্ট করো।
                     </div>
                   )}
@@ -1679,8 +1679,8 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                       onClick={() => handleSelectClass(lec)}
                       className={`w-full text-left p-3 rounded-lg border transition-colors cursor-pointer ${
                         selectedClass?.id === lec.id
-                          ? 'border-[#F59E0B] bg-[#0E1621]'
-                          : 'border-slate-800 bg-[#0B1118] hover:border-slate-700'
+                          ? 'border-pink-400 bg-[#1F2430]'
+                          : 'border-[#262B36] bg-[#0C0E13] hover:border-purple-500/40'
                       }`}
                     >
                       <div className="text-xs font-sans font-medium text-sky-300 tabular-nums">
@@ -1693,7 +1693,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
               </div>
 
               {selectedClass && (
-                <div className="mt-6 pt-6 border-t border-slate-800">
+                <div className="mt-6 pt-6 border-t border-[#262B36]">
                   <ChapterEmbeddedLab chapterNumber={selectedClass.chapterNumber} />
                 </div>
               )}
@@ -1706,10 +1706,10 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
       {hasVaultAccess && activeTab === 'classroom' && (
         <div className="space-y-8">
           {/* Student Welcome & Quick Overview Hub */}
-          <div className="bg-[#131C28] border border-slate-800 rounded-xl p-6 sm:p-7 space-y-5">
+          <div className="bg-[#181C24] border border-[#262B36] rounded-xl p-6 sm:p-7 space-y-5">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
               <div className="space-y-1.5">
-                <div className="text-xs font-medium text-[#FBBF24]">
+                <div className="text-xs font-medium text-pink-300">
                   ওয়াসিম স্যার ফিজিক্স · এইচএসসি ২০২৮ ব্যাচ ক্লাসরুম
                 </div>
                 <h2 className="font-display text-xl sm:text-2xl font-bold text-slate-50 text-balance">
@@ -1732,7 +1732,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                   {myEnrollment?.rollNumber && (
                     <>
                       <span aria-hidden="true">·</span>
-                      <span className="font-mono tabular-nums text-slate-300">
+                      <span className="font-mono tabular-nums text-purple-300">
                         রোল: {myEnrollment.rollNumber}
                       </span>
                     </>
@@ -1743,13 +1743,13 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
               <div className="w-full lg:w-72 space-y-2 shrink-0">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-slate-300 font-medium">লেকচার অগ্রগতি</span>
-                  <span className="font-mono tabular-nums font-semibold text-[#FBBF24]">
+                  <span className="font-mono tabular-nums font-semibold text-green-300">
                     {completedCount} / {classes.length} ({progressPercent}%)
                   </span>
                 </div>
-                <div className="w-full h-2.5 bg-[#0B1118] rounded-full overflow-hidden border border-slate-800">
+                <div className="w-full h-2.5 bg-[#0C0E13] rounded-full overflow-hidden border border-[#262B36]">
                   <div
-                    className="h-full bg-[#F59E0B] transition-all"
+                    className="h-full bg-gradient-to-r from-green-400 to-sky-400 transition-all"
                     style={{ width: `${progressPercent}%` }}
                   />
                 </div>
@@ -1758,12 +1758,12 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
           </div>
 
           {loadingData ? (
-            <div className="aspect-video bg-[#131C28] border border-slate-800 rounded-xl flex items-center justify-center text-sm text-slate-400">
+            <div className="aspect-video bg-[#181C24] border border-[#262B36] rounded-xl flex items-center justify-center text-sm text-slate-400">
               রেকর্ডেড ক্লাস লোড হচ্ছে...
             </div>
           ) : !selectedClass ? (
             <div className="space-y-8">
-              <div className="bg-[#131C28] border border-slate-800 rounded-xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+              <div className="bg-[#181C24] border border-[#262B36] rounded-xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                 <div className="space-y-2 max-w-2xl">
                   <h3 className="font-display text-xl font-bold text-slate-50">
                     রেকর্ডেড ক্লাস তালিকা ও অধ্যায়ভিত্তিক প্রস্তুতি
@@ -1776,14 +1776,14 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                   <button
                     type="button"
                     onClick={() => setPortalTab('profile')}
-                    className="px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] rounded-lg transition-colors cursor-pointer whitespace-nowrap"
+                    className="px-4 py-2.5 text-xs sm:text-sm font-semibold text-white bg-pink-500 hover:bg-pink-400 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
                   >
                     আমার প্রোফাইল ও রেজাল্ট
                   </button>
                   <button
                     type="button"
                     onClick={() => setPortalTab('notices')}
-                    className="px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-100 bg-[#0B1118] border border-slate-700 hover:border-slate-500 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
+                    className="px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-100 bg-[#0C0E13] border border-[#2E3442] hover:border-green-400 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
                   >
                     নোটিশ বোর্ড দেখো
                   </button>
@@ -1813,13 +1813,13 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                         onClick={() => setEmptyLabChapter(ch.number)}
                         className={`px-3 py-2.5 text-left text-xs rounded-lg border transition-colors cursor-pointer ${
                           isSelected
-                            ? 'bg-[#F59E0B] border-[#F59E0B] text-slate-950 font-semibold'
-                            : 'bg-[#131C28] border-slate-800 text-slate-200 hover:border-slate-600'
+                            ? 'bg-purple-500 border-purple-400 text-white font-semibold'
+                            : 'bg-[#181C24] border-[#262B36] text-slate-200 hover:border-purple-500/50'
                         }`}
                       >
                         <span
                           className={`font-mono tabular-nums mr-1.5 ${
-                            isSelected ? 'text-slate-950 font-bold' : 'text-[#FBBF24]'
+                            isSelected ? 'text-pink-100 font-bold' : 'text-pink-300'
                           }`}
                         >
                           {String(ch.number).padStart(2, '0')}
@@ -1837,7 +1837,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
             <>
               <div ref={videoPlayerRef} className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                 <div className="lg:col-span-8 space-y-5">
-                  <div className="bg-[#131C28] border border-slate-800 rounded-xl overflow-hidden">
+                  <div className="bg-[#181C24] border border-[#262B36] rounded-xl overflow-hidden">
                     <div className="aspect-video bg-black relative">
                       {loadingStream ? (
                         <div className="w-full h-full flex items-center justify-center text-xs font-mono text-slate-300">
@@ -1861,7 +1861,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                               href={parsedEmbed.src}
                               target="_blank"
                               rel="noreferrer"
-                              className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-slate-950 bg-[#F59E0B] rounded-lg"
+                              className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-slate-950 bg-sky-400 hover:bg-sky-300 rounded-lg"
                             >
                               <span>ক্লাস ওপেন করো</span>
                               <ExternalLink className="w-3.5 h-3.5" />
@@ -1905,8 +1905,8 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                             }
                             className={`inline-flex items-center gap-1.5 px-3.5 py-2.5 text-xs font-semibold rounded-lg border transition-colors cursor-pointer whitespace-nowrap ${
                               isCurrentCompleted
-                                ? 'bg-emerald-950/60 border-emerald-700 text-emerald-300 hover:bg-emerald-900/60'
-                                : 'bg-[#0B1118] border-slate-700 text-slate-200 hover:border-slate-500'
+                                ? 'bg-green-950/60 border-green-700 text-green-300 hover:bg-green-900/60'
+                                : 'bg-[#0C0E13] border-[#2E3442] text-slate-200 hover:border-green-400/60'
                             }`}
                           >
                             <CheckCircle2 className="w-3.5 h-3.5" />
@@ -1918,7 +1918,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                               href={activeStream.noteUrl}
                               target="_blank"
                               rel="noreferrer"
-                              className="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] rounded-lg transition-colors whitespace-nowrap"
+                              className="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-semibold text-slate-950 bg-sky-400 hover:bg-sky-300 rounded-lg transition-colors whitespace-nowrap"
                             >
                               <FileText className="w-3.5 h-3.5" />
                               <span>বোর্ড নোট PDF</span>
@@ -1928,7 +1928,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                       </div>
 
                       {selectedClass.description && (
-                        <p className="text-sm text-slate-300 leading-relaxed pt-3 border-t border-slate-800">
+                        <p className="text-sm text-slate-300 leading-relaxed pt-3 border-t border-[#262B36]">
                           {selectedClass.description}
                         </p>
                       )}
@@ -1936,13 +1936,13 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                   </div>
                 </div>
 
-                <aside className="lg:col-span-4 bg-[#131C28] border border-slate-800 rounded-xl overflow-hidden">
-                  <div className="p-4 border-b border-slate-800 space-y-3">
+                <aside className="lg:col-span-4 bg-[#181C24] border border-[#262B36] rounded-xl overflow-hidden">
+                  <div className="p-4 border-b border-[#262B36] space-y-3">
                     <div className="flex items-center justify-between">
                       <h3 className="font-display text-base font-bold text-slate-100">
                         লেকচার তালিকা
                       </h3>
-                      <span className="text-xs font-mono text-slate-400 tabular-nums">
+                      <span className="text-xs font-mono text-pink-300 tabular-nums">
                         {filteredClasses.length}টি ক্লাস
                       </span>
                     </div>
@@ -1954,7 +1954,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                         placeholder="ক্লাস বা টপিক খুঁজুন..."
                         value={lectureSearch}
                         onChange={(e) => setLectureSearch(e.target.value)}
-                        className="w-full pl-8 pr-3 py-1.5 text-xs text-slate-100 placeholder:text-slate-500 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                        className="w-full pl-8 pr-3 py-1.5 text-xs text-slate-100 placeholder:text-slate-500 bg-[#0C0E13] border border-[#2E3442] rounded-lg focus:outline-none focus:border-purple-400"
                       />
                     </div>
 
@@ -1963,7 +1963,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                       onChange={(e) =>
                         setChapterFilter(e.target.value === 'all' ? 'all' : Number(e.target.value))
                       }
-                      className="w-full px-3 py-1.5 text-xs text-slate-100 bg-[#0B1118] border border-slate-700 rounded-lg focus:outline-none focus:border-[#F59E0B]"
+                      className="w-full px-3 py-1.5 text-xs text-slate-100 bg-[#0C0E13] border border-[#2E3442] rounded-lg focus:outline-none focus:border-purple-400"
                     >
                       <option value="all">প্রথম পত্রের সকল অধ্যায়</option>
                       {HSC28_PHYSICS_CHAPTERS.map((ch) => (
@@ -1974,7 +1974,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                     </select>
                   </div>
 
-                  <div className="divide-y divide-slate-800 max-h-[540px] overflow-y-auto">
+                  <div className="divide-y divide-[#262B36] max-h-[540px] overflow-y-auto">
                     {filteredClasses.length === 0 ? (
                       <div className="p-8 text-center text-xs text-slate-400">
                         এই অধ্যায়ে কোনো ক্লাস পাওয়া যায়নি।
@@ -1989,16 +1989,16 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                             type="button"
                             onClick={() => handleSelectClass(lec)}
                             className={`w-full text-left p-4 flex items-start gap-3 transition-colors cursor-pointer ${
-                              isActive ? 'bg-[#172333]' : 'hover:bg-[#172231]'
+                              isActive ? 'bg-[#1F2430]' : 'hover:bg-[#1A1F29]'
                             }`}
                           >
                             <div
                               className={`mt-0.5 w-7 h-7 rounded-md flex items-center justify-center shrink-0 ${
                                 isActive
-                                  ? 'bg-[#F59E0B] text-slate-950'
+                                  ? 'bg-purple-500 text-white'
                                   : isDone
-                                    ? 'bg-emerald-950/70 text-emerald-400 border border-emerald-800'
-                                    : 'bg-[#0B1118] text-slate-400 border border-slate-800'
+                                    ? 'bg-green-950/70 text-green-400 border border-green-700'
+                                    : 'bg-[#0C0E13] text-slate-400 border border-[#262B36]'
                               }`}
                             >
                               {isDone ? (
@@ -2014,7 +2014,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                               </div>
                               <div
                                 className={`text-sm font-medium leading-snug ${
-                                  isActive ? 'text-[#FBBF24] font-semibold' : 'text-slate-100'
+                                  isActive ? 'text-pink-300 font-semibold' : 'text-slate-100'
                                 }`}
                               >
                                 {lec.title}
@@ -2037,7 +2037,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
       {hasVaultAccess && activeTab === 'profile' && <StudentProfileResults />}
 
       {hasVaultAccess && activeTab === 'notices' && (
-        <div className="bg-[#131C28] border border-slate-800 rounded-xl divide-y divide-slate-800">
+        <div className="bg-[#181C24] border border-[#262B36] rounded-xl divide-y divide-[#262B36]">
           {notices.length === 0 ? (
             <div className="p-12 text-center">
               <Bell className="w-7 h-7 text-slate-500 mx-auto mb-3" />
@@ -2053,7 +2053,7 @@ export function StudentPortal({ preselectedClassId, authRoleRequest }: StudentPo
                   {n.pinned && (
                     <>
                       <span aria-hidden="true">·</span>
-                      <span className="text-[#FBBF24] font-medium">গুরুত্বপূর্ণ পিন করা</span>
+                      <span className="text-[#CBD5E1] font-semibold">গুরুত্বপূর্ণ পিন করা</span>
                     </>
                   )}
                 </div>

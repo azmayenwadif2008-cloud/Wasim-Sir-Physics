@@ -22,51 +22,46 @@ const SECTION_TABS = [
     id: 'instructor',
     label: 'ইন্সট্রাক্টর',
     icon: Award,
-    activeClass:
-      'bg-[#F59E0B] text-slate-950 border-[#FBBF24] shadow-[0_0_20px_rgba(245,158,11,0.25)]',
+    activeClass: 'bg-[#CBD5E1] text-[#111318] border-[#E2E8F0] shadow-sm',
     idleClass:
-      'bg-amber-950/35 text-amber-200 border-amber-700/50 hover:bg-amber-900/50 hover:border-amber-500/80',
-    iconIdleClass: 'text-[#FBBF24]',
+      'bg-[#181C24] text-[#CBD5E1] border-[#2A303D] hover:bg-[#1F2430] hover:border-[#CBD5E1]/60 hover:text-[#E2E8F0]',
+    iconIdleClass: 'text-[#CBD5E1]',
   },
   {
     id: 'campus-gallery',
     label: 'গ্যালারি',
     icon: Images,
-    activeClass:
-      'bg-[#38BDF8] text-slate-950 border-sky-300 shadow-[0_0_20px_rgba(56,189,248,0.25)]',
+    activeClass: 'bg-sky-400 text-[#0C0E13] border-sky-300 shadow-sm',
     idleClass:
-      'bg-sky-950/35 text-sky-200 border-sky-700/50 hover:bg-sky-900/50 hover:border-sky-500/80',
-    iconIdleClass: 'text-[#38BDF8]',
+      'bg-[#181C24] text-sky-200 border-[#2A303D] hover:bg-[#1F2430] hover:border-sky-400/60',
+    iconIdleClass: 'text-sky-400',
   },
   {
     id: 'notices',
     label: 'নোটিশ',
     icon: Bell,
-    activeClass:
-      'bg-emerald-400 text-slate-950 border-emerald-300 shadow-[0_0_20px_rgba(52,211,153,0.25)]',
+    activeClass: 'bg-green-400 text-[#0C0E13] border-green-300 shadow-sm',
     idleClass:
-      'bg-emerald-950/35 text-emerald-200 border-emerald-700/50 hover:bg-emerald-900/50 hover:border-emerald-500/80',
-    iconIdleClass: 'text-emerald-400',
+      'bg-[#181C24] text-green-200 border-[#2A303D] hover:bg-[#1F2430] hover:border-green-400/60',
+    iconIdleClass: 'text-green-400',
   },
   {
     id: 'curriculum',
     label: 'পাঠ্যক্রম',
     icon: BookOpen,
-    activeClass:
-      'bg-violet-400 text-slate-950 border-violet-300 shadow-[0_0_20px_rgba(167,139,250,0.25)]',
+    activeClass: 'bg-purple-500 text-white border-purple-400 shadow-sm',
     idleClass:
-      'bg-violet-950/35 text-violet-200 border-violet-700/50 hover:bg-violet-900/50 hover:border-violet-500/80',
-    iconIdleClass: 'text-violet-300',
+      'bg-[#181C24] text-purple-200 border-[#2A303D] hover:bg-[#1F2430] hover:border-purple-400/60',
+    iconIdleClass: 'text-purple-300',
   },
   {
     id: 'physics-lab',
     label: 'ফিজিক্স ল্যাব',
     icon: Atom,
-    activeClass:
-      'bg-rose-400 text-slate-950 border-rose-300 shadow-[0_0_20px_rgba(251,113,133,0.25)]',
+    activeClass: 'bg-pink-400 text-[#0C0E13] border-pink-300 shadow-sm',
     idleClass:
-      'bg-rose-950/35 text-rose-200 border-rose-700/50 hover:bg-rose-900/50 hover:border-rose-500/80',
-    iconIdleClass: 'text-rose-300',
+      'bg-[#181C24] text-pink-200 border-[#2A303D] hover:bg-[#1F2430] hover:border-pink-400/60',
+    iconIdleClass: 'text-pink-300',
   },
 ] as const;
 
@@ -112,7 +107,7 @@ export function Navbar({
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-[#0B1118]/95 backdrop-blur-md border-b border-slate-800/80">
+    <header className="sticky top-0 z-40 bg-[#111318]/95 backdrop-blur-md border-b border-[#262B36]">
       <div className="max-w-[1200px] mx-auto px-3 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-8">
         {/* Zone 1: Single text element wordmark */}
         <button
@@ -121,7 +116,7 @@ export function Navbar({
             onNavigateView('landing');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
-          className="font-display text-sm sm:text-lg font-bold tracking-tight text-slate-50 whitespace-nowrap shrink-0 cursor-pointer hover:text-[#FBBF24] transition-colors"
+          className="font-display text-sm sm:text-lg font-bold tracking-tight text-slate-50 whitespace-nowrap shrink-0 cursor-pointer hover:text-pink-400 transition-colors"
         >
           ওয়াসিম স্যার ফিজিক্স
         </button>
@@ -132,7 +127,7 @@ export function Navbar({
             <button
               type="button"
               onClick={() => onNavigateView('landing')}
-              className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-[11px] sm:text-xs font-semibold text-slate-100 bg-[#131C28] border border-slate-700 rounded-lg hover:bg-slate-800 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+              className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-[11px] sm:text-xs font-semibold text-slate-100 bg-[#181C24] border border-[#2E3442] rounded-lg hover:border-white/60 hover:text-white transition-colors whitespace-nowrap shrink-0 cursor-pointer"
             >
               <ArrowLeft className="w-3.5 h-3.5 shrink-0" />
               <span className="sm:hidden">হোম</span>
@@ -144,8 +139,8 @@ export function Navbar({
             onClick={() => onNavigateView('portal', 'student')}
             className={`inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-xs font-semibold rounded-lg transition-all whitespace-nowrap shrink-0 cursor-pointer ${
               activeView === 'portal' && activePanelRole === 'student'
-                ? 'text-slate-950 bg-[#FBBF24] ring-2 ring-amber-200/80'
-                : 'text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24]'
+                ? 'text-white bg-purple-500 ring-2 ring-pink-300/80'
+                : 'text-white bg-purple-600 hover:bg-purple-500'
             }`}
           >
             <UserCheck className="w-3.5 h-3.5 shrink-0" />
@@ -158,7 +153,7 @@ export function Navbar({
             className={`inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-xs font-semibold rounded-lg transition-all whitespace-nowrap shrink-0 cursor-pointer ${
               activeView === 'portal' && activePanelRole === 'admin'
                 ? 'text-slate-950 bg-sky-300 ring-2 ring-sky-200/80'
-                : 'text-slate-950 bg-[#38BDF8] hover:bg-sky-300'
+                : 'text-slate-950 bg-sky-400 hover:bg-sky-300'
             }`}
           >
             <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
@@ -172,7 +167,7 @@ export function Navbar({
       {activeView === 'landing' && (
         <nav
           aria-label="সেকশন নেভিগেশন ট্যাব"
-          className="border-t border-slate-800/80 bg-[#0E1621]/95"
+          className="border-t border-[#262B36] bg-[#14171D]/95"
         >
           <div className="max-w-[1200px] mx-auto px-3 sm:px-6 py-2 sm:py-2.5 flex items-center sm:justify-center gap-2 sm:gap-3 overflow-x-auto no-scrollbar">
             {SECTION_TABS.map((tab) => {
@@ -189,7 +184,7 @@ export function Navbar({
                 >
                   <Icon
                     className={`w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 ${
-                      isActive ? 'text-slate-950' : tab.iconIdleClass
+                      isActive ? 'text-current' : tab.iconIdleClass
                     }`}
                   />
                   <span>{tab.label}</span>

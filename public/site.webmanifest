@@ -1,12 +1,22 @@
 {
-  "name": "Wasim Sir Physics — ওয়াসিম স্যার ফিজিক্স",
+  "name": "Wasim Sir Physics",
   "short_name": "Wasim Sir Physics",
   "description": "চট্টগ্রামের পদার্থবিজ্ঞানের বৃহত্তম কম্পিটিটিভ প্ল্যাটফর্ম · HSC '২৮ একাডেমিক ও প্রজেক্টাইল ল্যাব পোর্টাল",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0B1118",
-  "theme_color": "#0B1118",
+  "background_color": "#111318",
+  "theme_color": "#111318",
   "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "48x48",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
     {
       "src": "/icon-192.png",
       "sizes": "192x192",

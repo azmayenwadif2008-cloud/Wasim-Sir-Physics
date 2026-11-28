@@ -89,7 +89,7 @@ export function LandingShowcase({ onOpenPortal }: LandingShowcaseProps) {
   return (
     <main>
       {/* Hero Section */}
-      <section className="observatory-grid-bg border-b border-slate-800/80">
+      <section className="observatory-grid-bg border-b border-[#262B36]">
         <div className="max-w-[1200px] mx-auto px-6 py-14 lg:py-18">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-10 items-stretch">
             {/* Left Copy */}
@@ -103,7 +103,7 @@ export function LandingShowcase({ onOpenPortal }: LandingShowcaseProps) {
                   কঠিন সূত্র নয়—যুক্তির আলোয় জয় করো পদার্থবিজ্ঞান।
                 </h1>
 
-                <p className="text-sm font-medium text-[#FBBF24] mb-4">
+                <p className="text-sm font-medium text-pink-300 mb-4">
                   এইচএসসি ২০২৮ · একাদশ শ্রেণি · পদার্থবিজ্ঞান প্রথম পত্র
                 </p>
 
@@ -115,7 +115,7 @@ export function LandingShowcase({ onOpenPortal }: LandingShowcaseProps) {
                   <button
                     type="button"
                     onClick={() => onOpenPortal(undefined, 'student')}
-                    className="inline-flex items-center gap-2.5 px-6 py-3.5 text-sm font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] rounded-lg transition-colors cursor-pointer whitespace-nowrap"
+                    className="inline-flex items-center gap-2.5 px-6 py-3.5 text-sm font-semibold text-[#111318] bg-[#CBD5E1] hover:bg-[#E2E8F0] rounded-lg transition-colors cursor-pointer whitespace-nowrap shadow-sm"
                   >
                     <span>
                       {isPaidStudent
@@ -135,12 +135,12 @@ export function LandingShowcase({ onOpenPortal }: LandingShowcaseProps) {
                 </div>
               </div>
 
-              <div className="mt-10 pt-6 border-t border-slate-800/90 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-slate-400">
-                <span className="text-slate-200 font-medium">অধ্যায়ভিত্তিক পূর্ণাঙ্গ রেকর্ডেড ক্লাস</span>
+              <div className="mt-10 pt-6 border-t border-[#262B36] flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-slate-400">
+                <span className="text-green-300 font-medium">অধ্যায়ভিত্তিক পূর্ণাঙ্গ রেকর্ডেড ক্লাস</span>
                 <span aria-hidden="true">·</span>
                 <span>বোর্ড সিকিউ ও অ্যাডমিশন গাণিতিক সমাধান</span>
                 <span aria-hidden="true">·</span>
-                <span>চট্টগ্রামের সেরা প্রতিযোগিতামূলক প্রস্তুতি</span>
+                <span className="text-purple-300 font-medium">চট্টগ্রামের সেরা প্রতিযোগিতামূলক প্রস্তুতি</span>
               </div>
             </div>
 
@@ -155,7 +155,7 @@ export function LandingShowcase({ onOpenPortal }: LandingShowcaseProps) {
                     }),
                   )
                 }
-                className="group relative h-[225px] sm:h-[250px] rounded-xl overflow-hidden border border-slate-700/80 bg-[#131C28]"
+                className="group relative h-[225px] sm:h-[250px] rounded-xl overflow-hidden border border-[#2D3340] bg-[#181C24] hover:border-sky-400/80 transition-colors"
               >
                 <ResilientImage
                   src={
@@ -167,8 +167,8 @@ export function LandingShowcase({ onOpenPortal }: LandingShowcaseProps) {
                   className="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-[1.02]"
                   fallbackLabel="ওয়াসিম স্যার ফিজিক্স · পূর্ণাঙ্গ ক্লাসরুম"
                 />
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#060A10] via-[#060A10]/70 to-transparent p-4 sm:p-5">
-                  <p className="text-[11px] font-medium text-[#FBBF24] mb-0.5">
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#0C0E13] via-[#0C0E13]/75 to-transparent p-4 sm:p-5">
+                  <p className="text-[11px] font-medium text-pink-300 mb-0.5">
                     মতি টাওয়ার (৫ম তলা), চকবাজার · পূর্ণাঙ্গ ক্লাসরুম
                   </p>
                   <p className="text-xs sm:text-sm font-medium text-slate-100">
@@ -187,7 +187,7 @@ export function LandingShowcase({ onOpenPortal }: LandingShowcaseProps) {
                         new CustomEvent('select-gallery-item', { detail: item.id }),
                       )
                     }
-                    className="group relative rounded-xl overflow-hidden border border-slate-700/80 bg-[#131C28] hover:border-[#F59E0B] transition-colors"
+                    className="group relative rounded-xl overflow-hidden border border-[#2D3340] bg-[#181C24] hover:border-pink-400 transition-colors"
                   >
                     <ResilientImage
                       src={item.src}
@@ -195,8 +195,8 @@ export function LandingShowcase({ onOpenPortal }: LandingShowcaseProps) {
                       className="w-full h-full object-cover object-top transition-transform duration-300 group-hover:scale-[1.03]"
                       fallbackLabel={item.sub}
                     />
-                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#060A10] via-[#060A10]/80 to-transparent p-2.5 sm:p-3">
-                      <p className="text-[11px] font-sans font-semibold text-[#FBBF24] leading-tight tabular-nums">
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#0C0E13] via-[#0C0E13]/80 to-transparent p-2.5 sm:p-3">
+                      <p className="text-[11px] font-sans font-semibold text-pink-300 leading-tight tabular-nums">
                         {item.label}
                       </p>
                       <p className="text-xs font-semibold text-slate-50 leading-tight mt-0.5 truncate">
@@ -210,16 +210,16 @@ export function LandingShowcase({ onOpenPortal }: LandingShowcaseProps) {
           </div>
 
           {/* 4-Column Proof Strip */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 border border-slate-800 rounded-xl bg-[#131C28]/90 mt-12 overflow-hidden">
-            <div className="p-6 border-r border-b lg:border-b-0 border-slate-800">
-              <div className="font-display text-2xl font-bold text-slate-50 mb-1">
+          <div className="grid grid-cols-2 lg:grid-cols-4 border border-[#262B36] rounded-xl bg-[#181C24]/95 mt-12 overflow-hidden">
+            <div className="p-6 border-r border-b lg:border-b-0 border-[#262B36]">
+              <div className="font-display text-2xl font-bold text-[#CBD5E1] mb-1">
                 ১০টি অধ্যায়
               </div>
               <div className="text-xs text-slate-400">
                 পদার্থবিজ্ঞান ১ম পত্র সম্পূর্ণ সিলেবাস
               </div>
             </div>
-            <div className="p-6 lg:border-r border-b lg:border-b-0 border-slate-800">
+            <div className="p-6 lg:border-r border-b lg:border-b-0 border-[#262B36]">
               <div className="font-display text-2xl font-bold text-sky-300 mb-1">
                 ১০২+ লেকচার
               </div>
@@ -227,8 +227,8 @@ export function LandingShowcase({ onOpenPortal }: LandingShowcaseProps) {
                 বোর্ড সিকিউ ও গাণিতিক অনুশীলন
               </div>
             </div>
-            <div className="p-6 border-r border-slate-800">
-              <div className="font-display text-2xl font-bold text-[#FBBF24] mb-1">
+            <div className="p-6 border-r border-[#262B36]">
+              <div className="font-display text-2xl font-bold text-green-300 mb-1">
                 বোর্ড পিডিএফ
               </div>
               <div className="text-xs text-slate-400">
@@ -236,7 +236,7 @@ export function LandingShowcase({ onOpenPortal }: LandingShowcaseProps) {
               </div>
             </div>
             <div className="p-6">
-              <div className="font-display text-2xl font-bold text-slate-50 mb-1">
+              <div className="font-display text-2xl font-bold text-purple-300 mb-1">
                 স্টুডেন্ট প্যানেল
               </div>
               <div className="text-xs text-slate-400">
@@ -248,18 +248,18 @@ export function LandingShowcase({ onOpenPortal }: LandingShowcaseProps) {
       </section>
 
       {/* Instructor Spotlight: Wasim Sharfaraz (Immediately below Hero for mobile & desktop visibility) */}
-      <section id="instructor" className="py-10 sm:py-14 border-t border-slate-800/80 bg-[#0E1621]">
+      <section id="instructor" className="py-10 sm:py-14 border-t border-[#262B36] bg-[#14171D]">
         <div className="max-w-[1200px] mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-12 items-stretch bg-[#131C28] border border-slate-800 rounded-xl overflow-hidden">
-            <div className="lg:col-span-5 relative min-h-[300px] sm:min-h-[340px] bg-slate-900 border-b lg:border-b-0 lg:border-r border-slate-800">
+          <div className="grid grid-cols-1 lg:grid-cols-12 items-stretch bg-[#181C24] border border-[#262B36] rounded-xl overflow-hidden">
+            <div className="lg:col-span-5 relative min-h-[300px] sm:min-h-[340px] bg-[#0C0E13] border-b lg:border-b-0 lg:border-r border-[#262B36]">
               <ResilientImage
                 src="/assets/aistudio/FB_IMG_1795659673722_bfb9af38.jpg"
                 alt="পদার্থবিজ্ঞান শিক্ষক ওয়াসিম সারফারাজ ও ব্যাচের শিক্ষার্থীবৃন্দ"
                 className="w-full h-full object-cover object-top"
                 fallbackLabel="Wasim Sharfaraz · Instructor"
               />
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#060A10] via-[#060A10]/85 to-transparent p-5 sm:p-7">
-                <p className="text-[11px] font-mono tracking-wider text-[#FBBF24] mb-1">
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#0C0E13] via-[#0C0E13]/85 to-transparent p-5 sm:p-7">
+                <p className="text-[11px] font-mono tracking-wider text-pink-300 mb-1">
                   INSTRUCTOR · পদার্থবিজ্ঞান
                 </p>
                 <div className="font-display text-2xl font-bold text-slate-50 leading-tight">
@@ -273,27 +273,27 @@ export function LandingShowcase({ onOpenPortal }: LandingShowcaseProps) {
 
             <div className="lg:col-span-7 p-6 sm:p-10 flex flex-col justify-between">
               <div>
-                <p className="text-xs font-medium text-[#FBBF24] tracking-wide mb-2">
+                <p className="text-xs font-medium text-[#CBD5E1] tracking-wide mb-2">
                   কোর্স ইন্সট্রাক্টর · AimX প্ল্যাটফর্ম (Wasim Sir Physics) · মতি টাওয়ার (৫ম তলা), চকবাজার
                 </p>
                 <h2 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-slate-100 mb-3 sm:mb-4 text-balance">
                   ওয়াসিম সারফারাজের এইচএসসি &apos;২৮ ফিজিক্স ব্যাচ
                 </h2>
                 <p className="text-sm sm:text-base text-slate-300 leading-relaxed mb-5 sm:mb-6">
-                  AimX প্ল্যাটফর্মে <span className="text-slate-100 font-medium">Wasim Sir Physics</span> ও <span className="text-slate-100 font-medium">Abdullah Sir Biology</span> এক জায়গায়। বাংলা ভার্সনের শিক্ষার্থীদের জন্য পদার্থবিজ্ঞানের প্রতিটি কঠিন টপিক সহজ বাংলায়, বাস্তব উদাহরণ ও চিত্রসহ ধাপে ধাপে বোঝানো হয়েছে—যাতে একাদশ শ্রেণির শুরু থেকেই বোর্ড ও অ্যাডমিশন প্রস্তুতি শক্তিশালী হয়। ওয়াসিম স্যার: +880 1883-600827 · হেল্পলাইন: +880 1600-653568 (দুটি নাম্বারেই কল ও WhatsApp)।
+                  AimX প্ল্যাটফর্মে <span className="text-sky-300 font-medium">Wasim Sir Physics</span> ও <span className="text-green-300 font-medium">Abdullah Sir Biology</span> এক জায়গায়। বাংলা ভার্সনের শিক্ষার্থীদের জন্য পদার্থবিজ্ঞানের প্রতিটি কঠিন টপিক সহজ বাংলায়, বাস্তব উদাহরণ ও চিত্রসহ ধাপে ধাপে বোঝানো হয়েছে—যাতে একাদশ শ্রেণির শুরু থেকেই বোর্ড ও অ্যাডমিশন প্রস্তুতি শক্তিশালী হয়। ওয়াসিম স্যার: +880 1883-600827 · হেল্পলাইন: +880 1600-653568 (দুটি নাম্বারেই কল ও WhatsApp)।
                 </p>
               </div>
 
-              <div className="pt-5 border-t border-slate-800 space-y-3">
+              <div className="pt-5 border-t border-[#262B36] space-y-3">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                  <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 rounded-lg bg-[#0B1118] border border-slate-800">
+                  <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 rounded-lg bg-[#111318] border border-[#262B36]">
                     <span className="text-xs font-medium text-slate-200 whitespace-nowrap">
                       ওয়াসিম স্যার · <span className="font-mono text-slate-100">01883-600827</span>
                     </span>
                     <div className="flex items-center gap-1.5 shrink-0">
                       <a
                         href="tel:+8801883600827"
-                        className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-amber-300 bg-amber-950/50 hover:bg-amber-900/60 border border-amber-800/70 rounded-md transition-colors whitespace-nowrap"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-[#D8DEE9] bg-[#CBD5E1]/10 hover:bg-[#CBD5E1]/20 border border-[#CBD5E1]/30 rounded-md transition-colors whitespace-nowrap"
                       >
                         <Phone className="w-3 h-3 shrink-0" />
                         <span>কল</span>
@@ -302,7 +302,7 @@ export function LandingShowcase({ onOpenPortal }: LandingShowcaseProps) {
                         href="https://wa.me/8801883600827"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-emerald-300 bg-emerald-950/50 hover:bg-emerald-900/60 border border-emerald-800/80 rounded-md transition-colors whitespace-nowrap"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-green-300 bg-green-950/50 hover:bg-green-900/60 border border-green-800/80 rounded-md transition-colors whitespace-nowrap"
                       >
                         <MessageCircle className="w-3 h-3 shrink-0" />
                         <span>WhatsApp</span>
@@ -310,14 +310,14 @@ export function LandingShowcase({ onOpenPortal }: LandingShowcaseProps) {
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 rounded-lg bg-[#0B1118] border border-slate-800">
+                  <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 rounded-lg bg-[#111318] border border-[#262B36]">
                     <span className="text-xs font-medium text-slate-200 whitespace-nowrap">
                       হেল্পলাইন · <span className="font-mono text-slate-100">01600-653568</span>
                     </span>
                     <div className="flex items-center gap-1.5 shrink-0">
                       <a
                         href="tel:+8801600653568"
-                        className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-amber-300 bg-amber-950/50 hover:bg-amber-900/60 border border-amber-800/70 rounded-md transition-colors whitespace-nowrap"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-[#D8DEE9] bg-[#CBD5E1]/10 hover:bg-[#CBD5E1]/20 border border-[#CBD5E1]/30 rounded-md transition-colors whitespace-nowrap"
                       >
                         <Phone className="w-3 h-3 shrink-0" />
                         <span>কল</span>
@@ -326,7 +326,7 @@ export function LandingShowcase({ onOpenPortal }: LandingShowcaseProps) {
                         href="https://wa.me/8801600653568"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-emerald-300 bg-emerald-950/50 hover:bg-emerald-900/60 border border-emerald-800/80 rounded-md transition-colors whitespace-nowrap"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-green-300 bg-green-950/50 hover:bg-green-900/60 border border-green-800/80 rounded-md transition-colors whitespace-nowrap"
                       >
                         <MessageCircle className="w-3 h-3 shrink-0" />
                         <span>WhatsApp</span>
@@ -348,7 +348,7 @@ export function LandingShowcase({ onOpenPortal }: LandingShowcaseProps) {
                   <button
                     type="button"
                     onClick={() => onOpenPortal(undefined, 'student')}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 sm:py-3 text-sm font-semibold text-slate-950 bg-[#F59E0B] hover:bg-[#FBBF24] rounded-lg transition-colors cursor-pointer whitespace-nowrap"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 sm:py-3 text-sm font-semibold text-white bg-purple-600 hover:bg-purple-500 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
                   >
                     <span>
                       {isPaidStudent
@@ -368,11 +368,11 @@ export function LandingShowcase({ onOpenPortal }: LandingShowcaseProps) {
       <CampusGallery />
 
       {/* Live Notice Board */}
-      <section id="notices" className="py-14 sm:py-20 border-t border-slate-800/80 bg-[#0B1118]">
+      <section id="notices" className="py-14 sm:py-20 border-t border-[#262B36] bg-[#111318]">
         <div className="max-w-[1200px] mx-auto px-6">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8 sm:mb-10">
             <div>
-              <p className="text-xs font-medium text-[#FBBF24] tracking-wide mb-2">
+              <p className="text-xs font-medium text-green-300 tracking-wide mb-2">
                 একাডেমিক নোটিশ বোর্ড
               </p>
               <h2 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-slate-100 text-balance">
@@ -382,14 +382,14 @@ export function LandingShowcase({ onOpenPortal }: LandingShowcaseProps) {
             <button
               type="button"
               onClick={() => onOpenPortal()}
-              className="inline-flex items-center gap-2 text-xs font-semibold text-sky-300 hover:text-[#FBBF24] hover:underline underline-offset-4 cursor-pointer whitespace-nowrap self-start md:self-auto"
+              className="inline-flex items-center gap-2 text-xs font-semibold text-pink-300 hover:text-pink-200 hover:underline underline-offset-4 cursor-pointer whitespace-nowrap self-start md:self-auto"
             >
               <span>সকল ব্যাচ নোটিশ পোর্টালে দেখো</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
 
-          <div className="border border-slate-800 rounded-xl divide-y divide-slate-800 bg-[#131C28]">
+          <div className="border border-[#262B36] rounded-xl divide-y divide-[#262B36] bg-[#181C24]">
             {displayNotices.length === 0 ? (
               <div className="p-8 sm:p-10 text-center">
                 <Bell className="w-6 h-6 text-slate-500 mx-auto mb-3" />
@@ -410,7 +410,7 @@ export function LandingShowcase({ onOpenPortal }: LandingShowcaseProps) {
                     {notice.pinned && (
                       <>
                         <span aria-hidden="true">·</span>
-                        <span className="font-medium text-[#FBBF24]">গুরুত্বপূর্ণ পিন করা</span>
+                        <span className="font-semibold text-[#CBD5E1]">গুরুত্বপূর্ণ পিন করা</span>
                       </>
                     )}
                   </div>
@@ -435,11 +435,11 @@ export function LandingShowcase({ onOpenPortal }: LandingShowcaseProps) {
       </section>
 
       {/* Curriculum & Recorded Class Preview */}
-      <section id="curriculum" className="py-14 sm:py-20 border-t border-slate-800/80 bg-[#0E1621]">
+      <section id="curriculum" className="py-14 sm:py-20 border-t border-[#262B36] bg-[#14171D]">
         <div className="max-w-[1200px] mx-auto px-6">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
             <div>
-              <p className="text-xs font-medium text-[#FBBF24] tracking-wide mb-2">
+              <p className="text-xs font-medium text-purple-300 tracking-wide mb-2">
                 এইচএসসি ২০২৮ · একাদশ শ্রেণি পাঠ্যক্রম
               </p>
               <h2 className="font-display text-3xl font-bold tracking-tight text-slate-100 text-balance">
@@ -448,7 +448,7 @@ export function LandingShowcase({ onOpenPortal }: LandingShowcaseProps) {
             </div>
 
             {/* Interactive Filter Tabs */}
-            <div className="inline-flex items-center gap-1 p-1 bg-[#131C28] border border-slate-800 rounded-lg self-start md:self-auto">
+            <div className="inline-flex items-center gap-1 p-1 bg-[#181C24] border border-[#262B36] rounded-lg self-start md:self-auto">
               {(
                 [
                   { id: 'all', label: 'সকল অধ্যায়' },
@@ -462,7 +462,7 @@ export function LandingShowcase({ onOpenPortal }: LandingShowcaseProps) {
                   onClick={() => setChapterFilter(tab.id)}
                   className={`px-3.5 py-1.5 text-xs font-medium rounded-md transition-colors cursor-pointer whitespace-nowrap ${
                     chapterFilter === tab.id
-                      ? 'bg-[#F59E0B] text-slate-950 font-semibold'
+                      ? 'bg-purple-500 text-white font-semibold'
                       : 'text-slate-300 hover:text-white'
                   }`}
                 >
@@ -474,8 +474,8 @@ export function LandingShowcase({ onOpenPortal }: LandingShowcaseProps) {
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             {/* Left Featured Spotlight */}
-            <div className="lg:col-span-4 bg-[#131C28] border border-slate-800 rounded-xl overflow-hidden">
-              <div className="aspect-[4/3] bg-slate-900 overflow-hidden">
+            <div className="lg:col-span-4 bg-[#181C24] border border-[#262B36] rounded-xl overflow-hidden">
+              <div className="aspect-[4/3] bg-[#0C0E13] overflow-hidden">
                 <ResilientImage
                   src="/src/assets/images/chapter_vectors_diagram_1795627543719.jpg"
                   alt="ভার্নিয়ার ক্যালিপার্স, স্টপওয়াচ ও বলের সামান্তরিক মডেল"
@@ -495,7 +495,7 @@ export function LandingShowcase({ onOpenPortal }: LandingShowcaseProps) {
                 </p>
 
                 {previewClasses.length > 0 && (
-                  <div className="pt-4 border-t border-slate-800 space-y-2.5">
+                  <div className="pt-4 border-t border-[#262B36] space-y-2.5">
                     <div className="text-xs font-semibold text-slate-200">
                       প্রকাশিত লেকচারসমূহ ({previewClasses.length})
                     </div>
@@ -504,7 +504,7 @@ export function LandingShowcase({ onOpenPortal }: LandingShowcaseProps) {
                         key={lec.id}
                         type="button"
                         onClick={() => onOpenPortal(lec.id)}
-                        className="w-full text-left flex items-center justify-between gap-3 p-2.5 rounded-lg border border-slate-800 bg-[#0E1621] hover:border-[#F59E0B] transition-colors cursor-pointer"
+                        className="w-full text-left flex items-center justify-between gap-3 p-2.5 rounded-lg border border-[#262B36] bg-[#111318] hover:border-pink-400 transition-colors cursor-pointer"
                       >
                         <div className="min-w-0">
                           <div className="text-xs font-medium text-slate-100 truncate">
@@ -515,7 +515,7 @@ export function LandingShowcase({ onOpenPortal }: LandingShowcaseProps) {
                           </div>
                         </div>
                         {lec.isFreePreview || isPaidStudent || isAdmin ? (
-                          <Play className="w-4 h-4 text-[#FBBF24] shrink-0" />
+                          <Play className="w-4 h-4 text-pink-400 shrink-0" />
                         ) : (
                           <Lock className="w-4 h-4 text-slate-500 shrink-0" />
                         )}
@@ -527,15 +527,15 @@ export function LandingShowcase({ onOpenPortal }: LandingShowcaseProps) {
             </div>
 
             {/* Right Clean Chapter Ledger */}
-            <div className="lg:col-span-8 bg-[#131C28] border border-slate-800 rounded-xl divide-y divide-slate-800">
+            <div className="lg:col-span-8 bg-[#181C24] border border-[#262B36] rounded-xl divide-y divide-[#262B36]">
               {visibleChapters.map((ch) => (
                 <div
                   key={ch.number}
-                  className="p-4 sm:px-6 sm:py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 hover:bg-[#172231] transition-colors"
+                  className="p-4 sm:px-6 sm:py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 hover:bg-[#1F2430] transition-colors"
                 >
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 text-xs text-slate-400 mb-1">
-                      <span className="font-semibold text-[#FBBF24] tabular-nums">
+                      <span className="font-semibold text-pink-300 tabular-nums">
                         {ch.titleBn}
                       </span>
                       <span aria-hidden="true">·</span>
@@ -557,7 +557,7 @@ export function LandingShowcase({ onOpenPortal }: LandingShowcaseProps) {
                           }),
                         )
                       }
-                      className="text-xs font-semibold text-[#FBBF24] hover:text-amber-300 hover:underline underline-offset-4 whitespace-nowrap"
+                      className="text-xs font-semibold text-green-300 hover:text-green-200 hover:underline underline-offset-4 whitespace-nowrap"
                     >
                       ল্যাব দেখো
                     </a>
@@ -567,7 +567,7 @@ export function LandingShowcase({ onOpenPortal }: LandingShowcaseProps) {
                         const chapterLecture = classes.find((c) => c.chapterNumber === ch.number);
                         onOpenPortal(chapterLecture?.id);
                       }}
-                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-sky-300 hover:text-[#FBBF24] shrink-0 whitespace-nowrap cursor-pointer"
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-sky-300 hover:text-pink-300 shrink-0 whitespace-nowrap cursor-pointer"
                     >
                       <BookOpen className="w-3.5 h-3.5" />
                       <span>ক্লাস দেখো</span>
@@ -577,7 +577,7 @@ export function LandingShowcase({ onOpenPortal }: LandingShowcaseProps) {
               ))}
 
               {chapterFilter === 'all' && filteredChapters.length > 5 && (
-                <div className="p-4 sm:px-6 flex items-center justify-between bg-[#0B1118]/50">
+                <div className="p-4 sm:px-6 flex items-center justify-between bg-[#111318]/80">
                   <span className="text-xs text-slate-400 tabular-nums">
                     {showAllChapters
                       ? 'সকল ১০টি অধ্যায় দেখানো হচ্ছে'
@@ -586,7 +586,7 @@ export function LandingShowcase({ onOpenPortal }: LandingShowcaseProps) {
                   <button
                     type="button"
                     onClick={() => setShowAllChapters((v) => !v)}
-                    className="text-xs font-semibold text-[#FBBF24] hover:text-amber-300 hover:underline underline-offset-4 cursor-pointer whitespace-nowrap"
+                    className="text-xs font-semibold text-purple-300 hover:text-purple-200 hover:underline underline-offset-4 cursor-pointer whitespace-nowrap"
                   >
                     {showAllChapters ? 'সংক্ষিপ্ত করো' : 'বাকি ৫টি অধ্যায় দেখো'}
                   </button>

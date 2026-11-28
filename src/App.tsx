@@ -35,7 +35,7 @@ function PortalShell() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#0B1118] text-[#F1F5F9]">
+    <div className="min-h-screen flex flex-col bg-[#111318] text-[#F3F4F6]">
       <Navbar
         activeView={activeView}
         activePanelRole={authRoleRequest.role}
@@ -61,11 +61,11 @@ function PortalShell() {
         )}
       </div>
 
-      <footer className="border-t border-slate-800/80 bg-[#080D14]">
+      <footer className="border-t border-[#262B36] bg-[#0C0E13]">
         <div className="max-w-[1200px] mx-auto px-6 py-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs text-slate-400">
           <div className="space-y-1">
             <div>
-              <span className="font-display font-semibold text-slate-100">
+              <span className="font-display font-semibold text-pink-200">
                 ওয়াসিম স্যার ফিজিক্স (Wasim Sir Physics)
               </span>
               <span className="mx-2" aria-hidden="true">·</span>
@@ -80,7 +80,7 @@ function PortalShell() {
               <span className="text-slate-400">০১৮৮৩-৬০০৮২৭:</span>
               <a
                 href="tel:+8801883600827"
-                className="text-amber-400 hover:text-amber-300 transition-colors"
+                className="text-[#CBD5E1] font-medium hover:text-[#E2E8F0] transition-colors"
               >
                 কল
               </a>
@@ -89,7 +89,7 @@ function PortalShell() {
                 href="https://wa.me/8801883600827"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-emerald-400 hover:text-emerald-300 transition-colors"
+                className="text-green-400 hover:text-green-300 transition-colors"
               >
                 WhatsApp
               </a>
@@ -98,7 +98,7 @@ function PortalShell() {
               <span className="text-slate-400">০১৬০০-৬৫৩৫৬৮:</span>
               <a
                 href="tel:+8801600653568"
-                className="text-amber-400 hover:text-amber-300 transition-colors"
+                className="text-[#CBD5E1] font-medium hover:text-[#E2E8F0] transition-colors"
               >
                 কল
               </a>
@@ -107,7 +107,7 @@ function PortalShell() {
                 href="https://wa.me/8801600653568"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-emerald-400 hover:text-emerald-300 transition-colors"
+                className="text-green-400 hover:text-green-300 transition-colors"
               >
                 WhatsApp
               </a>
@@ -126,14 +126,14 @@ function PortalShell() {
                 setActiveView('landing');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              className="hover:text-slate-100 transition-colors cursor-pointer"
+              className="text-purple-300 hover:text-purple-200 transition-colors cursor-pointer"
             >
               পাঠ্যক্রম
             </button>
             <button
               type="button"
               onClick={() => handleOpenPortal(undefined, 'student')}
-              className="hover:text-slate-100 transition-colors cursor-pointer"
+              className="text-pink-300 hover:text-pink-200 transition-colors cursor-pointer"
             >
               স্টুডেন্ট রেজিস্ট্রেশন / লগইন
             </button>
