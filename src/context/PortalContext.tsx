@@ -602,6 +602,9 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
                   if (oldData.address !== undefined) migratedDoc.address = oldData.address;
                   if (oldData.photoUrl !== undefined) migratedDoc.photoUrl = oldData.photoUrl;
                   await setDoc(targetEnrollRef, migratedDoc);
+                  try {
+                    await deleteDoc(doc(db, 'enrollments', sourcePhoneEmail));
+                  } catch {}
                 }
               }
             }
@@ -1842,13 +1845,24 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
       // If enrollment was moved from a legacy or old email, clean up old doc
       if (
         primaryKey !== sourceEmailKey &&
-        !isStudentPhoneEmail(sourceEmailKey) &&
         sourceSnap.exists()
       ) {
         try {
           await deleteDoc(doc(adminDb, 'enrollments', sourceEmailKey));
         } catch {
           // Non-fatal cleanup
+        }
+      }
+
+      // Also ensure any separate phone-based enrollment record is deleted when primaryKey is a real Gmail
+      if (finalPhone && !isStudentPhoneEmail(primaryKey)) {
+        const phoneAuthEmailKey = phoneToAuthEmail(finalPhone);
+        if (phoneAuthEmailKey !== primaryKey && isStudentPhoneEmail(phoneAuthEmailKey)) {
+          try {
+            await deleteDoc(doc(adminDb, 'enrollments', phoneAuthEmailKey));
+          } catch {
+            // Non-fatal cleanup
+          }
         }
       }
 
